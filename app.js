@@ -14,31 +14,31 @@
   const RELATION_EXPLAIN = {
     상생: {
       emoji: '🌱',
-      title: '상생 — 가장 편안하고 오래가는 관계',
-      lover: ['함께 있으면 서로 더 좋은 사람이 되는 느낌', '자연스럽게 응원하고 배려함', '싸워도 금방 풀림', '서로의 장점을 키워줌'],
-      friend: ['힘들 때 가장 먼저 찾게 되는 친구', '같이 있으면 에너지가 충전됨', '서로 도움을 주고받으며 오래 감'],
+      title: '상생 — 함께 있을수록 편안해지는 관계',
+      lover: ['함께 있으면 서로 더 좋은 사람이 되는 느낌을 받아요', '자연스럽게 응원하고 챙겨주는 편이에요', '다퉈도 비교적 금방 마음을 풀어요', '서로의 장점을 더 잘 살려줘요'],
+      friend: ['힘들 때 먼저 떠오르는 친구가 되기 쉬워요', '같이 있으면 기운이 나는 편이에요', '필요할 때 도움을 주고받으며 오래 이어져요'],
       quote: '너랑 있으면 내가 더 좋아지는 것 같아.',
     },
     상극: {
       emoji: '⚔️',
-      title: '상극 — 강하게 끌리기도 하지만 자주 부딪히는 관계',
-      lover: ['첫인상이 강렬하거나 끌릴 수도 있음', '하지만 가치관이나 생활 방식이 자주 충돌', '자존심 싸움이 생기기 쉬움', '서로 맞춰가면 크게 성장하기도 함'],
-      friend: ['친하지만 자주 티격태격', '서로 지적을 많이 함', '가끔은 스트레스를 주기도 함'],
+      title: '상극 — 끌림도 크지만 부딪힐 때도 있어요',
+      lover: ['첫인상이 강렬하거나 빠르게 끌릴 수 있어요', '가치관이나 생활 방식의 차이가 눈에 잘 보여요', '서로 물러서지 않으면 자존심 싸움이 되기 쉬워요', '차이를 잘 맞춰가면 서로 많이 성장할 수 있어요'],
+      friend: ['친해도 종종 티격태격할 수 있어요', '서로의 부족한 점을 빠르게 지적하는 편이에요', '가까운 만큼 피곤하게 느껴지는 순간도 있어요'],
       quote: '좋아하긴 하는데 왜 이렇게 싸우지?',
-      caveat: '※ 상극이 반드시 나쁜 관계는 아닙니다. 서로를 변화시키고 성장시키는 계기가 되기도 합니다.',
+      caveat: '※ 상극이라고 해서 꼭 나쁜 관계는 아니에요. 서로 다른 점을 이해하는 과정에서 함께 성장하기도 해요.',
     },
     동기: {
       emoji: '🤝',
-      title: '동기 — 너무 잘 통하는 관계',
-      lover: ['취향과 생각이 비슷함', '말이 잘 통함', '서로를 잘 이해함', '하지만 둘 다 고집이 세면 양보를 안 할 수도 있음'],
-      friend: ['베스트프렌드가 되기 쉬움', '같이 놀면 시간 가는 줄 모름', '관심사가 비슷해서 편함'],
+      title: '동기 — 닮은 점이 많아 금방 통하는 관계',
+      lover: ['취향과 생각이 비슷한 부분이 많아요', '대화의 흐름이 잘 이어져요', '서로의 반응을 빠르게 이해해요', '둘 다 고집을 부리면 먼저 양보하기 어려울 수 있어요'],
+      friend: ['가까운 친구가 되기 쉬워요', '같이 놀면 시간이 빠르게 가요', '관심사가 비슷해서 편하게 느껴져요'],
       quote: '너랑 있으면 나를 보는 것 같아.',
     },
     중립: {
       emoji: '⚖️',
-      title: '중립 — 편안하지만 특별한 자극은 적은 관계',
-      lover: ['크게 싸우지도 않고 크게 불타지도 않음', '안정적이지만 심심하게 느껴질 수도 있음', '시간이 지나며 정이 드는 스타일'],
-      friend: ['만나면 반갑지만 자주 연락하지는 않음', '필요할 때 편하게 만날 수 있음'],
+      title: '중립 — 천천히 편안해지는 관계',
+      lover: ['크게 싸우지도, 감정이 급하게 달아오르지도 않아요', '안정적이지만 가끔은 심심하게 느껴질 수 있어요', '시간을 함께 보내면서 정이 깊어지는 편이에요'],
+      friend: ['만나면 반갑지만 연락이 뜸할 수 있어요', '필요할 때 부담 없이 만날 수 있어요'],
       quote: '편하긴 한데, 엄청 특별한 느낌은 아니야.',
     },
   };
@@ -107,51 +107,51 @@
 
   // 오행 이름을 실제 관계 행동으로 풀어쓴 문장
   const ELEMENT_LOW_GUIDE = {
-    목: '새로운 데이트를 정하거나 둘의 다음 계획을 세울 때 서로 눈치만 보며 시작이 늦어질 수 있어요. 여행 날짜, 이번 달에 해볼 일처럼 첫 행동을 미리 정해두면 편합니다.',
-    화: '좋아하는 마음이 있어도 말이나 표정으로 잘 드러나지 않아 관계가 심심하게 느껴질 수 있어요. “보고 싶었어”, “오늘 좋았어”처럼 짧은 표현을 자주 해주는 게 도움이 됩니다.',
-    토: '약속, 돈, 일정, 집안일처럼 반복해서 챙겨야 하는 일을 서로 미루기 쉬워요. 누가 무엇을 언제까지 할지 정해두면 사소한 다툼을 줄일 수 있습니다.',
-    금: '싫은 점이나 지켜야 할 선을 분명하게 말하지 못해 문제가 오래 끌 수 있어요. 연락 빈도, 돈 쓰는 방식, 친구 관계처럼 민감한 기준은 미리 말로 맞춰두는 편이 좋습니다.',
-    수: '감정이 올라왔을 때 잠깐 멈추거나 상대 이야기를 끝까지 듣는 여유가 부족할 수 있어요. 바로 결론 내리기보다 20분 정도 쉬고 다시 이야기할 시간을 정해두는 방식이 잘 맞습니다.',
+    목: '새로운 데이트를 정하거나 둘의 다음 계획을 세울 때 서로 눈치만 보며 시작이 늦어질 수 있어요. 여행 날짜, 이번 달에 해볼 일처럼 첫 행동을 미리 정해두면 편해요.',
+    화: '좋아하는 마음이 있어도 말이나 표정으로 잘 드러나지 않아 관계가 심심하게 느껴질 수 있어요. “보고 싶었어”, “오늘 좋았어”처럼 짧은 표현을 자주 해주는 게 도움이 돼요.',
+    토: '약속, 돈, 일정, 집안일처럼 반복해서 챙겨야 하는 일을 서로 미루기 쉬워요. 누가 무엇을 언제까지 할지 정해두면 사소한 다툼을 줄일 수 있어요.',
+    금: '싫은 점이나 지켜야 할 선을 분명하게 말하지 못해 문제가 오래 끌 수 있어요. 연락 빈도, 돈 쓰는 방식, 친구 관계처럼 민감한 기준은 미리 말로 맞춰두는 편이 좋아요.',
+    수: '감정이 올라왔을 때 잠깐 멈추거나 상대 이야기를 끝까지 듣는 여유가 부족할 수 있어요. 바로 결론 내리기보다 20분 정도 쉬고 다시 이야기할 시간을 정해두는 방식이 잘 맞아요.',
   };
 
   const ELEMENT_HELP_TEXT = {
-    목: (supporter, receiver) => `${supporter}님은 ${receiver}님이 앞으로 무엇을 해야 할지 막막해할 때, 새로운 선택지를 꺼내고 첫 단계를 정하는 데 도움을 주는 편입니다.`,
-    화: (supporter, receiver) => `${supporter}님은 ${receiver}님이 기분이 가라앉거나 표현을 망설일 때, 먼저 말을 걸고 분위기를 풀어주는 역할을 하기 쉽습니다.`,
-    토: (supporter, receiver) => `${supporter}님은 ${receiver}님이 일정·약속·생활 문제로 흔들릴 때, 해야 할 일을 차근차근 정리하고 꾸준히 챙겨주는 편입니다.`,
-    금: (supporter, receiver) => `${supporter}님은 ${receiver}님이 결정을 미루거나 기준을 잡지 못할 때, 선택지를 정리하고 분명한 결론을 내리도록 돕는 편입니다.`,
-    수: (supporter, receiver) => `${supporter}님은 ${receiver}님이 감정이 복잡할 때, 서둘러 답을 요구하기보다 이야기를 들어주고 마음을 정리할 시간을 주는 편입니다.`,
+    목: (supporter, receiver) => `${supporter}님은 ${receiver}님이 앞으로 무엇을 해야 할지 막막해할 때, 새로운 선택지를 꺼내고 첫 단계를 정하는 데 도움을 주는 편이에요.`,
+    화: (supporter, receiver) => `${supporter}님은 ${receiver}님이 기분이 가라앉거나 표현을 망설일 때, 먼저 말을 걸고 분위기를 풀어주는 역할을 하기 쉬워요.`,
+    토: (supporter, receiver) => `${supporter}님은 ${receiver}님이 일정·약속·생활 문제로 흔들릴 때, 해야 할 일을 차근차근 정리하고 꾸준히 챙겨주는 편이에요.`,
+    금: (supporter, receiver) => `${supporter}님은 ${receiver}님이 결정을 미루거나 기준을 잡지 못할 때, 선택지를 정리하고 분명한 결론을 내리도록 돕는 편이에요.`,
+    수: (supporter, receiver) => `${supporter}님은 ${receiver}님이 감정이 복잡할 때, 서둘러 답을 요구하기보다 이야기를 들어주고 마음을 정리할 시간을 주는 편이에요.`,
   };
 
   const ELEMENT_SHARED_STRONG = {
-    목: '둘 다 새로운 장소나 활동을 찾는 데 적극적이라 데이트가 단조롭지 않은 편입니다. 다만 계획이 자주 바뀌거나 시작만 하고 마무리가 늦어질 수 있어요.',
-    화: '둘 다 반응과 애정 표현이 빠르기 때문에 즐거울 때는 분위기가 금방 달아오릅니다. 반대로 서운할 때도 말이 빨라져 싸움이 커지기 쉬워요.',
-    토: '둘 다 약속과 익숙한 생활을 중요하게 여겨 안정적인 관계를 만들기 쉽습니다. 다만 한 번 정한 방식에서 물러서지 않아 고집 대결이 생길 수 있어요.',
-    금: '둘 다 약속, 예의, 관계의 기준을 중요하게 여겨 서로 믿을 만한 사람이라고 느끼기 쉽습니다. 다만 상대의 부족한 점을 빠르게 지적하는 분위기가 될 수 있어요.',
-    수: '둘 다 조용히 생각하고 깊게 대화하는 시간을 편하게 느낍니다. 다만 속마음을 먼저 꺼내지 않아 서로 괜찮은 줄 알고 지나칠 수 있어요.',
+    목: '둘 다 새로운 장소나 활동을 찾는 데 적극적이라 데이트가 단조롭지 않은 편이에요. 다만 계획이 자주 바뀌거나 시작만 하고 마무리가 늦어질 수 있어요.',
+    화: '둘 다 반응과 애정 표현이 빠르기 때문에 즐거울 때는 분위기가 금방 달아올라요. 반대로 서운할 때도 말이 빨라져 싸움이 커지기 쉬워요.',
+    토: '둘 다 약속과 익숙한 생활을 중요하게 여겨 안정적인 관계를 만들기 쉬워요. 다만 한 번 정한 방식에서 물러서지 않아 고집 대결이 생길 수 있어요.',
+    금: '둘 다 약속, 예의, 관계의 기준을 중요하게 여겨 서로 믿을 만한 사람이라고 느끼기 쉬워요. 다만 상대의 부족한 점을 빠르게 지적하는 분위기가 될 수 있어요.',
+    수: '둘 다 조용히 생각하고 깊게 대화하는 시간을 편하게 느껴요. 다만 속마음을 먼저 꺼내지 않아 서로 괜찮은 줄 알고 지나칠 수 있어요.',
   };
 
   const ELEMENT_SHARED_GAP = {
-    목: '둘 다 새로운 계획을 먼저 꺼내는 데 약할 수 있으니, 한 달에 한 번은 번갈아 데이트 장소나 여행 계획을 정하는 방식이 좋습니다.',
+    목: '둘 다 새로운 계획을 먼저 꺼내는 데 약할 수 있으니, 한 달에 한 번은 번갈아 데이트 장소나 여행 계획을 정하는 방식이 좋아요.',
     화: '둘 다 애정 표현을 기다리는 편이 될 수 있으니, 고맙거나 보고 싶을 때는 상대가 알아주길 기다리지 말고 바로 말해주세요.',
-    토: '돈, 일정, 집안일처럼 꾸준히 관리해야 하는 부분이 흐트러질 수 있으니 공동 캘린더나 역할표를 사용하는 편이 좋습니다.',
+    토: '돈, 일정, 집안일처럼 꾸준히 관리해야 하는 부분이 흐트러질 수 있으니 공동 캘린더나 역할표를 사용하는 편이 좋아요.',
     금: '연락 기준이나 서로 지켜야 할 선이 애매해질 수 있으니, 불편한 일이 생기기 전에 구체적인 기준을 말로 정해주세요.',
-    수: '싸운 뒤 감정을 가라앉히고 천천히 대화하는 과정이 부족할 수 있으니, 잠시 쉬었다가 다시 이야기할 시간을 약속하는 것이 좋습니다.',
+    수: '싸운 뒤 감정을 가라앉히고 천천히 대화하는 과정이 부족할 수 있으니, 잠시 쉬었다가 다시 이야기할 시간을 약속하는 것이 좋아요.',
   };
 
   const SANGSAENG_PAIR_SCENE = {
-    '목>화': (a, b) => `${a}님이 새로운 데이트나 계획을 꺼내면 ${b}님이 반응과 추진력을 더하는 조합입니다. 아이디어만 있던 일을 실제 약속으로 옮길 때 손발이 잘 맞을 수 있어요.`,
-    '화>토': (a, b) => `${a}님이 따뜻한 말과 애정 표현으로 관계의 분위기를 만들면 ${b}님이 그것을 꾸준한 연락과 약속으로 이어가는 조합입니다. 즐거움이 일상의 안정감으로 연결되기 쉬워요.`,
-    '토>금': (a, b) => `${a}님이 차분하게 상황을 정리하고 기다려주면 ${b}님이 기준을 세우고 결정을 내리는 조합입니다. 돈, 일정, 장기 계획처럼 현실적인 문제를 함께 처리할 때 장점이 잘 드러납니다.`,
-    '금>수': (a, b) => `${a}님이 복잡한 문제의 핵심을 정리해주면 ${b}님이 감정과 상황을 살펴 더 부드러운 방법을 찾는 조합입니다. 한 사람은 결론을 잡고 다른 사람은 분위기를 조율하는 식으로 역할이 나뉘기 쉬워요.`,
-    '수>목': (a, b) => `${a}님이 충분히 들어주고 생각할 여유를 만들어주면 ${b}님이 자신감을 얻어 새로운 시도를 시작하는 조합입니다. ${b}님은 ${a}님 곁에서 막막했던 생각을 실제 계획으로 바꾸기 쉬워요.`,
+    '목>화': (a, b) => `${a}님이 새로운 데이트나 계획을 꺼내면 ${b}님이 반응과 추진력을 더하는 조합이에요. 아이디어만 있던 일을 실제 약속으로 옮길 때 손발이 잘 맞을 수 있어요.`,
+    '화>토': (a, b) => `${a}님이 따뜻한 말과 애정 표현으로 관계의 분위기를 만들면 ${b}님이 그것을 꾸준한 연락과 약속으로 이어가는 조합이에요. 즐거움이 일상의 안정감으로 연결되기 쉬워요.`,
+    '토>금': (a, b) => `${a}님이 차분하게 상황을 정리하고 기다려주면 ${b}님이 기준을 세우고 결정을 내리는 조합이에요. 돈, 일정, 장기 계획처럼 현실적인 문제를 함께 처리할 때 장점이 잘 드러나요.`,
+    '금>수': (a, b) => `${a}님이 복잡한 문제의 핵심을 정리해주면 ${b}님이 감정과 상황을 살펴 더 부드러운 방법을 찾는 조합이에요. 한 사람은 결론을 잡고 다른 사람은 분위기를 조율하는 식으로 역할이 나뉘기 쉬워요.`,
+    '수>목': (a, b) => `${a}님이 충분히 들어주고 생각할 여유를 만들어주면 ${b}님이 자신감을 얻어 새로운 시도를 시작하는 조합이에요. ${b}님은 ${a}님 곁에서 막막했던 생각을 실제 계획으로 바꾸기 쉬워요.`,
   };
 
   const SANGGEUK_PAIR_SCENE = {
-    '목>토': (a, b) => `${a}님은 변화를 빨리 시작하려 하고 ${b}님은 익숙한 방식과 안정성을 지키려는 편이라, ${a}님은 답답함을 느끼고 ${b}님은 재촉받는다고 느낄 수 있습니다. 여행·이사·돈처럼 큰 결정은 바로 결론 내기보다 검토 기간을 함께 정하는 것이 좋아요.`,
-    '토>수': (a, b) => `${a}님은 관계를 분명하고 안정적으로 만들고 싶어 하지만 ${b}님은 상황에 따라 움직일 여유가 필요합니다. ${a}님이 답을 재촉하면 ${b}님이 말을 줄일 수 있으니, 언제까지 생각한 뒤 답할지 시간을 정해주는 방식이 잘 맞습니다.`,
-    '수>화': (a, b) => `${a}님은 먼저 상황을 지켜보고 생각하려 하고 ${b}님은 바로 표현하고 반응하려는 편입니다. ${b}님은 무시당한다고 느끼고 ${a}님은 감정에 압도될 수 있으니, 잠시 쉬되 다시 대화할 시각을 확실히 약속해주세요.`,
-    '화>금': (a, b) => `${a}님은 순간의 감정과 즐거움을 중요하게 여기고 ${b}님은 약속과 기준을 정확히 지키려는 편입니다. ${a}님은 지적받는다고 느끼고 ${b}님은 말이 자주 바뀐다고 느낄 수 있으니, 즉흥적인 선택이 가능한 범위를 미리 정해두면 좋습니다.`,
-    '금>목': (a, b) => `${a}님은 문제를 정확히 짚고 고치려 하지만 ${b}님은 자유롭게 시도하며 배우는 편입니다. ${a}님의 조언이 잦아지면 ${b}님은 통제받는다고 느낄 수 있으니, 지적보다 “나는 이렇게 해줬으면 좋겠어”라는 요청으로 말하는 것이 좋습니다.`,
+    '목>토': (a, b) => `${a}님은 변화를 빨리 시작하려 하고 ${b}님은 익숙한 방식과 안정성을 지키려는 편이라, ${a}님은 답답함을 느끼고 ${b}님은 재촉받는다고 느낄 수 있어요. 여행·이사·돈처럼 큰 결정은 바로 결론 내기보다 검토 기간을 함께 정하는 것이 좋아요.`,
+    '토>수': (a, b) => `${a}님은 관계를 분명하고 안정적으로 만들고 싶어 하지만 ${b}님은 상황에 따라 움직일 여유가 필요해요. ${a}님이 답을 재촉하면 ${b}님이 말을 줄일 수 있으니, 언제까지 생각한 뒤 답할지 시간을 정해주는 방식이 잘 맞아요.`,
+    '수>화': (a, b) => `${a}님은 먼저 상황을 지켜보고 생각하려 하고 ${b}님은 바로 표현하고 반응하려는 편이에요. ${b}님은 무시당한다고 느끼고 ${a}님은 감정에 압도될 수 있으니, 잠시 쉬되 다시 대화할 시각을 확실히 약속해주세요.`,
+    '화>금': (a, b) => `${a}님은 순간의 감정과 즐거움을 중요하게 여기고 ${b}님은 약속과 기준을 정확히 지키려는 편이에요. ${a}님은 지적받는다고 느끼고 ${b}님은 말이 자주 바뀐다고 느낄 수 있으니, 즉흥적인 선택이 가능한 범위를 미리 정해두면 좋아요.`,
+    '금>목': (a, b) => `${a}님은 문제를 정확히 짚고 고치려 하지만 ${b}님은 자유롭게 시도하며 배우는 편이에요. ${a}님의 조언이 잦아지면 ${b}님은 통제받는다고 느낄 수 있으니, 지적보다 “나는 이렇게 해줬으면 좋겠어”라는 요청으로 말하는 것이 좋아요.`,
   };
 
   function buildElementHelpSentences(supporter, receiver, elements) {
@@ -173,24 +173,24 @@
   const RELATION_DIRECTION_TEXT = {
     aGeneratesB: ({ nameA, nameB, aDay, bDay }) => {
       const scene = SANGSAENG_PAIR_SCENE[`${aDay}>${bDay}`];
-      return scene ? scene(nameA, nameB) : `${nameA}님이 먼저 힘을 보태고 ${nameB}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
+      return scene ? scene(nameA, nameB) : `${nameA}님이 먼저 힘을 보태고 ${nameB}님이 그 도움을 받아 움직이기 쉬운 관계예요.`;
     },
     bGeneratesA: ({ nameA, nameB, aDay, bDay }) => {
       const scene = SANGSAENG_PAIR_SCENE[`${bDay}>${aDay}`];
-      return scene ? scene(nameB, nameA) : `${nameB}님이 먼저 힘을 보태고 ${nameA}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
+      return scene ? scene(nameB, nameA) : `${nameB}님이 먼저 힘을 보태고 ${nameA}님이 그 도움을 받아 움직이기 쉬운 관계예요.`;
     },
     aControlsB: ({ nameA, nameB, aDay, bDay }) => {
       const scene = SANGGEUK_PAIR_SCENE[`${aDay}>${bDay}`];
-      return scene ? scene(nameA, nameB) : `${nameA}님이 기준을 먼저 정하고 ${nameB}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
+      return scene ? scene(nameA, nameB) : `${nameA}님이 기준을 먼저 정하고 ${nameB}님이 맞춰야 하는 상황이 반복될 수 있어요. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
     },
     bControlsA: ({ nameA, nameB, aDay, bDay }) => {
       const scene = SANGGEUK_PAIR_SCENE[`${bDay}>${aDay}`];
-      return scene ? scene(nameB, nameA) : `${nameB}님이 기준을 먼저 정하고 ${nameA}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
+      return scene ? scene(nameB, nameA) : `${nameB}님이 기준을 먼저 정하고 ${nameA}님이 맞춰야 하는 상황이 반복될 수 있어요. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
     },
     same: ({ nameA, nameB, aDay }) =>
-      `두 사람은 ${aDay}(${OHAENG_HANJA[aDay]}) 성향을 함께 가지고 있어, 중요하게 여기는 점과 반응 속도가 비슷합니다. 설명하지 않아도 통하는 순간이 많지만 같은 문제에서 동시에 고집을 부릴 수도 있어요. “나도 같을 거야”라고 넘기지 말고, 원하는 결론과 속도를 따로 확인하는 것이 좋습니다.`,
+      `두 사람은 ${aDay}(${OHAENG_HANJA[aDay]}) 성향을 함께 가지고 있어, 중요하게 여기는 점과 반응 속도가 비슷해요. 설명하지 않아도 통하는 순간이 많지만 같은 문제에서 동시에 고집을 부릴 수도 있어요. “나도 같을 거야”라고 넘기지 말고, 원하는 결론과 속도를 따로 확인하는 것이 좋아요.`,
     neutral: ({ nameA, nameB }) =>
-      `${nameA}님과 ${nameB}님은 처음부터 누가 이끌고 누가 맞춰주는지가 정해지는 관계는 아닙니다. 같은 취미를 정기적으로 함께 하거나, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 하나씩 쌓을수록 신뢰와 친밀감이 커지는 조합입니다.`,
+      `${nameA}님과 ${nameB}님은 처음부터 누가 이끌고 누가 맞춰주는지가 정해지는 관계는 아니에요. 같은 취미를 정기적으로 함께 하거나, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 하나씩 쌓을수록 신뢰와 친밀감이 커지는 조합이에요.`,
   };
 
   function escapeHtml(value) {
@@ -250,8 +250,8 @@
       stats,
       dominant,
       trait,
-      summary: `${name}님은 사주에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향을 중심으로 보고, 실제 관계에서는 ${trait.core}입니다. 특히 ${trait.love}을 느낄 때 상대의 마음을 확실히 믿는 편이에요.`,
-      caution: `잘하는 점은 ${trait.strength}입니다. 다만 갈등이 생기면 ${trait.shadow}가 나타나기 쉬워요. ${weakText}`,
+      summary: `${name}님은 사주에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향을 중심으로 보여요. 실제 관계에서는 ${trait.core}이에요. 특히 ‘${trait.love}’가 느껴질 때 상대의 마음을 더 확실히 믿는 편이에요.`,
+      caution: `관계에서 특히 잘하는 점은 ${trait.strength}이에요. 다만 갈등이 생기면 ${trait.shadow}가 나타나기 쉬워요. ${weakText}`,
     };
   }
 
@@ -270,21 +270,21 @@
     const daySignal = getJijiSignal(day);
 
     if (daySignal > 0 && yearSignal > 0) {
-      return `일지의 ${day.type}과 년지의 ${year.type}이 모두 긍정적으로 작용합니다. 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬운 조합이에요.`;
+      return `일지의 ${day.type}과 년지의 ${year.type}이 모두 좋은 방향으로 이어져요. 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬운 조합이에요.`;
     }
     if (daySignal > 0 && yearSignal < 0) {
-      return `둘만 있을 때의 정서적 호흡은 일지 ${day.type}으로 좋은 편이지만, 년지 ${year.type}의 영향으로 가족관계·사회생활·생활 습관에서는 차이가 커질 수 있습니다. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
+      return `둘만 있을 때의 정서적 호흡은 일지 ${day.type}으로 좋은 편이지만, 년지 ${year.type}의 영향으로 가족관계·사회생활·생활 습관에서는 차이가 커질 수 있어요. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
     }
     if (daySignal < 0 && yearSignal > 0) {
-      return `겉으로 보이는 생활 방향과 사회적 호흡은 년지 ${year.type}으로 잘 맞지만, 가까워질수록 일지 ${day.type}의 긴장이 드러날 수 있습니다. 바깥에서는 좋은 팀인데 사적인 감정 문제를 미루기 쉬운 조합이므로, 둘만의 대화 시간을 따로 확보하는 것이 좋아요.`;
+      return `겉으로 보이는 생활 방향과 사회적 호흡은 년지 ${year.type}으로 잘 맞지만, 가까워질수록 일지 ${day.type}의 긴장이 드러날 수 있어요. 바깥에서는 좋은 팀인데 사적인 감정 문제를 미루기 쉬운 조합이므로, 둘만의 대화 시간을 따로 확보하는 것이 좋아요.`;
     }
     if (daySignal < 0 && yearSignal < 0) {
-      return `일지 ${day.type}과 년지 ${year.type}이 모두 마찰 신호를 보여, 감정 표현과 생활 방식 양쪽에서 차이가 반복될 가능성이 있습니다. 끌림이 강하더라도 관계 규칙을 구체적으로 정하지 않으면 같은 갈등이 되풀이될 수 있어요.`;
+      return `일지 ${day.type}과 년지 ${year.type}이 모두 마찰 신호를 보여, 감정 표현과 생활 방식 양쪽에서 차이가 반복될 가능성이 있어요. 끌림이 강하더라도 관계 규칙을 구체적으로 정하지 않으면 같은 갈등이 되풀이될 수 있어요.`;
     }
     if (day.type === '동일' || year.type === '동일') {
-      return `지지에 동일 관계가 있어 익숙함과 친밀감이 빠르게 생기기 쉽습니다. 다만 비슷한 약점과 생활 습관도 함께 증폭될 수 있어, 서로가 못하는 부분을 상대가 자동으로 채워줄 것이라 기대하지 않는 편이 좋아요.`;
+      return `지지에 동일 관계가 있어 익숙함과 친밀감이 빠르게 생기기 쉬워요. 다만 비슷한 약점과 생활 습관도 함께 증폭될 수 있어, 서로가 못하는 부분을 상대가 자동으로 채워줄 것이라 기대하지 않는 편이 좋아요.`;
     }
-    return `${nameA}님과 ${nameB}님의 년지·일지 관계는 한쪽으로 강하게 기울기보다 무난한 편입니다. 연락을 얼마나 자주 할지, 돈과 주말 일정을 어떻게 나눌지, 어떤 취미를 함께 즐길지처럼 실제 생활에서 맞춰가는 방식이 관계 만족도를 더 크게 좌우해요.`;
+    return `${nameA}님과 ${nameB}님의 년지·일지 관계는 한쪽으로 강하게 기울기보다 무난한 편이에요. 연락을 얼마나 자주 할지, 돈과 주말 일정을 어떻게 나눌지, 어떤 취미를 함께 즐길지처럼 실제 생활에서 맞춰가는 방식이 관계 만족도를 더 크게 좌우해요.`;
   }
 
   function buildComplementInsight(profileA, profileB, compat) {
@@ -295,17 +295,17 @@
     const lines = [];
 
     if (aFillsB.length && bFillsA.length) {
-      lines.push('두 사람은 서로에게 도움이 되는 방식이 다릅니다. 한쪽만 계속 챙기는 관계라기보다, 상황에 따라 도움을 주고받기 쉬운 조합이에요.');
+      lines.push('두 사람은 서로를 편하게 해주는 방식이 조금씩 달라요. 한쪽만 계속 챙기는 관계라기보다, 상황에 따라 도움을 주고받기 쉬운 조합이에요.');
       lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
       lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
     } else if (aFillsB.length) {
       lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
-      lines.push(`${profileA.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileB.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
+      lines.push(`${profileA.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileB.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 작은 행동으로라도 다시 표현해주는 게 좋아요.`);
     } else if (bFillsA.length) {
       lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
-      lines.push(`${profileB.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileA.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
+      lines.push(`${profileB.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileA.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 작은 행동으로라도 다시 표현해주는 게 좋아요.`);
     } else {
-      lines.push('두 사람은 잘하는 점과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 해결해주기를 기다리기보다 담당을 정하는 것이 좋아요.');
+      lines.push('두 사람은 잘하는 점과 어려워하는 부분이 비슷한 편이에요. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 해결해주기를 기다리기보다 담당을 정하는 것이 좋아요.');
     }
 
     sharedDominant.slice(0, 2).forEach(k => {
@@ -325,21 +325,21 @@
     if (direction === 'aControlsB' || direction === 'bControlsA') {
       const controller = direction === 'aControlsB' ? profileA : profileB;
       const receiver = direction === 'aControlsB' ? profileB : profileA;
-      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하고, ${receiver.name}님이 통제받는다고 느끼는 패턴을 조심해야 합니다.`);
+      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하고, ${receiver.name}님은 통제받는다고 느끼는 상황이 반복될 수 있어요.`);
     } else if (direction === 'same') {
-      base.push('두 사람이 같은 논리와 감정으로 동시에 버티면서, 작은 문제가 자존심 대결로 길어지는 패턴을 조심해야 합니다.');
+      base.push('두 사람이 같은 논리와 감정으로 동시에 버티면 작은 문제가 자존심 대결로 길어질 수 있어요.');
     } else if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
       const giver = direction === 'aGeneratesB' ? profileA : profileB;
       const receiver = direction === 'aGeneratesB' ? profileB : profileA;
-      base.push(`${giver.name}님이 계속 이해하고 북돋우다가 지치고, ${receiver.name}님은 문제를 늦게 알아차리는 비대칭을 조심해야 합니다.`);
+      base.push(`${giver.name}님이 계속 이해하고 북돋우다가 먼저 지치고, ${receiver.name}님은 그 사실을 늦게 알아차릴 수 있어요.`);
     } else {
-      base.push('서로 나쁘게 생각하지 않지만 기대하는 방식이 달라, 설명 없이 기다리다가 서운함이 누적되는 패턴을 조심해야 합니다.');
+      base.push('서로를 나쁘게 생각하지 않아도 기대하는 방식이 달라, 말하지 않고 기다리다가 서운함이 쌓일 수 있어요.');
     }
 
-    if (dayTone === 'clash') base.push('특히 감정이 가까워질수록 즉각 반응하지 말고, 사실·감정·요청을 나누어 말하는 방식이 필요합니다.');
-    else if (dayTone === 'friction') base.push('큰 사건보다 잔소리, 말투, 연락 속도 같은 작은 마찰을 그날그날 정리하는 것이 효과적입니다.');
+    if (dayTone === 'clash') base.push('특히 감정이 가까워질수록 즉각 반응하지 말고, 사실·감정·요청을 나누어 말하는 방식이 잘 맞아요.');
+    else if (dayTone === 'friction') base.push('큰 사건보다 잔소리, 말투, 연락 속도 같은 작은 마찰을 그날그날 짧게 풀어두는 게 좋아요.');
 
-    if (yearTone === 'clash' || yearTone === 'friction') base.push('가족, 돈, 시간 사용, 공개적인 관계 방식은 초기에 기준을 맞춰두는 것이 좋습니다.');
+    if (yearTone === 'clash' || yearTone === 'friction') base.push('가족, 돈, 시간 사용, 공개적인 관계 방식은 초기에 기준을 맞춰두는 것이 좋아요.');
     return base;
   }
 
@@ -349,30 +349,30 @@
     const complementCount = (compat?.complement?.aFillsB?.length || 0) + (compat?.complement?.bFillsA?.length || 0);
 
     if (relation === '상생' && daySignal > 0 && complementCount >= 2) {
-      return '초반의 호감뿐 아니라 시간이 지날수록 신뢰가 쌓이는 장기 안정형입니다. 한 사람은 계획을 세우고 다른 사람은 분위기를 풀어주는 식으로 역할이 자연스럽게 나뉘기 쉬워, 여행·저축·운동처럼 함께할 목표를 정하면 관계가 더 단단해집니다.';
+      return '초반의 호감이 시간이 지나면서 신뢰로 이어지는 관계예요. 한 사람은 계획을 세우고 다른 사람은 분위기를 풀어주는 식으로 역할이 자연스럽게 나뉘기 쉬워요. 여행·저축·운동처럼 둘이 함께할 목표를 정하면 관계가 더 단단해져요.';
     }
     if (relation === '상극' && daySignal < 0) {
-      return '끌림과 긴장이 동시에 큰 고자극형입니다. 관계가 빠르게 깊어질 수 있지만, 갈등 규칙이 없으면 좋을 때와 힘들 때의 진폭도 커집니다. 속도 조절과 경계 존중이 핵심입니다.';
+      return '서로에게 끌리는 힘도 크지만 긴장도 함께 큰 관계예요. 관계가 빠르게 깊어질 수 있는 만큼, 다툴 때의 규칙이 없으면 감정의 오르내림도 커져요. 서로의 속도를 맞추고 선을 존중하는 게 중요해요.';
     }
     if (relation === '동기' && complementCount === 0) {
-      return '친구처럼 빠르게 가까워지는 관계입니다. 말이 잘 통하고 같은 취미를 즐기기 쉽지만, 약속 잡기·돈 관리·사과하기처럼 둘 다 어려워하는 일은 함께 미룰 수 있어요. 이런 일은 번갈아 맡는 편이 좋습니다.';
+      return '친구처럼 빠르게 가까워지는 관계예요. 말이 잘 통하고 같은 취미를 즐기기 쉽지만, 약속 잡기·돈 관리·사과하기처럼 둘 다 어려워하는 일은 함께 미룰 수 있어요. 이런 일은 번갈아 맡는 편이 좋아요.';
     }
     if (daySignal > 0) {
-      return '겉보기보다 가까워질수록 편안함이 커지는 관계입니다. 큰 이벤트보다 일상적인 연락, 식사, 생활 리듬을 꾸준히 공유할 때 애정이 안정됩니다.';
+      return '겉보기보다 가까워질수록 편안함이 커지는 관계예요. 큰 이벤트보다 일상적인 연락과 식사, 생활 리듬을 꾸준히 나눌 때 애정이 안정돼요.';
     }
     if (daySignal < 0) {
-      return '초반의 매력과 별개로 가까워진 뒤 조정이 필요한 관계입니다. 서로를 바꾸려 하기보다 각자 절대 양보하기 어려운 기준과 조정 가능한 부분을 나눠야 합니다.';
+      return '초반의 매력과 별개로 가까워진 뒤에는 조율이 필요한 관계예요. 서로를 바꾸려 하기보다 꼭 지키고 싶은 기준과 서로 맞출 수 있는 부분을 나눠 이야기해보세요.';
     }
-    return '처음부터 강하게 끌리기보다 함께 지내며 정이 쌓이는 관계입니다. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워집니다.';
+    return '처음부터 강하게 끌리기보다 함께 지내면서 정이 차곡차곡 쌓이는 관계예요. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워져요.';
   }
 
   function buildActionTips(profileA, profileB, direction, compat) {
     const tips = [];
-    tips.push(`${profileA.name}님에게는 ${profileA.trait.repair}이 효과적입니다.`);
-    tips.push(`${profileB.name}님에게는 ${profileB.trait.repair}이 효과적입니다.`);
+    tips.push(`${profileA.name}님에게는 ${profileA.trait.repair}이 효과가 좋아요.`);
+    tips.push(`${profileB.name}님에게는 ${profileB.trait.repair}이 효과가 좋아요.`);
 
     if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
-      tips.push('배려를 받은 사람이 “고마워”에서 끝내지 않고, 다음 행동으로 되돌려주는 순환을 만드는 것이 좋습니다.');
+      tips.push('배려를 받은 사람이 “고마워”에서 끝내지 않고, 다음 행동으로 되돌려주는 순환을 만드는 것이 좋아요.');
     } else if (direction === 'aControlsB' || direction === 'bControlsA') {
       tips.push('상대의 행동을 교정하려 하기 전에 “내가 필요한 것은 무엇인지”를 요청형 문장으로 말해주세요.');
     } else if (direction === 'same') {
@@ -393,9 +393,13 @@
       .compat-detail-title{font-weight:800;font-size:17px;margin-bottom:12px;color:#4f493f}
       .compat-summary-card{padding:14px 16px;margin:10px 0;border-radius:14px;background:rgba(163,128,63,.07);line-height:1.75}
       .compat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
-      .compat-card{padding:14px;border:1px solid rgba(107,99,85,.14);border-radius:14px;background:rgba(255,255,255,.55);line-height:1.7}
-      .compat-card h4{margin:0 0 8px;font-size:14px;color:#6b5328}
+      .compat-card{padding:14px 16px;border:1px solid rgba(107,99,85,.14);border-radius:14px;background:rgba(255,255,255,.58);line-height:1.7;box-shadow:0 4px 14px rgba(79,73,63,.035)}
+      .compat-card h4{display:flex;align-items:center;gap:7px;margin:0 0 9px;font-size:14px;color:#6b5328}
+      .compat-card h4::before{content:'';width:6px;height:6px;border-radius:50%;background:#a3803f;box-shadow:0 0 0 4px rgba(163,128,63,.09);flex:0 0 auto}
       .compat-card p{margin:6px 0}
+      .compat-stack-card{margin-top:16px}
+      .compat-highlight-card{border-color:rgba(163,128,63,.20);background:linear-gradient(135deg,rgba(163,128,63,.075),rgba(255,255,255,.62))}
+      .compat-stack-card + .compat-stack-card{margin-top:16px}
       .compat-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
       .compat-chip{display:inline-flex;padding:4px 9px;border-radius:999px;background:rgba(163,128,63,.10);font-size:12px}
       .compat-list{margin:7px 0 0;padding-left:20px;line-height:1.75}
@@ -435,18 +439,18 @@
 
     return `
       <section class="compat-detail-wrap">
-        <div class="compat-detail-title">두 사람의 사주를 함께 본 상세 궁합</div>
-        <div class="compat-summary-card"><b>관계의 핵심 흐름</b><br>${directionText}</div>
+        <div class="compat-detail-title">두 사람의 관계를 조금 더 자세히 볼게요</div>
+        <div class="compat-summary-card"><b>두 사람 사이의 기본 분위기</b><br>${directionText}</div>
 
         <div class="compat-grid">
           <article class="compat-card">
-            <h4>${nameA}님의 관계 성향</h4>
+            <h4>${nameA}님은 사랑할 때 이런 편이에요</h4>
             <div class="compat-chip-row">${chipsA.map(x => `<span class="compat-chip">${x}</span>`).join('')}</div>
             <p>${profileA.summary}</p>
             <p>${profileA.caution}</p>
           </article>
           <article class="compat-card">
-            <h4>${nameB}님의 관계 성향</h4>
+            <h4>${nameB}님은 사랑할 때 이런 편이에요</h4>
             <div class="compat-chip-row">${chipsB.map(x => `<span class="compat-chip">${x}</span>`).join('')}</div>
             <p>${profileB.summary}</p>
             <p>${profileB.caution}</p>
@@ -454,33 +458,33 @@
         </div>
 
         <div class="compat-card">
-          <h4>가까워졌을 때 나타나는 궁합</h4>
+          <h4>가까워질수록 이런 모습이 보여요</h4>
           <p>${buildJijiSynthesis(compat, nameA, nameB)}</p>
-          <p><b>관계의 진행 방식:</b> ${flow}</p>
+          <p><b>두 사람의 관계는</b> ${flow}</p>
         </div>
 
         <div class="compat-grid">
           <article class="compat-card">
-            <h4>상대에게 실제로 도움이 되는 부분</h4>
+            <h4>서로에게 힘이 되어주는 순간</h4>
             <ul class="compat-list">${complements.map(x => `<li>${x}</li>`).join('')}</ul>
           </article>
           <article class="compat-card">
-            <h4>반복되기 쉬운 갈등</h4>
+            <h4>이럴 때 자주 부딪힐 수 있어요</h4>
             <ul class="compat-list">${conflicts.map(x => `<li>${x}</li>`).join('')}</ul>
           </article>
         </div>
 
-        <div class="compat-card">
-          <h4>두 사람이 함께 있을 때 두드러지는 모습</h4>
+        <div class="compat-card compat-stack-card compat-highlight-card">
+          <h4>둘이 함께 있으면 이런 모습이에요</h4>
           <p>${buildCombinedEverydayText(combinedStats)}</p>
-          <p>데이트나 공동 활동은 ${profileA.trait.activity}, 그리고 ${profileB.trait.activity}을 번갈아 선택하면 두 사람의 만족도를 고르게 맞추는 데 도움이 됩니다.</p>
+          <p>데이트할 때는 ${profileA.trait.activity}과 ${profileB.trait.activity}을 번갈아 골라보세요. 한쪽 취향에만 치우치지 않아 둘 다 즐겁게 시간을 보내기 쉬워요.</p>
         </div>
 
-        <div class="compat-card">
-          <h4>관계를 오래 유지하는 실천법</h4>
+        <div class="compat-card compat-stack-card compat-highlight-card">
+          <h4>오래 잘 만나려면 이렇게 해보세요</h4>
           <ol class="compat-list">${tips.map(x => `<li>${x}</li>`).join('')}</ol>
         </div>
-        <div class="compat-muted">※ ‘균형’ 수치는 사주에 같은 성향이 얼마나 몰려 있는지 보여주는 참고값입니다. 점수가 높다고 무조건 좋은 관계라는 뜻은 아닙니다.</div>
+        <div class="compat-muted">※ ‘균형’ 수치는 사주에 같은 성향이 얼마나 몰려 있는지 보여주는 참고용으로 봐주세요. 점수가 높다고 무조건 좋은 관계라는 뜻은 아니에요.</div>
       </section>
     `;
   }
@@ -501,18 +505,18 @@
     if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB));
     if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA));
     if (sharedStrong.length) sharedStrong.slice(0, 2).forEach(k => observations.push(ELEMENT_SHARED_STRONG[k]));
-    if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않습니다. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용합니다.');
+    if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않아요. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용해요.');
 
     return `
       <section class="compat-detail-wrap">
-        <div class="compat-detail-title">확인 가능한 오행으로 본 참고 궁합</div>
-        <div class="compat-summary-card">연도가 없는 사람의 일간과 년지·일지는 확정할 수 없지만, 월지와 입력된 시간에서 나타나는 오행 경향으로 두 사람의 분위기를 제한적으로 비교했습니다.</div>
+        <div class="compat-detail-title">지금 확인할 수 있는 정보로 두 사람을 살펴봤어요</div>
+        <div class="compat-summary-card">연도가 없는 사람은 일간과 년지·일지를 정확히 정하기 어려워요. 그래서 지금 확인할 수 있는 월지와 태어난 시간의 흐름만으로 두 사람의 분위기를 가볍게 살펴봤어요.</div>
         <div class="compat-grid">
-          <article class="compat-card"><h4>${nameA}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}입니다.</p></article>
-          <article class="compat-card"><h4>${nameB}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}입니다.</p></article>
+          <article class="compat-card"><h4>${nameA}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}이에요.</p></article>
+          <article class="compat-card"><h4>${nameB}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}이에요.</p></article>
         </div>
-        <div class="compat-card"><h4>두 사람 사이에서 예상되는 흐름</h4><ul class="compat-list">${observations.map(x => `<li>${x}</li>`).join('')}</ul></div>
-        <div class="compat-muted">※ 연도 미상 결과는 일부 기둥만 반영한 추정 해설입니다. 상생·상극, 부부궁, 띠 궁합은 연도를 확인한 뒤에만 정확하게 설명할 수 있습니다.</div>
+        <div class="compat-card"><h4>두 사람 사이에는 이런 흐름이 보여요</h4><ul class="compat-list">${observations.map(x => `<li>${x}</li>`).join('')}</ul></div>
+        <div class="compat-muted">※ 연도 미상 결과는 확인 가능한 일부 정보만 반영한 참고 내용이에요. 상생·상극, 부부궁, 띠 궁합은 연도를 확인한 뒤에만 정확하게 설명할 수 있어요.</div>
       </section>
     `;
   }
@@ -543,10 +547,29 @@
   // 추천 색상 이름 -> 실제 표시용 hex (스와치 렌더링용)
   const COLOR_NAME_HEX = {
     '초록색': '#84ab78', '연두색': '#bcd89a', '청록색': '#7fbcb2',
+    '세이지그린': '#9caf88', '올리브색': '#8d9464', '민트색': '#a8d5c2',
+    '포레스트그린': '#4f7758', '피스타치오색': '#b7c98b', '이끼색': '#798b61',
+    '에메랄드색': '#5a9b84', '카키색': '#8b8f62', '라임색': '#c4d66b',
+
     '빨간색': '#d98a7c', '주황색': '#eab08a', '핑크색': '#f0b8c4',
+    '코랄색': '#e79b8d', '살구색': '#efbd9d', '로즈핑크': '#d994a8',
+    '체리레드': '#c96f76', '버건디': '#8e4d5a', '주홍색': '#df765e',
+    '와인색': '#7d4655', '복숭아색': '#f3b7a6', '자주색': '#a2678a',
+
     '갈색': '#b08b6e', '황토색': '#cbab7a', '베이지': '#e6dac0',
+    '크림색': '#f0e5ca', '카멜색': '#c49a6c', '테라코타': '#c98267',
+    '머스터드색': '#c7a34b', '모래색': '#d7c39d', '브라운': '#94735d',
+    '아이보리': '#eee8d6', '오트밀색': '#d8cbb3', '웜그레이': '#aaa096',
+
     '흰색': '#f5f4f0', '금색': '#dcc48f', '은색·그레이': '#c2c2bd',
+    '샴페인골드': '#d8c3a5', '펄그레이': '#d5d6d3', '쿨그레이': '#aeb3b8',
+    '라이트그레이': '#d8dadc', '스틸색': '#8f9aa3', '아이보리화이트': '#f2efe5',
+    '백금색': '#d9d7d2', '차콜그레이': '#66686a', '크림화이트': '#f4efe4',
+
     '검은색': '#4a4a4a', '남색': '#7186a8', '짙은 파란색': '#82a0bd',
+    '네이비': '#4f6281', '코발트블루': '#597db3', '인디고': '#59658d',
+    '블루그레이': '#8799aa', '먹색': '#555b62', '청회색': '#788f9e',
+    '군청색': '#526b91', '딥블루': '#536f95', '아쿠아블루': '#76aabb',
   };
 
   // ---------------------------------------------------------------
@@ -626,7 +649,7 @@
       const leapCheckYear = 2024; // 2/29 검증용 임의 윤년
       const d = new Date(leapCheckYear, month - 1, day);
       if (d.getMonth() !== month - 1 || d.getDate() !== day) {
-        return { error: `존재하지 않는 날짜입니다 (${month}월 ${day}일)`, name };
+        return { error: `존재하지 않는 날짜예요 (${month}월 ${day}일)`, name };
       }
       return { yearUnknown: true, month, day, hour, minute, hourUnknown, name };
     }
@@ -634,7 +657,7 @@
     const year = parseInt(document.getElementById(prefix + '-year').value, 10);
     const d = new Date(year, month - 1, day);
     if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) {
-      return { error: `존재하지 않는 날짜입니다 (${year}년 ${month}월 ${day}일)`, name };
+      return { error: `존재하지 않는 날짜예요 (${year}년 ${month}월 ${day}일)`, name };
     }
     return { yearUnknown: false, year, month, day, hour, minute, hourUnknown, name };
   }
@@ -680,7 +703,7 @@
         resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (e) {
         loading.style.display = 'none';
-        errorMsg.textContent = '계산 중 오류가 발생했습니다: ' + e.message;
+        errorMsg.textContent = '계산 중 오류가 생겼어요: ' + e.message;
         console.error(e);
       } finally {
         calcBtn.disabled = false;
@@ -838,7 +861,7 @@
       approxNoteEl.innerHTML =
         '<b>연도 미상 안내.</b> 사주는 연·월·일·시 네 기둥 모두 태어난 해에 뿌리를 두기 때문에, ' +
         '연도를 모르면 60갑자를 정확히 특정할 수 없어요. 아래 결과는 <b>월지는 절기로 확정</b>하고, ' +
-        '<b>일간은 최근 60년을 가정했을 때 가장 흔히 나오는 오행</b>을 보여주는 참고용 추정치입니다. ' +
+        '<b>일간은 최근 60년을 가정했을 때 가장 흔히 나오는 오행</b>을 보여주는 참고용 추정치예요. ' +
         '실제 사주와 다를 수 있어요.';
     } else {
       approxNoteEl.style.display = 'none';
@@ -869,7 +892,7 @@
     if (anyApprox) {
       document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
       explainEl.innerHTML =
-        '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계는 단정하지 않아요. 대신 현재 확인 가능한 오행 경향만으로 제한적인 참고 궁합을 제공합니다.</div>' +
+        '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계는 단정하지 않아요. 대신 현재 확인 가능한 오행 경향만으로 제한적인 참고 궁합을 보여드려요.</div>' +
         buildApproxCompatHtml(entryA, entryB, nameA, nameB);
       // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
       deepCompatEl.style.display = 'none';
@@ -914,19 +937,30 @@
 
     // 추천 이유를 생활 언어로 설명
     const s = rec.support;
-    const recommendationEffect = {
-      목: '새로운 장소를 찾고 함께 계획을 시작하는 분위기',
-      화: '애정 표현이 자연스럽고 활기찬 분위기',
-      토: '서두르지 않고 편안하게 머물 수 있는 분위기',
-      금: '복잡하지 않고 깔끔하게 정리된 분위기',
-      수: '조용히 이야기하고 충분히 쉬어갈 수 있는 분위기',
+    const fallbackSummary = {
+      목: '둘이 먼저 계획을 꺼내고 새로운 경험을 시작하는 모습',
+      화: '좋아하는 마음을 말과 표정으로 분명하게 보여주는 모습',
+      토: '약속과 일정을 꾸준히 지키며 관계를 편안하게 만드는 모습',
+      금: '연락·약속·돈 문제의 기준을 분명하게 맞추는 모습',
+      수: '서둘러 결론을 내리지 않고 서로의 이야기를 끝까지 듣는 모습',
     }[rec.primaryOhaeng];
+
+    const primarySummary = escapeHtml(p.summary || fallbackSummary);
+    const primaryPlaces = (p.places || []).slice(0, 2).map(escapeHtml).join(' 또는 ');
+    const primaryColors = (p.colors || []).slice(0, 2).map(escapeHtml).join('·');
+    const primaryTip = escapeHtml(p.dateTip || '');
+    const supportPlace = escapeHtml((s.places || [])[0] || '');
+    const supportTip = escapeHtml(s.dateTip || '');
+
     let note =
-      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${recommendationEffect}</b>이 상대적으로 덜 드러나는 편이라, ` +
-      `${p.season}의 계절감과 ${p.colors[0]} 계열처럼 그 분위기를 쉽게 만들 수 있는 색상·장소를 추천했어요. ` +
-      `${s.season}(${s.timeRange})의 느낌을 함께 섞으면 데이트가 한쪽 취향으로만 치우치는 것을 줄일 수 있습니다. 색이나 계절이 관계를 바꾼다는 뜻은 아니며, 데이트 테마를 고르는 참고용이에요.`;
+      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${primarySummary}</b>이 상대적으로 덜 나타나는 편이에요. ` +
+      `${primaryPlaces ? `${primaryPlaces}처럼 실제로 함께 움직이거나 머물 수 있는 데이트를 골라보세요. ` : ''}` +
+      `${primaryColors ? `옷이나 작은 소품은 ${primaryColors} 계열 중 하나만 가볍게 활용해도 충분해요. ` : ''}` +
+      `${primaryTip ? `<br><b>이번 데이트에서 해볼 일:</b> ${primaryTip}` : ''}` +
+      `${supportPlace || supportTip ? `<br><b>분위기를 바꾸고 싶을 때:</b> ${supportPlace ? `${supportPlace}도 잘 맞아요. ` : ''}${supportTip}` : ''}` +
+      `<br><span style="opacity:.78;">같은 부족 오행이 나오더라도 두 사람의 일간 관계, 강한 오행, 년지·일지 관계가 다르면 시간·색상·꽃·장소와 실천 팁도 달라져요.</span>`;
     if (anyApprox) {
-      note += ' (연도 미상 추정치를 포함한 결과입니다.)';
+      note += ' <span style="opacity:.78;">연도 미상 추정치를 포함한 결과예요.</span>';
     }
     document.getElementById('supportNote').innerHTML = note;
   }
@@ -956,7 +990,7 @@
 
     let complementHtml = '';
     if (parts.length === 0) {
-      complementHtml = `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님은 잘하는 방식과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 처리해주기를 기다리지 말고 역할을 정하는 것이 좋아요.`;
+      complementHtml = `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님은 잘하는 방식과 어려워하는 부분이 비슷한 편이에요. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 처리해주기를 기다리지 말고 역할을 정하는 것이 좋아요.`;
     } else {
       complementHtml = parts.join(' ');
     }
