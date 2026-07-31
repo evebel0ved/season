@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Season — 사주로 찾는 우리의 계절</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+Infant:ital,wght@0,500;0,600;1,500;1,600;1,700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-void: #fbfbfc;
     --bg-panel: #ffffff;
     --bg-panel-raised: #f4f4f6;
-    --ink: #1c1d21;
+    --ink: #5f626b;
     --ink-dim: #6b6d76;
     --ink-faint: #9fa1a9;
     --line: #e6e7eb;
@@ -40,6 +40,7 @@
     --accent-3: #6f727e;
     --accent-grad: linear-gradient(135deg, #c7cad3 0%, #9a9dab 52%, #767a88 100%);
     --accent-grad-soft: linear-gradient(120deg, #d6d8df 0%, #aeb1bd 55%, #90939f 100%);
+    --flower-grad: linear-gradient(135deg, var(--bg-panel-raised) 0%, #ececf0 100%);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,13 +84,21 @@
     color: var(--ink);
   }
 
-  h1 em {
-    font-style: normal;
-    background: var(--accent-grad-soft);
+  .season-title {
+    margin: 0;
+    font-family: 'Cormorant Infant', 'Cormorant Garamond', serif;
+    font-size: clamp(38px, 6vw, 62px);
+    font-weight: 600;
+    font-style: italic;
+    line-height: 1.08;
+    letter-spacing: 0.015em;
+    background: linear-gradient(120deg, #858893 0%, #666a74 55%, #8f929c 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
+
+  li::marker { color: var(--accent-2); }
 
   .sub {
     margin-top: 18px;
@@ -374,9 +383,9 @@
   .cta-row { text-align: center; margin: 44px 0 8px; }
 
   button.primary {
-    background: var(--accent-grad);
-    color: #ffffff;
-    border: none;
+    background: var(--flower-grad);
+    color: #666a73;
+    border: 1px solid var(--line);
     padding: 16px 44px;
     font-size: 15.5px;
     font-weight: 600;
@@ -384,10 +393,15 @@
     border-radius: 999px;
     cursor: pointer;
     font-family: 'Noto Sans KR', sans-serif;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 8px 24px rgba(120,123,136,0.22);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s, background 0.2s;
+    box-shadow: 0 8px 22px rgba(120,123,136,0.14);
   }
-  button.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(120,123,136,0.32); }
+  button.primary:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f8f8fa 0%, #e6e6eb 100%);
+    border-color: #d5d6dc;
+    box-shadow: 0 10px 26px rgba(120,123,136,0.20);
+  }
   button.primary:active { transform: translateY(0); }
   button.primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
@@ -634,15 +648,6 @@
   .rec-detail-card .dv { font-size: 15px; color: var(--ink); }
   .rec-detail-card .dv-sub { font-size: 12.5px; color: var(--ink-dim); margin-top: 6px; }
 
-  /* Time · 시간대 카드 — 다른 블록들의 포인트 컬러(accent-grad)로 그라데이션 강조 */
-  .rec-detail-card--time {
-    background: var(--accent-grad-soft);
-    border-color: transparent;
-  }
-  .rec-detail-card--time .dk { color: rgba(255,255,255,0.82); }
-  .rec-detail-card--time .dv { color: #ffffff; font-weight: 600; }
-  .rec-detail-card--time .dv-sub { color: rgba(255,255,255,0.85); }
-  .rec-detail-card--time:hover { box-shadow: 0 10px 24px rgba(120,123,136,0.28); }
   .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .tag {
     font-size: 12.5px;
@@ -655,7 +660,8 @@
 
   /* ---------- Relation explanation (full-width third row) ---------- */
   .relation-explain {
-    background: linear-gradient(160deg, var(--bg-panel-raised) 0%, var(--bg-panel) 100%);
+    /* Flower · 꽃 카드와 동일한 회색 배경 계열의 은은한 그라데이션 */
+    background: var(--flower-grad);
     border: 1px solid var(--line);
   }
   .relation-explain:hover { transform: none; box-shadow: none; }
@@ -836,7 +842,7 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Saju &amp; Elements</div>
-    <em>Finding the Colors of Our Season</em>
+    <h1 class="season-title">Finding the Colors of Our Season</h1>
     <p class="sub">생년월일시를 입력하면 명리학의 오행(五行) 이론에 따라 두 사람에게 부족한 기운을 찾아, 어울리는 계절·시간대·색·꽃·장소를 알려드립니다.</p>
     <div class="ring-deco">
       <span>木</span><span>火</span><span>土</span><span>金</span><span>水</span>
@@ -979,7 +985,7 @@
       </div>
 
       <div class="rec-details">
-        <div class="rec-detail-card rec-detail-card--time">
+        <div class="rec-detail-card">
           <div class="dk">Time · 시간대</div>
           <div class="dv" id="recTime"></div>
           <div class="dv-sub" id="recTimeDetail"></div>
