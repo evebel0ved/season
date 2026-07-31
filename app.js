@@ -834,7 +834,7 @@
     const style = document.createElement('style');
     style.id = 'relationship-mode-styles';
     style.textContent = `
-      .relationship-mode-wrap{margin:18px 0 16px;padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:var(--bg-panel)}
+      .relationship-mode-wrap{height:100%;margin:0;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:var(--bg-panel);box-shadow:0 1px 2px rgba(28,29,33,0.03),0 8px 24px rgba(28,29,33,0.03);display:flex;flex-direction:column;justify-content:center;text-align:left}
       .relationship-mode-title{font-family:'Noto Serif KR',serif;font-weight:500;font-size:14px;color:var(--ink);margin-bottom:12px}
       .relationship-mode-options{display:flex;flex-wrap:wrap;gap:18px}
       .relationship-mode-option{position:relative;cursor:pointer;display:flex;align-items:center;gap:8px}
@@ -851,6 +851,7 @@
       .relationship-mode-option .cb-label{font-size:14px;color:var(--ink-dim);transition:color .18s ease;}
       .relationship-mode-option input:checked ~ .cb-label{color:var(--ink);font-weight:600;}
       .relationship-mode-note{margin-top:12px;font-size:11.5px;line-height:1.6;color:var(--ink-faint)}
+      @media(max-width:620px){.relationship-mode-wrap{padding:14px 12px}.relationship-mode-title{font-size:12.5px;margin-bottom:9px}.relationship-mode-options{gap:10px}.relationship-mode-option{gap:6px}.relationship-mode-option .cb-label{font-size:12px}.relationship-mode-note{margin-top:9px;font-size:10px;line-height:1.45}}
       .re-single-mode{grid-template-columns:1fr!important}
       #result.friend-result-mode .lover-only-block{display:none!important}
     `;
@@ -876,7 +877,9 @@
       </div>
       <div class="relationship-mode-note">친구를 선택하면 친구 관계 해설만 보여드려요. 연애·데이트 관련 추가 해설은 연인 선택에서만 확인할 수 있어요.</div>
     `;
-    calcButton.parentNode.insertBefore(wrap, calcButton);
+    const relationshipSlot = document.getElementById('relationshipModeSlot');
+    if (relationshipSlot) relationshipSlot.appendChild(wrap);
+    else calcButton.parentNode.insertBefore(wrap, calcButton);
 
     wrap.querySelectorAll('input[name="relationshipMode"]').forEach(input => {
       input.addEventListener('change', event => {
@@ -916,6 +919,48 @@
   const loading = document.getElementById('loading');
   const resultEl = document.getElementById('result');
 
+  // 모바일·태블릿에서도 결과값은 PC 레이아웃(992px)을 그대로 유지한 채
+  // 화면 너비에 맞춰 결과 영역 전체를 같은 비율로 축소합니다.
+  const RESULT_DESKTOP_WIDTH = 992;
+  let resultScaleFrame = 0;
+
+  function updateResultDesktopScale() {
+    if (!resultEl) return;
+    const parent = resultEl.parentElement;
+    const parentStyle = parent ? getComputedStyle(parent) : null;
+    const horizontalPadding = parentStyle
+      ? (parseFloat(parentStyle.paddingLeft) || 0) + (parseFloat(parentStyle.paddingRight) || 0)
+      : 0;
+    const parentInnerWidth = parent
+      ? parent.clientWidth - horizontalPadding
+      : (window.innerWidth || RESULT_DESKTOP_WIDTH);
+    const availableWidth = Math.max(240, Math.floor(parentInnerWidth));
+    const scale = Math.min(1, availableWidth / RESULT_DESKTOP_WIDTH);
+    const needsScale = scale < 0.999;
+
+    resultEl.classList.toggle('result-desktop-layout', needsScale);
+    if (needsScale) {
+      resultEl.style.width = `${RESULT_DESKTOP_WIDTH}px`;
+      resultEl.style.maxWidth = 'none';
+      resultEl.style.zoom = String(scale);
+    } else {
+      resultEl.style.width = '';
+      resultEl.style.maxWidth = '';
+      resultEl.style.zoom = '';
+    }
+  }
+
+  function scheduleResultScaleUpdate() {
+    cancelAnimationFrame(resultScaleFrame);
+    resultScaleFrame = requestAnimationFrame(() => {
+      updateResultDesktopScale();
+      resultScaleFrame = 0;
+    });
+  }
+
+  window.addEventListener('resize', scheduleResultScaleUpdate, { passive: true });
+  window.addEventListener('orientationchange', scheduleResultScaleUpdate, { passive: true });
+
   ensureRelationshipModeSelector(calcBtn);
 
   calcBtn.addEventListener('click', () => {
@@ -948,7 +993,8 @@
         renderResult(entryA, entryB, rec, a, b);
         loading.style.display = 'none';
         resultEl.style.display = 'block';
-        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        updateResultDesktopScale();
+        requestAnimationFrame(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       } catch (e) {
         loading.style.display = 'none';
         errorMsg.textContent = '계산 중 오류가 생겼어요: ' + e.message;
@@ -1556,7 +1602,7 @@
     document.getElementById('recSeason').textContent = p.season;
     document.getElementById('recKeyword').textContent = `${p.seasonDetail} · ${p.keyword}의 분위기`;
 
-    // 커플 사진 원형 프레임 — 계절(오행)에 맞는 연한 단일 색상 테두리
+    // 커플 사진 둥근 정사각형 프레임 — 계절(오행)에 맞는 연한 단일 색상 테두리
     const photoWrap = document.getElementById('recPhotoWrap');
     const photoInner = document.getElementById('recPhotoInner');
     const ringColorDim = { 목: '#dbe8d3', 화: '#f6e1dc', 토: '#ede4d1', 금: '#edeae1', 수: '#dde8f1' }[rec.primaryOhaeng];
@@ -1708,7 +1754,7 @@
       /* 화면에는 영향을 주지 않고 저장용 복제본에만 적용 */
       .capture-sandbox {
         position: fixed;
-        left: -100000px;
+        left: -1100px;
         top: 0;
         width: 1040px;
         margin: 0;
@@ -1719,7 +1765,7 @@
       }
 
       .capture-sandbox .capture-clean {
-        width: 100%;
+        width: 992px !important;
         margin: 0 !important;
         /* ::before 대신 실제 카드 배경에 계절색을 적용해 html2canvas 오류 방지 */
         background-color: #ffffff !important;
@@ -1745,6 +1791,32 @@
       .capture-sandbox .capture-clean::after {
         content: none !important;
         display: none !important;
+      }
+
+      /* 실제 기기 화면 폭과 무관하게 저장 이미지는 PC 레이아웃으로 고정 */
+      .capture-sandbox .capture-clean .rec-hero-top.has-photo {
+        display: grid !important;
+        grid-template-columns: 184px minmax(0, 1fr) !important;
+        align-items: center !important;
+        width: 100% !important;
+        text-align: left !important;
+        gap: 40px !important;
+      }
+      .capture-sandbox .capture-clean .rec-hero-top.has-photo .rec-photo-wrap {
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+      }
+      .capture-sandbox .capture-clean .rec-hero-top.has-photo .rec-hero-text {
+        text-align: left !important;
+      }
+      .capture-sandbox .capture-clean .rec-details,
+      .capture-sandbox .capture-clean .relation-explain-body .re-lover-friend,
+      .capture-sandbox .capture-clean .dc-grid,
+      .capture-sandbox .capture-clean .compat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      .capture-sandbox .capture-clean .flower-detail-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       }
 
       /* 애니메이션/호버 변형만 정지하고 카드 내부 디자인은 유지 */
@@ -1781,6 +1853,62 @@
 
     /* 복제본의 최종 레이아웃이 확정된 다음 프레임에 캡처 */
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  }
+
+
+  function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob);
+        else reject(new Error('PNG 파일을 만들지 못했어요.'));
+      }, 'image/png', 1);
+    });
+  }
+
+  function isMobileOrTabletDevice() {
+    return window.matchMedia?.('(pointer: coarse)').matches
+      || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')
+      || (navigator.maxTouchPoints > 1 && window.innerWidth <= 1366);
+  }
+
+  async function deliverSavedImage(blob, filename) {
+    const file = new File([blob], filename, { type: 'image/png' });
+    const mobileDevice = isMobileOrTabletDevice();
+
+    // iOS/Android에서는 data URL 다운로드가 실패하는 경우가 많으므로
+    // 파일 공유 API를 우선 사용해 사진 앱·파일 앱으로 바로 저장할 수 있게 합니다.
+    if (mobileDevice && navigator.share && navigator.canShare) {
+      try {
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Season 궁합 결과',
+            text: 'Season에서 만든 궁합 결과 이미지예요.',
+          });
+          return;
+        }
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        console.warn('모바일 공유 저장 실패, 일반 다운로드로 전환합니다.', error);
+      }
+    }
+
+    // 데스크톱 및 공유 API 미지원 브라우저용 Blob 다운로드
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // 일부 모바일 브라우저는 download 속성을 무시하므로 새 탭으로 한 번 더 열어줍니다.
+    if (mobileDevice && !('download' in HTMLAnchorElement.prototype)) {
+      window.open(blobUrl, '_blank', 'noopener');
+    }
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
   }
 
   async function handleSaveResultImage(btn) {
@@ -1821,9 +1949,10 @@
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
 
-    /* 현재 화면의 카드 폭을 유지하되 최대 저장 폭은 1040px로 제한 */
-    const captureWidth = Math.min(1040, Math.max(320, Math.ceil(recHero.getBoundingClientRect().width)));
+    /* 모바일·태블릿에서도 PC와 동일한 992px 레이아웃으로 저장 */
+    const captureWidth = RESULT_DESKTOP_WIDTH;
     sandbox.style.width = `${captureWidth}px`;
+    clone.style.width = `${captureWidth}px`;
     sandbox.appendChild(clone);
     document.body.appendChild(sandbox);
 
@@ -1833,19 +1962,22 @@
       /* 바깥 sandbox가 아니라 정리된 카드 자체만 캡처해 여백/모서리 잔상을 차단 */
       const canvas = await html2canvas(clone, {
         backgroundColor: '#ffffff',
-        scale: Math.min(2, window.devicePixelRatio || 2),
+        scale: 2,
         useCORS: true,
         allowTaint: false,
         logging: false,
         imageTimeout: 15000,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: captureWidth,
+        windowWidth: 1200,
         onclone: clonedDocument => {
           const captured = clonedDocument.querySelector('.capture-clean');
           if (!captured) return;
 
           /* 가상 요소 없이도 화면과 같은 계절색과 둥근 테두리가 저장되도록 고정 */
+          captured.style.width = `${captureWidth}px`;
+          captured.style.maxWidth = 'none';
+          captured.style.zoom = '1';
           captured.style.setProperty('--capture-accent-glow', accentGlow);
           captured.style.setProperty('--accent-glow', accentGlow);
           captured.style.backgroundColor = '#ffffff';
@@ -1858,14 +1990,10 @@
           captured.style.filter = 'none';
         },
       });
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
       const stamp = new Date().toISOString().slice(0, 10);
-      link.download = `season-궁합-${stamp}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const filename = `season-궁합-${stamp}.png`;
+      const blob = await canvasToPngBlob(canvas);
+      await deliverSavedImage(blob, filename);
     } catch (e) {
       console.error(e);
       alert('이미지를 저장하는 중 문제가 생겼어요: ' + e.message);
