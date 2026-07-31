@@ -850,6 +850,24 @@
     }).join('');
   }
 
+
+  function ensureFlowerRecommendationStyles() {
+    if (document.getElementById('flower-recommendation-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'flower-recommendation-styles';
+    style.textContent = `
+      .flower-meaning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;margin-top:2px}
+      .flower-meaning-card{min-width:0;padding:12px 13px;border:1px solid rgba(163,128,63,.18);border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(163,128,63,.055));box-shadow:0 4px 13px rgba(79,73,63,.035)}
+      .flower-meaning-name{font-weight:800;font-size:14px;color:#594b34;line-height:1.4}
+      .flower-meaning-theme{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:rgba(163,128,63,.10);color:#765d32;font-size:11px;line-height:1.35}
+      .flower-meaning-text{margin-top:8px;font-size:12.5px;line-height:1.58;color:#514c44}
+      .flower-meaning-text b{color:#7a5d2e}
+      .flower-meaning-reason{margin-top:7px;padding-top:7px;border-top:1px dashed rgba(107,99,85,.16);font-size:11.5px;line-height:1.55;color:#71695d}
+      @media (max-width:760px){.flower-meaning-grid{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+  }
+
   function renderResult(entryA, entryB, rec, inputA, inputB) {
     const anyApprox = !!(entryA.approx || entryB.approx);
 
@@ -927,7 +945,22 @@
     document.getElementById('recColors').innerHTML = colorSwatchesHtml(p.colors);
 
     const flowersEl = document.getElementById('recFlowers');
-    flowersEl.innerHTML = p.flowers.map(f => `<span class="tag">${f}</span>`).join('');
+    ensureFlowerRecommendationStyles();
+    const flowerDetails = Array.isArray(p.flowerDetails) && p.flowerDetails.length
+      ? p.flowerDetails
+      : (p.flowers || []).map(name => ({ name, meaning: '', theme: '', reason: '' }));
+    flowersEl.innerHTML = `
+      <div class="flower-meaning-grid">
+        ${flowerDetails.map(item => `
+          <div class="flower-meaning-card">
+            <div class="flower-meaning-name">${escapeHtml(item.name)}</div>
+            ${item.theme ? `<span class="flower-meaning-theme">${escapeHtml(item.theme)}</span>` : ''}
+            ${item.meaning ? `<div class="flower-meaning-text"><b>꽃말</b> · ${escapeHtml(item.meaning)}</div>` : ''}
+            ${item.reason ? `<div class="flower-meaning-reason">${escapeHtml(item.reason)}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
 
     const placesEl = document.getElementById('recPlaces');
     placesEl.innerHTML = p.places.map(pl => `<span class="tag">${pl}</span>`).join('');
