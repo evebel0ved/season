@@ -815,6 +815,351 @@ const OHAENG_INFO = {
   },
 };
 
+
+// ===================================================================
+// 꽃말 기반 추천
+//
+// 꽃말은 시대·문화·꽃 색상에 따라 여러 해석이 공존하므로, 이 사이트에서는
+// 관계 궁합에 활용하기 좋은 긍정적인 현대 해석으로 기준을 통일한다.
+// 먼저 부족한 오행에 속한 꽃 후보군을 정한 뒤,
+// 1) 일간 관계, 2) 년지·일지 관계, 3) 서로에게 도움이 되는 방식에 맞는 꽃말을
+// 각각 평가하여 점수가 높은 꽃을 추천한다. 해시는 동점일 때만 사용한다.
+// ===================================================================
+const FLOWER_TAG_LABEL = {
+  love: '사랑',
+  affection: '애정 표현',
+  passion: '설렘과 열정',
+  joy: '함께하는 기쁨',
+  admiration: '존중과 감탄',
+  gratitude: '고마움',
+  support: '서로 돕는 마음',
+  mutualSupport: '서로 주고받는 도움',
+  trust: '신뢰',
+  devotion: '한결같은 마음',
+  loyalty: '변치 않는 마음',
+  promise: '약속',
+  sincerity: '진심',
+  honesty: '솔직함',
+  respect: '존중',
+  understanding: '이해',
+  communication: '대화',
+  reconciliation: '화해',
+  forgiveness: '서운함을 푸는 마음',
+  patience: '기다려주는 마음',
+  calm: '차분함',
+  comfort: '편안함',
+  steadiness: '꾸준함',
+  harmony: '조화',
+  balance: '균형',
+  partnership: '동반자 관계',
+  friendship: '친근함과 우정',
+  deepBond: '깊은 유대',
+  lastingLove: '오래가는 사랑',
+  individuality: '서로의 다름 존중',
+  growth: '함께 성장함',
+  newBeginning: '새로운 시작',
+  hope: '희망',
+  curiosity: '새로운 경험',
+  sharedExperience: '함께 쌓는 추억',
+  healing: '회복과 위로',
+  protection: '든든한 보호',
+  memory: '오래 남는 추억',
+  peace: '평화로운 관계',
+  courage: '용기',
+  warmth: '따뜻함',
+  prosperity: '함께 만드는 결실',
+};
+
+const FLOWER_MEANING_RULES = [
+  { match: ['화이트 튤립'], meaning: '진심 어린 사과와 새로운 출발', tags: ['reconciliation', 'sincerity', 'newBeginning', 'forgiveness'] },
+  { match: ['주황 튤립'], meaning: '따뜻한 관심과 밝은 설렘', tags: ['affection', 'warmth', 'joy', 'passion'] },
+  { match: ['튤립'], meaning: '배려와 진심 어린 사랑', tags: ['love', 'sincerity', 'care', 'newBeginning'] },
+  { match: ['개나리'], meaning: '희망과 반가운 시작', tags: ['hope', 'newBeginning', 'joy', 'growth'] },
+  { match: ['은엽 유칼립투스', '유칼립투스'], meaning: '회복과 든든한 보호', tags: ['healing', 'protection', 'calm', 'support'] },
+  { match: ['프리지어'], meaning: '순수한 믿음과 새로운 시작', tags: ['trust', 'sincerity', 'newBeginning', 'friendship'] },
+  { match: ['라넌큘러스'], meaning: '서로의 매력을 알아보는 마음', tags: ['admiration', 'affection', 'joy', 'love'] },
+  { match: ['스위트피'], meaning: '고마움과 즐거운 추억', tags: ['gratitude', 'memory', 'joy', 'sharedExperience'] },
+  { match: ['아이비'], meaning: '굳건한 우정과 오래가는 결속', tags: ['loyalty', 'friendship', 'lastingLove', 'partnership'] },
+  { match: ['몬스테라'], meaning: '함께 자라는 관계와 번영', tags: ['growth', 'prosperity', 'partnership', 'hope'] },
+  { match: ['수선화'], meaning: '새로운 시작과 자신을 존중하는 마음', tags: ['newBeginning', 'respect', 'hope', 'individuality'] },
+  { match: ['은엽아카시아'], meaning: '세심한 배려와 따뜻한 우정', tags: ['support', 'friendship', 'warmth', 'gratitude'] },
+  { match: ['그린벨'], meaning: '기쁜 소식과 밝은 기대', tags: ['hope', 'joy', 'newBeginning', 'curiosity'] },
+  { match: ['리시안셔스'], meaning: '변치 않는 사랑과 고마움', tags: ['lastingLove', 'gratitude', 'devotion', 'sincerity'] },
+  { match: ['작은 야생화 다발'], meaning: '꾸밈없는 마음과 자연스러운 친밀감', tags: ['sincerity', 'friendship', 'comfort', 'individuality'] },
+  { match: ['허브 화분'], meaning: '일상 속 돌봄과 천천히 회복하는 마음', tags: ['healing', 'steadiness', 'support', 'comfort'] },
+  { match: ['올리브나무'], meaning: '평화와 화해, 오래 이어지는 관계', tags: ['peace', 'reconciliation', 'lastingLove', 'partnership'] },
+
+  { match: ['흰 장미'], meaning: '순수한 진심과 서로를 향한 존중', tags: ['sincerity', 'respect', 'trust', 'love'] },
+  { match: ['브라운 장미'], meaning: '편안한 애정과 안정적인 신뢰', tags: ['comfort', 'trust', 'steadiness', 'affection'] },
+  { match: ['짙은 보라 장미'], meaning: '깊은 매력과 특별한 존중', tags: ['admiration', 'respect', 'deepBond', 'love'] },
+  { match: ['장미'], meaning: '사랑과 솔직한 애정 표현', tags: ['love', 'affection', 'passion', 'sincerity'] },
+  { match: ['황금색 해바라기', '해바라기'], meaning: '한결같은 마음과 밝은 응원', tags: ['devotion', 'support', 'joy', 'loyalty'] },
+  { match: ['흰 작약'], meaning: '차분한 행복과 깊은 배려', tags: ['comfort', 'support', 'lastingLove', 'sincerity'] },
+  { match: ['작약'], meaning: '행복한 관계와 다정한 사랑', tags: ['love', 'joy', 'lastingLove', 'warmth'] },
+  { match: ['거베라'], meaning: '희망과 함께 웃는 기쁨', tags: ['hope', 'joy', 'support', 'friendship'] },
+  { match: ['다알리아'], meaning: '품위 있는 헌신과 단단한 마음', tags: ['devotion', 'respect', 'courage', 'loyalty'] },
+  { match: ['카네이션'], meaning: '사랑과 감사, 따뜻한 돌봄', tags: ['love', 'gratitude', 'warmth', 'support'] },
+  { match: ['맨드라미'], meaning: '쉽게 변하지 않는 열정적인 마음', tags: ['passion', 'loyalty', 'lastingLove', 'courage'] },
+  { match: ['금어초'], meaning: '솔직하게 마음을 말하는 용기', tags: ['communication', 'honesty', 'courage', 'sincerity'] },
+  { match: ['알스트로메리아'], meaning: '서로를 지지하는 우정과 헌신', tags: ['friendship', 'support', 'devotion', 'partnership'] },
+  { match: ['백일홍'], meaning: '오래 기억하는 마음과 변치 않는 우정', tags: ['memory', 'loyalty', 'friendship', 'lastingLove'] },
+  { match: ['코스모스'], meaning: '조화와 순수한 마음', tags: ['harmony', 'sincerity', 'balance', 'peace'] },
+  { match: ['글라디올러스'], meaning: '진실한 마음과 관계를 지키는 용기', tags: ['honesty', 'courage', 'devotion', 'sincerity'] },
+  { match: ['붉은 아마릴리스'], meaning: '자신 있게 표현하는 매력과 열정', tags: ['passion', 'admiration', 'courage', 'affection'] },
+
+  { match: ['흰 국화'], meaning: '진실한 마음과 성실한 약속', tags: ['sincerity', 'steadiness', 'promise', 'respect'] },
+  { match: ['국화'], meaning: '성실함과 오래 이어지는 진심', tags: ['steadiness', 'sincerity', 'lastingLove', 'trust'] },
+  { match: ['메리골드'], meaning: '따뜻한 위로와 다시 웃는 힘', tags: ['healing', 'warmth', 'joy', 'support'] },
+  { match: ['천일홍'], meaning: '변치 않는 마음과 오래가는 인연', tags: ['loyalty', 'lastingLove', 'memory', 'devotion'] },
+  { match: ['밀 이삭'], meaning: '함께 일군 결실과 풍요', tags: ['prosperity', 'partnership', 'steadiness', 'gratitude'] },
+  { match: ['팜파스그래스'], meaning: '서로의 자유를 품어주는 마음', tags: ['individuality', 'balance', 'comfort', 'respect'] },
+  { match: ['골든볼'], meaning: '밝은 희망과 즐거운 에너지', tags: ['hope', 'joy', 'warmth', 'support'] },
+  { match: ['카라'], meaning: '순수한 존중과 단정한 약속', tags: ['respect', 'sincerity', 'promise', 'trust'] },
+  { match: ['목화'], meaning: '포근한 사랑과 변치 않는 돌봄', tags: ['comfort', 'love', 'support', 'steadiness'] },
+  { match: ['드라이플라워 다발'], meaning: '오래 간직하고 싶은 추억', tags: ['memory', 'lastingLove', 'gratitude', 'sharedExperience'] },
+  { match: ['헬리크리섬'], meaning: '변하지 않는 기억과 오래가는 마음', tags: ['memory', 'loyalty', 'lastingLove', 'devotion'] },
+  { match: ['노란 프리지어'], meaning: '밝은 우정과 믿음', tags: ['friendship', 'trust', 'joy', 'sincerity'] },
+  { match: ['솔리다고'], meaning: '격려와 함께 이루는 성공', tags: ['support', 'prosperity', 'partnership', 'hope'] },
+
+  { match: ['백합'], meaning: '순수한 마음과 깊은 존중', tags: ['sincerity', 'respect', 'trust', 'peace'] },
+  { match: ['은방울꽃'], meaning: '다시 찾아오는 행복', tags: ['reconciliation', 'joy', 'hope', 'healing'] },
+  { match: ['안개꽃'], meaning: '맑은 마음과 오래가는 사랑', tags: ['sincerity', 'lastingLove', 'love', 'devotion'] },
+  { match: ['화이트 리시안셔스'], meaning: '변치 않는 진심과 감사', tags: ['sincerity', 'gratitude', 'devotion', 'lastingLove'] },
+  { match: ['델피늄 화이트'], meaning: '열린 마음과 부드러운 소통', tags: ['communication', 'sincerity', 'peace', 'understanding'] },
+  { match: ['화이트 튤립'], meaning: '진심 어린 사과와 새로운 출발', tags: ['reconciliation', 'sincerity', 'newBeginning', 'forgiveness'] },
+  { match: ['스카비오사'], meaning: '쉽게 말하지 못한 깊은 마음', tags: ['deepBond', 'sincerity', 'communication', 'understanding'] },
+  { match: ['실버 브루니아'], meaning: '단단한 신뢰와 서로를 지켜주는 마음', tags: ['trust', 'protection', 'loyalty', 'support'] },
+  { match: ['스타티스 화이트'], meaning: '변치 않는 기억과 성실한 마음', tags: ['memory', 'steadiness', 'loyalty', 'sincerity'] },
+
+  { match: ['수국'], meaning: '진심 어린 이해와 감사', tags: ['understanding', 'gratitude', 'communication', 'healing'] },
+  { match: ['동백꽃'], meaning: '겸손하고 변치 않는 사랑', tags: ['lastingLove', 'devotion', 'sincerity', 'respect'] },
+  { match: ['블루 델피늄'], meaning: '열린 마음과 깊은 소통', tags: ['communication', 'understanding', 'deepBond', 'sincerity'] },
+  { match: ['아이리스'], meaning: '믿음과 희망, 지혜로운 관계', tags: ['trust', 'hope', 'understanding', 'respect'] },
+  { match: ['블루 스타'], meaning: '서로를 믿는 행복한 사랑', tags: ['trust', 'love', 'joy', 'loyalty'] },
+  { match: ['라벤더'], meaning: '평온함과 한결같은 헌신', tags: ['calm', 'devotion', 'healing', 'loyalty'] },
+  { match: ['아네모네 블루'], meaning: '기다림 속에서도 이어지는 기대', tags: ['patience', 'hope', 'sincerity', 'deepBond'] },
+  { match: ['히아신스'], meaning: '진심과 마음의 평온', tags: ['sincerity', 'calm', 'healing', 'understanding'] },
+  { match: ['에린지움'], meaning: '서로의 독립성을 지켜주는 오래가는 마음', tags: ['individuality', 'respect', 'loyalty', 'lastingLove'] },
+  { match: ['블루 데이지'], meaning: '평화와 믿음, 편안한 친밀감', tags: ['peace', 'trust', 'comfort', 'friendship'] },
+  { match: ['무스카리'], meaning: '관용과 쉽게 흔들리지 않는 신뢰', tags: ['forgiveness', 'trust', 'patience', 'loyalty'] },
+  { match: ['청보라 스타티스'], meaning: '변치 않는 마음과 오래 남는 추억', tags: ['loyalty', 'memory', 'lastingLove', 'deepBond'] },
+  { match: ['옥시페탈룸'], meaning: '서로를 믿는 행복한 사랑', tags: ['trust', 'love', 'joy', 'partnership'] },
+];
+
+const FLOWER_ELEMENT_FALLBACK = {
+  목: { meaning: '함께 성장하고 새로운 일을 시작하는 마음', tags: ['growth', 'newBeginning', 'hope', 'curiosity'] },
+  화: { meaning: '좋아하는 마음을 솔직하게 표현하는 사랑', tags: ['love', 'affection', 'passion', 'joy'] },
+  토: { meaning: '편안함과 오래 이어지는 신뢰', tags: ['comfort', 'trust', 'steadiness', 'devotion'] },
+  금: { meaning: '진심과 서로를 존중하는 약속', tags: ['sincerity', 'respect', 'promise', 'trust'] },
+  수: { meaning: '깊은 이해와 차분하게 기다리는 마음', tags: ['understanding', 'calm', 'patience', 'deepBond'] },
+};
+
+function getFlowerMeaningInfo(name, ohaeng) {
+  // '리시안셔스'보다 '화이트 리시안셔스'처럼 더 구체적인 이름을 우선한다.
+  const matches = FLOWER_MEANING_RULES
+    .map(rule => {
+      const matchedKeyword = rule.match
+        .filter(keyword => String(name).includes(keyword))
+        .sort((a, b) => b.length - a.length)[0];
+      return matchedKeyword ? { rule, matchedLength: matchedKeyword.length } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.matchedLength - a.matchedLength);
+  const found = matches[0]?.rule;
+  const fallback = FLOWER_ELEMENT_FALLBACK[ohaeng] || FLOWER_ELEMENT_FALLBACK.토;
+  return {
+    name,
+    meaning: found?.meaning || fallback.meaning,
+    tags: [...new Set(found?.tags || fallback.tags)],
+    source: found ? 'library' : 'fallback',
+  };
+}
+
+function relationFlowerTheme(context) {
+  const relation = context?.relation;
+  if (relation === '상생') {
+    return {
+      key: 'relation',
+      title: '서로 힘을 보태는 마음',
+      tags: ['support', 'mutualSupport', 'gratitude', 'devotion', 'partnership'],
+      intro: '서로 자연스럽게 힘을 보태는 장점을 오래 이어가라는 의미로',
+    };
+  }
+  if (relation === '상극') {
+    return {
+      key: 'relation',
+      title: '부딪힌 뒤 다시 이해하는 마음',
+      tags: ['reconciliation', 'understanding', 'patience', 'respect', 'communication', 'forgiveness'],
+      intro: '의견이 부딪힐 때도 상대를 이기려 하기보다 다시 이해하고 대화하라는 의미로',
+    };
+  }
+  if (relation === '동기') {
+    return {
+      key: 'relation',
+      title: '닮은 점과 다른 점을 함께 존중하는 마음',
+      tags: ['harmony', 'balance', 'individuality', 'friendship', 'respect'],
+      intro: '닮은 점은 즐기고 같은 고집이 생길 때는 서로의 차이를 존중하라는 의미로',
+    };
+  }
+  if (relation === '중립') {
+    return {
+      key: 'relation',
+      title: '함께 경험을 쌓는 마음',
+      tags: ['sharedExperience', 'curiosity', 'friendship', 'newBeginning', 'joy'],
+      intro: '같은 취미와 새로운 장소에서의 좋은 경험이 두 사람을 더 가깝게 만든다는 의미로',
+    };
+  }
+  return {
+    key: 'relation',
+    title: '지금 두 사람에게 필요한 마음',
+    tags: ['trust', 'understanding', 'support', 'sincerity', 'sharedExperience'],
+    intro: '현재 확인 가능한 사주 흐름에서 두 사람에게 도움이 되는 태도를 담아',
+  };
+}
+
+function closenessFlowerTheme(context) {
+  const dayTone = context?.dayJijiRelation?.tone;
+  const yearTone = context?.yearJijiRelation?.tone;
+  if (dayTone === 'good') {
+    return {
+      key: 'closeness',
+      title: '가까워질수록 커지는 신뢰',
+      tags: ['trust', 'lastingLove', 'partnership', 'comfort', 'deepBond'],
+      intro: '가까워질수록 편안해지는 장점을 오래가는 신뢰로 이어가라는 의미로',
+    };
+  }
+  if (dayTone === 'clash') {
+    return {
+      key: 'closeness',
+      title: '생활 방식의 차이를 푸는 마음',
+      tags: ['reconciliation', 'communication', 'patience', 'understanding', 'peace', 'calm'],
+      intro: '가까워진 뒤 드러나는 생활 방식의 차이를 차분한 대화와 화해로 풀어가라는 의미로',
+    };
+  }
+  if (dayTone === 'friction') {
+    return {
+      key: 'closeness',
+      title: '작은 서운함을 쌓아두지 않는 마음',
+      tags: ['forgiveness', 'honesty', 'communication', 'understanding', 'warmth'],
+      intro: '사소한 서운함을 오래 쌓지 않고 부드럽게 말해 풀어가라는 의미로',
+    };
+  }
+  if (yearTone === 'good') {
+    return {
+      key: 'closeness',
+      title: '함께 움직일 때 잘 맞는 호흡',
+      tags: ['partnership', 'harmony', 'sharedExperience', 'trust', 'support'],
+      intro: '밖에서 함께 활동하거나 목표를 세울 때 잘 맞는 호흡을 살리라는 의미로',
+    };
+  }
+  if (yearTone === 'clash' || yearTone === 'friction') {
+    return {
+      key: 'closeness',
+      title: '생활 기준을 맞춰가는 마음',
+      tags: ['respect', 'communication', 'balance', 'patience', 'promise'],
+      intro: '돈·일정·가족·연락처럼 생활 기준이 다른 부분을 미리 맞춰가라는 의미로',
+    };
+  }
+  return {
+    key: 'closeness',
+    title: '일상에서 천천히 쌓는 친밀감',
+    tags: ['comfort', 'friendship', 'steadiness', 'sharedExperience', 'trust'],
+    intro: '특별한 이벤트보다 반복되는 일상 속 좋은 경험을 천천히 쌓으라는 의미로',
+  };
+}
+
+function complementFlowerTheme(ohaeng, context) {
+  const aFillsB = context?.complement?.aFillsB || [];
+  const bFillsA = context?.complement?.bFillsA || [];
+  const fallbackTags = FLOWER_ELEMENT_FALLBACK[ohaeng]?.tags || [];
+  if (aFillsB.length > 0 && bFillsA.length > 0) {
+    return {
+      key: 'complement',
+      title: '서로 주고받는 도움에 대한 감사',
+      tags: ['mutualSupport', 'gratitude', 'partnership', 'support', 'devotion', 'trust'],
+      intro: '두 사람이 서로 다른 방식으로 힘을 보태는 관계이므로, 받은 배려를 당연하게 여기지 말고 다시 돌려주라는 의미로',
+    };
+  }
+  if (aFillsB.length > 0 || bFillsA.length > 0) {
+    return {
+      key: 'complement',
+      title: '한쪽의 배려를 당연하게 여기지 않는 마음',
+      tags: ['gratitude', 'respect', 'support', 'devotion', 'trust', 'warmth'],
+      intro: '한 사람이 먼저 챙기거나 방향을 잡아주는 순간이 많을 수 있어, 그 배려를 말과 행동으로 알아주라는 의미로',
+    };
+  }
+  return {
+    key: 'complement',
+    title: '같은 약점을 함께 다루는 균형',
+    tags: ['balance', 'communication', 'individuality', 'partnership', ...fallbackTags],
+    intro: '두 사람이 비슷한 부분에서 함께 어려움을 느낄 수 있으므로 역할을 나누고 서로의 방식을 존중하라는 의미로',
+  };
+}
+
+function withObjectParticle(word) {
+  const value = String(word || '');
+  const last = value.charCodeAt(value.length - 1);
+  if (last >= 0xac00 && last <= 0xd7a3) {
+    const hasFinalConsonant = (last - 0xac00) % 28 !== 0;
+    return value + (hasFinalConsonant ? '을' : '를');
+  }
+  return value + '을';
+}
+
+function scoreFlowerForTheme(flower, theme, allTags, seed) {
+  const themeMatches = flower.tags.filter(tag => theme.tags.includes(tag));
+  const allMatches = flower.tags.filter(tag => allTags.includes(tag));
+  // 핵심 주제 일치도를 가장 크게 보고, 전체 궁합 태그는 보조 점수로 사용한다.
+  // 해시는 점수가 같은 꽃의 순서만 안정적으로 정하기 위한 값이다.
+  const tieBreaker = stableHash(`${seed}|${theme.key}|${flower.name}`) / 4294967296;
+  return {
+    score: themeMatches.length * 100 + allMatches.length * 12 + tieBreaker,
+    themeMatches,
+  };
+}
+
+function selectFlowersByMeaning(pool, ohaeng, seed, context) {
+  const candidates = (pool || []).map(name => getFlowerMeaningInfo(name, ohaeng));
+  const themes = [
+    relationFlowerTheme(context),
+    closenessFlowerTheme(context),
+    complementFlowerTheme(ohaeng, context),
+  ];
+  const allTags = [...new Set(themes.flatMap(theme => theme.tags))];
+  const selected = [];
+
+  themes.forEach(theme => {
+    let ranked = candidates
+      .filter(candidate => !selected.some(item => item.name === candidate.name))
+      .map(candidate => ({ candidate, ...scoreFlowerForTheme(candidate, theme, allTags, seed) }));
+    // 해당 주제와 직접 연결되는 꽃이 하나라도 있으면, 다른 주제 점수만 높은 꽃은 제외한다.
+    if (ranked.some(item => item.themeMatches.length > 0)) {
+      ranked = ranked.filter(item => item.themeMatches.length > 0);
+    }
+    ranked.sort((a, b) => b.score - a.score);
+    const best = ranked[0];
+    if (!best) return;
+
+    const matchedLabels = best.themeMatches
+      .slice(0, 2)
+      .map(tag => FLOWER_TAG_LABEL[tag])
+      .filter(Boolean);
+    const matchText = matchedLabels.length ? ` 특히 ${matchedLabels.join('·')}의 의미가 잘 맞아요.` : '';
+
+    selected.push({
+      name: best.candidate.name,
+      meaning: best.candidate.meaning,
+      tags: best.candidate.tags,
+      theme: theme.title,
+      reason: `${theme.intro} ${withObjectParticle(best.candidate.name)} 골랐어요. 꽃말은 ‘${best.candidate.meaning}’이에요.${matchText}`,
+      score: Math.floor(best.score),
+    });
+  });
+
+  return selected;
+}
+
+
 // 오행 상생 관계: 부족한 오행을 "낳아주는" 관계의 오행을 함께 제안하기 위함
 const SANGSAENG_PARENT = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
 
@@ -907,13 +1252,23 @@ function buildRecommendationVariant(ohaeng, seed, context) {
   const random = createSeededRandom(stableHash(`${seed}|${ohaeng}|${contextText}`));
   const time = pickOne(info.timeOptions, random);
 
+  // 꽃은 무작위로 섞지 않고, 관계 특징과 꽃말의 일치도를 계산해 선택한다.
+  const flowerDetails = selectFlowersByMeaning(
+    info.flowers,
+    ohaeng,
+    `${seed}|${contextText}`,
+    context
+  );
+
   return {
     season: info.season,
     seasonDetail: info.seasonDetail,
     timeRange: time?.range || info.timeRange,
     timeDetail: time?.detail || info.timeDetail,
     colors: pickMany(info.colors, 3, random),
-    flowers: pickMany(info.flowers, 3, random),
+    flowers: flowerDetails.map(item => item.name),
+    flowerDetails,
+    flowerSelectionMethod: 'meaning-score',
     places: pickMany(info.places, 4, random),
     keyword: pickOne(info.keywords, random) || info.keyword,
     summary: pickOne(info.summaryPool, random),
@@ -1111,4 +1466,5 @@ window.SajuCore = {
   calculateSaju, analyzeCompatibility, OHAENG_INFO, generateCoupleRecommendation,
   calculateSajuApprox, getMonthOhaengByDate, getDayOhaengDistribution,
   generateCoupleRecommendationApprox,
+  getFlowerMeaningInfo,
 };
