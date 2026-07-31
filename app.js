@@ -1378,7 +1378,7 @@
     const style = document.createElement('style');
     style.id = 'flower-recommendation-styles';
     style.textContent = `
-      .rec-couple-extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;align-items:stretch}
+      .rec-couple-extra-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px;align-items:stretch}
       .rec-date-ideas,.rec-touch-card{min-width:0;margin:0;padding:15px 16px;border:1px solid var(--line);border-radius:15px;background:var(--bg-panel-raised)}
       .rec-extra-title{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:14px;font-weight:700;color:var(--ink)}
       .rec-extra-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 4px rgba(148,151,163,.14)}
