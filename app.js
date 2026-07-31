@@ -44,6 +44,17 @@
   };
   const RELATION_GENERAL_CAVEAT = '사주에서 이 관계를 볼 때는 오행 궁합 하나만으로 판단하지 않아요. 상극이라도 전체 사주가 잘 맞으면 좋은 인연이 될 수 있고, 상생이라도 다른 요소가 맞지 않으면 어려움을 겪을 수 있어요. 상생·상극은 두 사람 관계의 한 가지 성향을 보여주는 지표로 이해해주세요.';
 
+  // 지지(地支) 관계 유형별 부가 설명 — getJijiRelation()의 결과(type)에 매칭
+  const JIJI_RELATION_DESC = {
+    육합: '두 지지가 짝을 이뤄 화합하는 자리예요. 함께 있으면 자연스럽게 안정감이 들고, 큰 노력 없이도 손발이 잘 맞는 궁합으로 봐요.',
+    삼합: '같은 기운의 흐름에 속한 지지끼리 만난 자리예요. 지향하는 방향이 비슷해서, 함께 뭔가를 도모하거나 목표를 세울 때 특히 잘 맞아요.',
+    충: '정반대 자리에서 마주보는 지지끼리 만난, 명리학에서 가장 강하게 부딪히는 관계예요. 서로 기질이나 방식이 뚜렷하게 달라 자주 의견 차이가 생길 수 있지만, 그만큼 강하게 끌리는 경우도 많아요.',
+    형: '겉으로는 무난해 보여도 은근히 신경전이나 잔소리가 쌓이기 쉬운 자리예요. 대화로 오해를 자주 풀어주는 게 좋아요.',
+    해: '크게 부딪히진 않지만 사소한 데서 자꾸 어긋나는 느낌을 줄 수 있는 자리예요. 서로의 속도나 방식 차이를 이해해주면 무난해져요.',
+    동일: '같은 지지라 기질이 서로 닮아 있어요. 통하는 부분이 많지만, 같은 약점도 공유할 수 있어요.',
+    평: '합도 충도 아닌, 특별한 상호작용이 없는 무난한 자리예요. 좋고 나쁨보다는 다른 요소들로 궁합을 살펴보는 게 좋아요.',
+  };
+
   function relationExplainHtml(relationKey, nameA, nameB) {
     const r = RELATION_EXPLAIN[relationKey];
     if (!r) return '';
@@ -391,10 +402,13 @@
 
     // 관계 배지 (근사 모드에서는 일간 비교가 불확실하므로 문구를 다르게)
     const explainEl = document.getElementById('relationExplainBody');
+    const deepCompatEl = document.getElementById('deepCompat');
     const nameA = inputA.name, nameB = inputB.name;
     if (anyApprox) {
       document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
       explainEl.innerHTML = '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계 궁합은 이번 결과에서 제공하지 않아요.</div>';
+      // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
+      deepCompatEl.style.display = 'none';
     } else {
       const relationLabels = {
         상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
@@ -404,6 +418,10 @@
       };
       document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
       explainEl.innerHTML = relationExplainHtml(rec.compat.relation, nameA, nameB);
+
+      // 더 깊이 본 궁합: 년지(띠)/일지(부부궁) 관계 + 오행 상호보완도
+      renderDeepCompat(rec.compat, nameA, nameB);
+      deepCompatEl.style.display = 'block';
     }
 
     // 메인 추천
@@ -438,6 +456,39 @@
       note += ' (연도 미상 추정치를 포함한 결과입니다.)';
     }
     document.getElementById('supportNote').innerHTML = note;
+  }
+
+  // 년지(띠)/일지(부부궁) 관계 뱃지와 오행 상호보완도를 렌더링
+  function renderDeepCompat(compat, nameA, nameB) {
+    const toneLabelMap = { good: '좋은 궁합', clash: '충돌 주의', friction: '마찰 주의', neutral: '무난' };
+
+    function fillItem(prefix, relInfo) {
+      const badgeEl = document.getElementById(prefix + 'Badge');
+      const descEl = document.getElementById(prefix + 'Desc');
+      badgeEl.innerHTML = `<span class="dc-tone-badge dc-tone-${relInfo.tone}">${relInfo.type} · ${toneLabelMap[relInfo.tone]}</span>`;
+      descEl.textContent = JIJI_RELATION_DESC[relInfo.type] || '';
+    }
+
+    fillItem('dcYear', compat.yearJijiRelation);
+    fillItem('dcDay', compat.dayJijiRelation);
+
+    // 오행 상호보완도 설명
+    const hanjaMap = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
+    const { aFillsB, bFillsA } = compat.complement;
+    let complementHtml = '';
+    if (aFillsB.length === 0 && bFillsA.length === 0) {
+      complementHtml = `${nameA}님과 ${nameB}님은 서로 오행 분포가 비슷해서, 어느 한쪽이 특별히 다른 쪽의 부족한 기운을 채워주는 조합은 아니에요. 대신 함께 있을 때 같은 기운이 강해지는 편이에요.`;
+    } else {
+      const parts = [];
+      if (bFillsA.length > 0) {
+        parts.push(`<b>${nameB}님이 넉넉히 가진 ${bFillsA.map(k => `${k}(${hanjaMap[k]})</b>`).join(', ')} 기운이 ${nameA}님에게 부족한 부분을 채워줘요`);
+      }
+      if (aFillsB.length > 0) {
+        parts.push(`<b>${nameA}님이 넉넉히 가진 ${aFillsB.map(k => `${k}(${hanjaMap[k]})</b>`).join(', ')} 기운이 ${nameB}님에게 부족한 부분을 채워줘요`);
+      }
+      complementHtml = parts.join('. 반대로 ') + '. 서로 부족한 기운을 채워주는, 균형이 잘 맞는 조합이에요.';
+    }
+    document.getElementById('dcComplement').innerHTML = complementHtml;
   }
 
   function buildApproxCount(approx) {
