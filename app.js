@@ -319,26 +319,65 @@
     const lines = [];
 
     if (aFillsB.length && bFillsA.length) {
-      lines.push('두 사람은 서로를 편하게 해주는 방식이 조금씩 달라요. 한쪽만 계속 챙기는 관계라기보다, 상황에 따라 도움을 주고받기 쉬운 조합이에요.');
+      lines.push('한 사람만 계속 챙기는 관계라기보다, 상황에 따라 먼저 손을 내미는 사람이 자연스럽게 바뀌는 편이에요.');
       lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
       lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
     } else if (aFillsB.length) {
       lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
-      lines.push(`${profileA.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileB.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 작은 행동으로라도 다시 표현해주는 게 좋아요.`);
+      lines.push(`${profileB.name}님도 ${profileA.name}님이 지쳐 보이는 날에는 먼저 안부를 묻거나 약속을 준비해주면, 도움을 받기만 한다는 느낌 없이 애정이 자연스럽게 오갈 수 있어요.`);
     } else if (bFillsA.length) {
       lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
-      lines.push(`${profileB.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileA.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 작은 행동으로라도 다시 표현해주는 게 좋아요.`);
+      lines.push(`${profileA.name}님도 ${profileB.name}님이 지쳐 보이는 날에는 먼저 안부를 묻거나 약속을 준비해주면, 도움을 받기만 한다는 느낌 없이 애정이 자연스럽게 오갈 수 있어요.`);
     } else {
-      lines.push('두 사람은 잘하는 점과 어려워하는 부분이 비슷한 편이에요. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 해결해주기를 기다리기보다 담당을 정하는 것이 좋아요.');
+      lines.push('둘 다 어려워하는 일을 상대가 알아서 해결해주길 기다리기보다, 일정 잡기나 예약처럼 작은 역할부터 나누면 서로를 훨씬 든든하게 느낄 수 있어요.');
     }
 
-    sharedDominant.slice(0, 2).forEach(k => {
+    if (compat?.relation === '상생') {
+      lines.push('한 사람이 아이디어를 꺼내거나 힘든 마음을 말하면 다른 사람이 실제 행동이나 따뜻한 반응으로 이어주기 쉬워, 같이 있을 때 혼자 감당한다는 느낌이 줄어들어요.');
+    } else if (compat?.relation === '상극') {
+      lines.push('생각이 달라 처음에는 부딪혀도, 한쪽이 놓친 현실적인 문제나 감정적인 부분을 다른 쪽이 발견해줘 중요한 결정을 더 균형 있게 내릴 수 있어요.');
+    } else if (compat?.relation === '동기') {
+      lines.push('말을 길게 설명하지 않아도 상대의 기분이나 취향을 빠르게 알아차려, 지친 날에는 조용히 쉬어주고 즐거운 날에는 바로 함께 움직이는 호흡이 좋아요.');
+    } else {
+      lines.push('상대를 몰아붙이기보다 필요한 순간에 곁을 지켜주는 편이라, 큰 도움보다 꾸준한 연락과 약속을 통해 편안한 믿음을 쌓기 쉬워요.');
+    }
+
+    if (compat?.dayJijiRelation?.tone === 'good') {
+      lines.push('둘만 있을 때는 긴장을 풀고 속마음을 나누기 쉬워요. 힘든 일이 생기면 해결책부터 말하기보다 함께 밥을 먹거나 산책하며 마음을 가라앉혀주는 방식이 잘 맞아요.');
+    } else if (compat?.yearJijiRelation?.tone === 'good') {
+      lines.push('여행 일정, 모임, 장기 계획처럼 둘 밖의 생활을 함께 꾸릴 때 손발이 잘 맞아, 서로의 일상에 실제로 도움이 되는 연인이 되기 쉬워요.');
+    }
+
+    sharedDominant.slice(0, 1).forEach(k => {
       if (ELEMENT_SHARED_STRONG[k]) lines.push(ELEMENT_SHARED_STRONG[k]);
     });
-    sharedMissing.slice(0, 2).forEach(k => {
+    sharedMissing.slice(0, 1).forEach(k => {
       if (ELEMENT_SHARED_GAP[k]) lines.push(ELEMENT_SHARED_GAP[k]);
     });
-    return lines;
+    return [...new Set(lines)].slice(0, 4);
+  }
+
+  const ELEMENT_PAIR_CONFLICT = {
+    '목+목': '둘 다 새로운 계획을 먼저 꺼내다 보니 여행·데이트 약속이 자주 바뀌고, 시작한 일을 누가 마무리할지를 두고 서로 미룰 수 있어요.',
+    '목+화': '재미있는 일이 생기면 둘 다 바로 움직이지만, 한쪽은 다음 계획으로 넘어가고 다른 쪽은 지금의 감정을 더 확인받고 싶어 속도가 엇갈릴 수 있어요.',
+    '목+토': '여행·이사·돈처럼 큰 결정을 할 때 한 사람은 빨리 바꾸고 싶고 다른 사람은 충분히 확인하고 싶어, 결론을 내는 시점을 두고 다툴 수 있어요.',
+    '목+금': '한 사람은 자유롭게 시도해보려 하고 다른 사람은 미리 기준을 세우려 해, 조언이 반복되면 간섭으로 느껴지고 즉흥적인 선택은 무책임하게 보일 수 있어요.',
+    '목+수': '한 사람은 바로 다음 행동을 정하고 싶지만 다른 사람은 더 생각할 시간이 필요해, 답을 재촉하거나 연락을 미루는 상황에서 서운함이 생길 수 있어요.',
+    '화+화': '둘 다 서운함과 애정을 바로 표현하는 편이라 화해도 빠르지만, 감정이 올라온 순간에는 같은 말을 반복하며 싸움의 강도가 커질 수 있어요.',
+    '화+토': '한 사람은 즉흥적인 만남과 표현을 원하고 다른 사람은 정해진 일정과 꾸준함을 중요하게 여겨, 갑작스러운 약속 변경이나 연락 패턴에서 차이가 나기 쉬워요.',
+    '화+금': '한 사람은 그때의 감정과 분위기를 따라 말하고 다른 사람은 했던 말과 약속을 정확히 기억해, 가벼운 표현이 약속 위반처럼 받아들여질 수 있어요.',
+    '화+수': '한 사람은 지금 바로 이야기하고 싶고 다른 사람은 혼자 정리한 뒤 말하고 싶어, 답장 속도와 싸운 뒤 대화를 다시 시작하는 시점에서 가장 자주 엇갈려요.',
+    '토+토': '둘 다 익숙한 생활을 지키려 해서 안정적이지만, 돈 쓰는 방식이나 주말 루틴이 한 번 굳어지면 서로 양보하지 않아 고집 대결이 될 수 있어요.',
+    '토+금': '둘 다 약속과 책임을 중요하게 여기지만, 일정·비용·역할을 너무 정확히 따지면 연애가 편안한 관계보다 평가받는 일처럼 느껴질 수 있어요.',
+    '토+수': '한 사람은 관계의 계획과 답을 분명히 하고 싶고 다른 사람은 상황에 맞춰 여유롭게 움직이고 싶어, 확답을 요구하는 순간 부담이 커질 수 있어요.',
+    '금+금': '둘 다 잘못된 부분을 빠르게 알아채서 문제 해결은 빠르지만, 누가 더 옳은지 따지기 시작하면 사과보다 지적이 길어질 수 있어요.',
+    '금+수': '한 사람은 관계의 기준과 결론을 명확히 듣고 싶고 다른 사람은 상황과 감정을 더 살펴보고 싶어, 애매한 답이나 단호한 말투에서 상처가 생길 수 있어요.',
+    '수+수': '둘 다 상대가 먼저 말해주길 기다리면 겉으로는 조용해도 서운함이 오래 남을 수 있고, 싸운 뒤 연락을 누가 먼저 할지를 두고 시간이 길어질 수 있어요.',
+  };
+
+  function getElementPairConflict(profileA, profileB) {
+    const pair = [profileA.dominant, profileB.dominant].sort((a, b) => OHAENG_ORDER.indexOf(a) - OHAENG_ORDER.indexOf(b)).join('+');
+    return ELEMENT_PAIR_CONFLICT[pair] || '서로 중요하게 여기는 기준이 다른 상황에서는 애정의 크기보다 연락 시점, 약속 방식, 말투 같은 작은 차이가 더 크게 느껴질 수 있어요.';
   }
 
   function buildConflictScenario(profileA, profileB, direction, compat) {
@@ -349,40 +388,34 @@
     if (direction === 'aControlsB' || direction === 'bControlsA') {
       const controller = direction === 'aControlsB' ? profileA : profileB;
       const receiver = direction === 'aControlsB' ? profileB : profileA;
-      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하면, ${receiver.name}님은 자신의 방식이 무시되거나 통제받는다고 느낄 수 있어요.`);
+      base.push(`여행 계획이나 중요한 결정을 할 때 ${controller.name}님이 기준과 해결책을 먼저 정하면, ${receiver.name}님은 함께 상의하기보다 정해진 답을 따라야 한다고 느낄 수 있어요.`);
     } else if (direction === 'same') {
-      base.push('두 사람이 비슷한 논리와 감정으로 동시에 버티면 작은 문제가 자존심 대결로 길어질 수 있어요.');
+      base.push('둘 다 같은 결론을 원한다고 생각해 세부 내용을 확인하지 않으면, 막상 약속 시간·비용·역할을 정할 때 서로 다른 기대가 드러날 수 있어요.');
     } else if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
       const giver = direction === 'aGeneratesB' ? profileA : profileB;
       const receiver = direction === 'aGeneratesB' ? profileB : profileA;
-      base.push(`${giver.name}님이 계속 이해하고 분위기를 맞추다가 먼저 지칠 수 있고, ${receiver.name}님은 그 피로를 뒤늦게 알아차릴 수 있어요.`);
+      base.push(`${giver.name}님이 연락·예약·분위기 조율을 계속 맡고 ${receiver.name}님이 자연스럽게 따라가는 패턴이 굳어지면, 어느 순간 데이트를 혼자 준비한다는 서운함이 생길 수 있어요.`);
     } else {
-      base.push('서로를 나쁘게 생각하지 않아도 기대하는 표현 방식이 달라, 먼저 말하지 않고 기다리다가 서운함이 쌓일 수 있어요.');
+      base.push('큰 문제는 없어 보여도 누가 먼저 연락하고 약속을 잡을지 서로 기다리면, 관심이 줄었다고 오해하거나 관계가 정체된 느낌을 받을 수 있어요.');
     }
 
-    if (profileA.dominant === profileB.dominant) {
-      base.push(`두 사람 모두 ${profileA.dominant}(${OHAENG_HANJA[profileA.dominant]}) 성향이 강해서 잘 맞는 부분은 빠르게 통하지만, 같은 약점이 드러나는 순간에는 먼저 물러설 사람이 없어질 수 있어요.`);
-    } else {
-      base.push(`${profileA.name}님은 ‘${profileA.trait.love}’를 중요하게 느끼고, ${profileB.name}님은 ‘${profileB.trait.love}’를 중요하게 느껴요. 상대가 원하는 방식과 내가 표현하는 방식이 다르면 충분히 사랑받지 못한다고 오해할 수 있어요.`);
-    }
-
-    base.push(`갈등이 생겼을 때 ${profileA.name}님에게는 ${profileA.trait.shadow}가, ${profileB.name}님에게는 ${profileB.trait.shadow}가 나타나기 쉬워요. 두 반응이 동시에 나오면 대화의 내용보다 말투와 태도 때문에 싸움이 커질 수 있어요.`);
+    base.push(getElementPairConflict(profileA, profileB));
 
     if (dayTone === 'clash') {
-      base.push('가까운 사이일수록 즉시 답을 요구하거나 감정적으로 결론을 내리기 쉬워요. 사실, 느낀 감정, 원하는 행동을 한 문장씩 나누어 말하는 편이 좋아요.');
+      base.push('둘만 있는 가까운 상황에서는 한 번 서운해진 일이 다른 이야기까지 번지기 쉬워요. 한꺼번에 과거 일을 꺼내기보다 지금 다루는 문제 하나만 정해서 말하는 편이 좋아요.');
     } else if (dayTone === 'friction') {
-      base.push('큰 사건보다 잔소리, 말투, 답장 속도, 약속 변경처럼 작은 일이 반복되면서 피로가 쌓일 수 있어요. 불편했던 일을 그날 짧게 말하고 넘기는 습관이 필요해요.');
+      base.push('답장 속도, 말투, 약속 변경처럼 사소한 일이 반복되면서 피로가 쌓일 수 있어요. 참았다가 크게 말하기보다 그날 불편했던 행동 하나만 짧게 알려주세요.');
     } else {
-      base.push('크게 싸우지 않는 대신 불편한 일을 대충 넘기기 쉬워요. 괜찮다고 말하기 전에 정말 괜찮은지 한 번 더 확인하면 뒤늦은 폭발을 줄일 수 있어요.');
+      base.push('크게 싸우지 않는 대신 불편한 일을 괜찮다고 넘기기 쉬워요. 데이트가 끝난 뒤 좋았던 점과 아쉬웠던 점을 하나씩 나누면 뒤늦은 서운함을 줄일 수 있어요.');
     }
 
     if (yearTone === 'clash' || yearTone === 'friction') {
-      base.push('가족과 친구를 만나는 방식, 돈을 쓰는 기준, 주말 시간을 보내는 방식에서 차이가 드러날 수 있어요. 감정이 좋을 때 미리 기준을 맞춰두는 편이 좋아요.');
+      base.push('가족·친구 모임에 참여하는 정도, 기념일 비용, 주말 시간을 쓰는 방식처럼 둘 밖의 생활에서 차이가 커질 수 있어요. 일정이 잡히기 전에 각자의 기준부터 확인하는 게 좋아요.');
     } else {
-      base.push('데이트 일정과 연락을 한 사람이 계속 정하면 편한 사람과 부담을 떠안는 사람이 나뉠 수 있어요. 장소 선택과 약속 준비를 번갈아 맡아보세요.');
+      base.push('데이트 장소와 예약, 이동 경로, 연락 시간을 한 사람이 계속 맡으면 부담이 한쪽에 쌓일 수 있어요. 준비하는 역할과 결정권을 번갈아 나누는 편이 좋아요.');
     }
 
-    return [...new Set(base)].slice(0, 5);
+    return [...new Set(base)].slice(0, 4);
   }
 
   function buildRelationshipFlow(profileA, profileB, compat) {
@@ -408,6 +441,49 @@
     return '처음부터 강하게 끌리기보다 함께 지내면서 정이 차곡차곡 쌓이는 관계예요. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워져요.';
   }
 
+  const ROMANTIC_ELEMENT_SCENE = {
+    목: '새로운 식당이나 여행지를 함께 찾아보고, 다음에 할 일을 자연스럽게 이야기하는 연인이에요. 서로의 목표를 응원하는 말이 애정 표현처럼 느껴지는 편이에요.',
+    화: '만나면 표정과 말투가 밝아지고, 보고 싶었다는 말이나 사진·기념일 같은 표현을 적극적으로 나누는 연인이에요. 짧게 만나도 데이트 분위기가 금방 살아나요.',
+    토: '정해진 날에 만나 밥을 먹고 서로의 일상을 챙기는, 생활 속에서 안정감을 주는 연인이에요. 아플 때 필요한 것을 챙기거나 약속을 지키는 행동으로 사랑을 보여줘요.',
+    금: '시간과 약속을 소중히 여기고, 관계를 애매하게 두기보다 서로의 계획과 기준을 분명히 공유하는 연인이에요. 함께 세운 목표를 지켜갈 때 애정이 깊어져요.',
+    수: '시끄러운 자리보다 둘만의 카페나 밤 산책에서 속이야기를 오래 나누는 연인이에요. 계속 붙어 있기보다 각자의 시간을 보낸 뒤 다시 만날 때 편안함을 느껴요.',
+  };
+
+  function buildRomanticTogetherScenes(profileA, profileB, compat, direction, combinedStats) {
+    const scenes = [];
+    const relation = compat?.relation;
+    const daySignal = getJijiSignal(compat?.dayJijiRelation);
+    const dominant = combinedStats.dominant[0] || profileA.dominant;
+
+    if (relation === '상생') {
+      scenes.push('연인으로 지낼 때는 한 사람이 먼저 마음이나 계획을 꺼내면 다른 사람이 자연스럽게 호응해주는 모습이 많아요. 거창한 이벤트보다 안부를 챙기고, 필요한 순간에 먼저 움직여주는 행동에서 사랑을 확인하는 커플이에요.');
+    } else if (relation === '상극') {
+      scenes.push('연인으로서는 서로에게 없는 매력이 강하게 보여 설렘과 긴장감이 함께 살아 있는 커플이에요. 데이트할 때는 활기가 넘치지만, 의견이 다를 때도 감정이 크게 움직일 수 있어 화해 방식까지 둘만의 연애 습관으로 만드는 게 중요해요.');
+    } else if (relation === '동기') {
+      scenes.push('친구 같은 편안함과 연인다운 장난스러움이 함께 있는 커플이에요. 같은 이야기에 웃고, 별일 없는 날에도 메시지나 밈을 주고받으며 친밀감을 쌓지만 가끔은 익숙함에 기대지 않고 애정 표현을 분명히 해주는 게 좋아요.');
+    } else {
+      scenes.push('처음부터 불꽃처럼 달아오르기보다 자주 밥을 먹고 일상을 공유하면서 천천히 연인다운 정이 깊어지는 커플이에요. 조용히 곁에 있어주는 시간과 꾸준한 연락이 화려한 이벤트보다 더 큰 애정 표현이 되기 쉬워요.');
+    }
+
+    if (daySignal > 0) {
+      scenes.push('둘만 있을 때는 경계가 빨리 풀려 스킨십이나 속마음 표현도 비교적 자연스러워요. 피곤한 날에는 특별한 일을 하지 않아도 함께 쉬고 식사하는 것만으로 충분히 가까워졌다고 느낄 수 있어요.');
+    } else if (daySignal < 0) {
+      scenes.push('좋아하는 마음과 별개로 가까워질수록 각자의 방식이 선명해져요. 한 사람은 바로 확인받고 싶고 다른 사람은 생각할 시간이 필요할 수 있어서, 애정 표현의 속도를 맞추는 과정 자체가 이 커플의 중요한 연애 과제가 돼요.');
+    } else {
+      scenes.push('애정이 안정되면 서로의 일상에 무리하게 끼어들기보다, 각자 할 일을 하다가 자연스럽게 만나 쉬는 연애를 하기 쉬워요. 연락 횟수보다 약속한 순간에 성실하게 반응하는 것이 더 중요하게 느껴져요.');
+    }
+
+    if (ROMANTIC_ELEMENT_SCENE[dominant]) scenes.push(ROMANTIC_ELEMENT_SCENE[dominant]);
+
+    if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
+      const giver = direction === 'aGeneratesB' ? profileA : profileB;
+      const receiver = direction === 'aGeneratesB' ? profileB : profileA;
+      scenes.push(`${giver.name}님이 데이트의 흐름이나 감정 표현을 먼저 열고, ${receiver.name}님이 그 분위기를 이어가는 모습이 자주 보여요. 다만 늘 같은 사람이 먼저 움직이지 않도록 가끔은 역할을 바꿔주는 게 좋아요.`);
+    }
+
+    return [...new Set(scenes)].slice(0, 3);
+  }
+
   function buildActionTips(profileA, profileB, direction, compat) {
     const tips = [];
     tips.push(`${profileA.name}님과 이야기할 때는 ‘${profileA.trait.repair}’ 방식을 써보세요.`);
@@ -431,19 +507,19 @@
     const style = document.createElement('style');
     style.id = 'compat-detail-styles';
     style.textContent = `
-      .compat-detail-wrap{margin-top:20px;padding-top:18px;border-top:1px solid rgba(107,99,85,.16)}
-      .compat-detail-title{font-weight:800;font-size:17px;margin-bottom:12px;color:#4f493f}
-      .compat-summary-card{padding:14px 16px;margin:10px 0;border-radius:14px;background:rgba(163,128,63,.07);line-height:1.75}
+      .compat-detail-wrap{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+      .compat-detail-title{font-weight:700;font-size:17px;margin-bottom:12px;color:var(--ink);font-family:'Noto Serif KR',serif}
+      .compat-summary-card{padding:14px 16px;margin:10px 0;border-radius:14px;background:var(--bg-panel-raised);border:1px solid var(--line);line-height:1.75}
       .compat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
-      .compat-card{padding:14px 16px;border:1px solid rgba(107,99,85,.14);border-radius:14px;background:rgba(255,255,255,.58);line-height:1.7;box-shadow:0 4px 14px rgba(79,73,63,.035)}
-      .compat-card h4{display:flex;align-items:center;gap:7px;margin:0 0 9px;font-size:14px;color:#6b5328}
-      .compat-card h4::before{content:'';width:6px;height:6px;border-radius:50%;background:#a3803f;box-shadow:0 0 0 4px rgba(163,128,63,.09);flex:0 0 auto}
+      .compat-card{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#ffffff;line-height:1.7;box-shadow:0 4px 14px rgba(28,29,33,.035)}
+      .compat-card h4{display:flex;align-items:center;gap:7px;margin:0 0 9px;font-size:14px;color:var(--ink)}
+      .compat-card h4::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 4px rgba(148,151,163,.14);flex:0 0 auto}
       .compat-card p{margin:6px 0}
       .compat-stack-card{margin-top:16px}
-      .compat-highlight-card{border-color:rgba(163,128,63,.20);background:linear-gradient(135deg,rgba(163,128,63,.075),rgba(255,255,255,.62))}
+      .compat-highlight-card{border-color:var(--line);background:linear-gradient(135deg,var(--bg-panel-raised) 0%,#ffffff 100%)}
       .compat-stack-card + .compat-stack-card{margin-top:16px}
       .compat-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-      .compat-chip{display:inline-flex;padding:4px 9px;border-radius:999px;background:rgba(163,128,63,.10);font-size:12px}
+      .compat-chip{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--bg-panel-raised);border:1px solid var(--line);color:var(--ink-dim);font-size:12px}
       .compat-list{margin:7px 0 0;padding-left:20px;line-height:1.75}
       .compat-muted{font-size:12px;opacity:.72;margin-top:12px}
       @media (max-width:680px){.compat-grid{grid-template-columns:1fr}}
@@ -465,6 +541,7 @@
     const flow = buildRelationshipFlow(profileA, profileB, compat);
     const combinedCount = Object.fromEntries(OHAENG_ORDER.map(k => [k, profileA.stats.count[k] + profileB.stats.count[k]]));
     const combinedStats = analyzeOhaengCount(combinedCount);
+    const romanticScenes = buildRomanticTogetherScenes(profileA, profileB, compat, direction, combinedStats);
 
     const chipsA = [
       `일간 ${profileA.day}(${OHAENG_HANJA[profileA.day]})`,
@@ -517,9 +594,8 @@
         </div>
 
         <div class="compat-card compat-stack-card compat-highlight-card">
-          <h4>둘이 함께 있으면 이런 모습이에요</h4>
-          <p>${buildCombinedEverydayText(combinedStats)}</p>
-          <p>데이트할 때는 ${profileA.trait.activity}과 ${profileB.trait.activity}을 번갈아 골라보세요. 한쪽 취향에만 치우치지 않아 둘 다 즐겁게 시간을 보내기 쉬워요.</p>
+          <h4>연인이 되면 이런 모습이에요</h4>
+          ${romanticScenes.map(scene => `<p>${scene}</p>`).join('')}
         </div>
 
         <div class="compat-card compat-stack-card compat-highlight-card">
@@ -715,14 +791,23 @@
     const style = document.createElement('style');
     style.id = 'relationship-mode-styles';
     style.textContent = `
-      .relationship-mode-wrap{margin:18px 0 16px;padding:14px 15px;border:1px solid rgba(163,128,63,.18);border-radius:15px;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(163,128,63,.055))}
-      .relationship-mode-title{font-weight:800;font-size:14px;color:#5d503d;margin-bottom:10px}
-      .relationship-mode-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-      .relationship-mode-option{position:relative;cursor:pointer}
+      .relationship-mode-wrap{margin:18px 0 16px;padding:16px 18px;border:1px solid var(--line);border-radius:15px;background:var(--bg-panel)}
+      .relationship-mode-title{font-family:'Noto Serif KR',serif;font-weight:500;font-size:14px;color:var(--ink);margin-bottom:12px}
+      .relationship-mode-options{display:flex;flex-wrap:wrap;gap:18px}
+      .relationship-mode-option{position:relative;cursor:pointer;display:flex;align-items:center;gap:8px}
       .relationship-mode-option input{position:absolute;opacity:0;pointer-events:none}
-      .relationship-mode-option span{display:flex;align-items:center;justify-content:center;min-height:42px;border:1px solid rgba(107,99,85,.18);border-radius:12px;background:rgba(255,255,255,.72);font-size:14px;font-weight:700;color:#6a6257;transition:.18s ease}
-      .relationship-mode-option input:checked + span{border-color:rgba(163,128,63,.48);background:rgba(163,128,63,.12);color:#654d25;box-shadow:0 4px 13px rgba(79,73,63,.06)}
-      .relationship-mode-note{margin-top:8px;font-size:11.5px;line-height:1.55;color:#7a7267}
+      .relationship-mode-option .cb-box{
+        width:16px;height:16px;flex:0 0 auto;border-radius:5px;
+        border:1.5px solid var(--ink-faint);background:#fff;
+        display:flex;align-items:center;justify-content:center;
+        transition:border-color .18s ease,background .18s ease;
+      }
+      .relationship-mode-option .cb-box svg{width:10px;height:10px;opacity:0;transform:scale(.6);transition:opacity .15s ease,transform .15s ease;}
+      .relationship-mode-option input:checked + .cb-box{border-color:var(--accent-2);background:var(--accent-grad);}
+      .relationship-mode-option input:checked + .cb-box svg{opacity:1;transform:scale(1);}
+      .relationship-mode-option .cb-label{font-size:14px;color:var(--ink-dim);transition:color .18s ease;}
+      .relationship-mode-option input:checked ~ .cb-label{color:var(--ink);font-weight:600;}
+      .relationship-mode-note{margin-top:12px;font-size:11.5px;line-height:1.6;color:var(--ink-faint)}
       .re-single-mode{grid-template-columns:1fr!important}
       #result.friend-result-mode .lover-only-block{display:none!important}
     `;
@@ -731,11 +816,20 @@
     const wrap = document.createElement('div');
     wrap.id = 'relationshipModeSelector';
     wrap.className = 'relationship-mode-wrap';
+    const checkIcon = '<svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8.2L6.2 11.4L13 4.4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     wrap.innerHTML = `
       <div class="relationship-mode-title">두 사람은 어떤 관계인가요?</div>
       <div class="relationship-mode-options">
-        <label class="relationship-mode-option"><input type="radio" name="relationshipMode" value="lover" checked><span>연인 ❤️</span></label>
-        <label class="relationship-mode-option"><input type="radio" name="relationshipMode" value="friend"><span>친구 🤝</span></label>
+        <label class="relationship-mode-option">
+          <input type="radio" name="relationshipMode" value="lover" checked>
+          <span class="cb-box">${checkIcon}</span>
+          <span class="cb-label">연인</span>
+        </label>
+        <label class="relationship-mode-option">
+          <input type="radio" name="relationshipMode" value="friend">
+          <span class="cb-box">${checkIcon}</span>
+          <span class="cb-label">친구</span>
+        </label>
       </div>
       <div class="relationship-mode-note">친구를 선택하면 친구 관계 해설만 보여드려요. 연애·데이트 관련 추가 해설은 연인 선택에서만 확인할 수 있어요.</div>
     `;
@@ -940,7 +1034,7 @@
       svgContent += `<text x="${labelX}" y="${labelY + 18}" text-anchor="middle" font-family="Noto Sans KR, sans-serif" font-size="11" fill="${labelColor}">${val}</text>`;
     });
 
-    svgContent += `<polygon points="${points.join(' ')}" fill="rgba(163,128,63,0.14)" stroke="#a3803f" stroke-width="2"/>`;
+    svgContent += `<polygon points="${points.join(' ')}" fill="rgba(148,151,163,0.14)" stroke="#8a8d99" stroke-width="2"/>`;
 
     order.forEach((k, i) => {
       const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
@@ -967,18 +1061,18 @@
     const style = document.createElement('style');
     style.id = 'flower-recommendation-styles';
     style.textContent = `
-      .rec-date-ideas{margin-top:12px;padding:14px 15px;border:1px solid rgba(163,128,63,.18);border-radius:14px;background:rgba(255,255,255,.58)}
-      .rec-extra-title{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:14px;font-weight:800;color:#6b5328}
-      .rec-extra-title::before{content:'';width:6px;height:6px;border-radius:50%;background:#a3803f;box-shadow:0 0 0 4px rgba(163,128,63,.09)}
-      .rec-date-list{margin:0;padding-left:20px;line-height:1.72;color:#554f46;font-size:13px}
-      .flower-detail-section{margin-top:16px;padding:15px 16px;border:1px solid rgba(163,128,63,.20);border-radius:15px;background:linear-gradient(135deg,rgba(163,128,63,.065),rgba(255,255,255,.65))}
-      .flower-detail-title{font-size:15px;font-weight:800;color:#5f4d2f;margin-bottom:11px}
+      .rec-date-ideas{margin-top:16px;padding:15px 16px;border:1px solid var(--line);border-radius:15px;background:var(--bg-panel-raised)}
+      .rec-extra-title{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:14px;font-weight:700;color:var(--ink)}
+      .rec-extra-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 4px rgba(148,151,163,.14)}
+      .rec-date-list{margin:0;padding-left:20px;line-height:1.72;color:var(--ink-dim);font-size:13px}
+      .flower-detail-section{margin-top:16px;padding:15px 16px;border:1px solid var(--line);border-radius:15px;background:var(--bg-panel-raised)}
+      .flower-detail-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:11px;font-family:'Noto Serif KR',serif}
       .flower-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-      .flower-detail-item{min-width:0;padding:12px 13px;border:1px solid rgba(107,99,85,.14);border-radius:13px;background:rgba(255,255,255,.72);box-shadow:0 4px 13px rgba(79,73,63,.035)}
-      .flower-detail-name{font-weight:800;font-size:14px;color:#594b34;line-height:1.4}
-      .flower-detail-row{margin-top:8px;font-size:12.5px;line-height:1.6;color:#514c44}
-      .flower-detail-row b{display:block;margin-bottom:2px;color:#7a5d2e;font-size:11.5px}
-      .flower-detail-reason{padding-top:8px;border-top:1px dashed rgba(107,99,85,.16)}
+      .flower-detail-item{min-width:0;padding:12px 13px;border:1px solid var(--line);border-radius:13px;background:#ffffff;box-shadow:0 4px 13px rgba(28,29,33,.035)}
+      .flower-detail-name{font-weight:700;font-size:14px;color:var(--ink);line-height:1.4}
+      .flower-detail-row{margin-top:8px;font-size:12.5px;line-height:1.6;color:var(--ink-dim)}
+      .flower-detail-row b{display:block;margin-bottom:2px;color:var(--accent-3);font-size:11.5px}
+      .flower-detail-reason{padding-top:8px;border-top:1px dashed var(--line)}
       @media (max-width:760px){.flower-detail-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(style);
@@ -987,26 +1081,27 @@
   function ensureDateIdeasBlock() {
     let block = document.getElementById('recDateIdeasBlock');
     if (block) return block;
-    const placesEl = document.getElementById('recPlaces');
-    if (!placesEl) return null;
-    block = document.createElement('div');
+    const supportNote = document.getElementById('supportNote');
+    if (!supportNote) return null;
+    block = document.createElement('section');
     block.id = 'recDateIdeasBlock';
     block.className = 'rec-date-ideas lover-only-block';
-    block.innerHTML = '<div class="rec-extra-title">추천하는 데이트</div><ul id="recDateIdeas" class="rec-date-list"></ul>';
-    const anchor = placesEl.parentElement || placesEl;
-    anchor.insertAdjacentElement('afterend', block);
+    block.innerHTML = '<div class="rec-extra-title">둘에게 잘 맞는 데이트</div><ul id="recDateIdeas" class="rec-date-list"></ul>';
+    supportNote.insertAdjacentElement('afterend', block);
     return block;
   }
 
   function ensureFlowerMeaningDetails() {
     let section = document.getElementById('flowerMeaningDetails');
     if (section) return section;
+    const dateIdeasBlock = ensureDateIdeasBlock();
     const supportNote = document.getElementById('supportNote');
-    if (!supportNote) return null;
+    const anchor = dateIdeasBlock || supportNote;
+    if (!anchor) return null;
     section = document.createElement('section');
     section.id = 'flowerMeaningDetails';
     section.className = 'flower-detail-section lover-only-block';
-    supportNote.insertAdjacentElement('afterend', section);
+    anchor.insertAdjacentElement('afterend', section);
     return section;
   }
 
@@ -1199,5 +1294,79 @@
     count[approx.day.likelyOhaeng[0]] += 1;
     if (approx.hour) count[approx.hour.ohaeng] += 1;
     return count;
+  }
+
+  // ---------------------------------------------------------------
+  // 결과 이미지 저장 (관계궁합 이후의 자세한 설명은 제외하고
+  // "추천 궁합 기운" 카드까지만 캡처)
+  // ---------------------------------------------------------------
+  function ensureSaveImageStyles() {
+    if (document.getElementById('save-image-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'save-image-styles';
+    style.textContent = `
+      .capture-sandbox{position:fixed;left:-9999px;top:0;width:1040px;background:var(--bg-void);padding:32px;}
+    `;
+    document.head.appendChild(style);
+  }
+
+  async function handleSaveResultImage(btn) {
+    if (typeof html2canvas === 'undefined') {
+      alert('이미지 저장 기능을 불러오지 못했어요. 네트워크 연결을 확인한 뒤 다시 시도해주세요.');
+      return;
+    }
+    const recHero = document.getElementById('recHero');
+    if (!recHero) return;
+
+    ensureSaveImageStyles();
+    const originalLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '이미지 만드는 중…';
+
+    // 캡처용으로 rec-hero를 복제한 뒤, 관계궁합 이후의 자세한 설명 블록들은 제거
+    const clone = recHero.cloneNode(true);
+    clone.removeAttribute('id');
+
+    // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
+    // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
+    clone.querySelectorAll('.compat-detail-wrap').forEach(el => el.remove());
+
+    // "관계궁합" 카드 이후에 이어지는 심층 설명(년지/일지 궁합), 서포트 노트,
+    // 데이트 아이디어, 꽃말 상세 설명은 이미지에서 제외
+    ['#deepCompat', '#supportNote', '#recDateIdeasBlock', '#flowerMeaningDetails']
+      .forEach(sel => { const el = clone.querySelector(sel); if (el) el.remove(); });
+
+    const sandbox = document.createElement('div');
+    sandbox.className = 'capture-sandbox';
+    sandbox.appendChild(clone);
+    document.body.appendChild(sandbox);
+
+    try {
+      const canvas = await html2canvas(sandbox, {
+        backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-void') || '#fbfbfc',
+        scale: Math.min(2, window.devicePixelRatio || 2),
+        useCORS: true,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      link.download = `season-궁합-${stamp}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      console.error(e);
+      alert('이미지를 저장하는 중 문제가 생겼어요: ' + e.message);
+    } finally {
+      document.body.removeChild(sandbox);
+      btn.disabled = false;
+      btn.innerHTML = originalLabel;
+    }
+  }
+
+  const saveImageBtn = document.getElementById('saveImageBtn');
+  if (saveImageBtn) {
+    saveImageBtn.addEventListener('click', () => handleSaveResultImage(saveImageBtn));
   }
 })();
