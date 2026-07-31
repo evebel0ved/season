@@ -10,36 +10,60 @@
     금: 'rgba(166,161,144,0.09)', 수: 'rgba(123,160,196,0.10)',
   };
 
+  let relationshipMode = 'lover';
+  let lastRenderPayload = null;
+
+  function hasFinalConsonant(value) {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    const code = text.charCodeAt(text.length - 1);
+    return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0;
+  }
+
+  function withSubjectParticle(value) {
+    const text = String(value || '').trim();
+    return text + (hasFinalConsonant(text) ? '이' : '가');
+  }
+
+
   // 일간 관계(상생/상극/동기/중립)에 대한 연인·친구 궁합 해설
   const RELATION_EXPLAIN = {
     상생: {
       emoji: '🌱',
       title: '상생 — 함께 있을수록 편안해지는 관계',
+      friendTitle: '상생 — 서로에게 힘이 되어주는 친구',
       lover: ['함께 있으면 서로 더 좋은 사람이 되는 느낌을 받아요', '자연스럽게 응원하고 챙겨주는 편이에요', '다퉈도 비교적 금방 마음을 풀어요', '서로의 장점을 더 잘 살려줘요'],
       friend: ['힘들 때 먼저 떠오르는 친구가 되기 쉬워요', '같이 있으면 기운이 나는 편이에요', '필요할 때 도움을 주고받으며 오래 이어져요'],
       quote: '너랑 있으면 내가 더 좋아지는 것 같아.',
+      friendQuote: '힘들 때 자연스럽게 서로를 찾게 돼.',
     },
     상극: {
       emoji: '⚔️',
       title: '상극 — 끌림도 크지만 부딪힐 때도 있어요',
+      friendTitle: '상극 — 친하지만 자주 티격태격하는 친구',
       lover: ['첫인상이 강렬하거나 빠르게 끌릴 수 있어요', '가치관이나 생활 방식의 차이가 눈에 잘 보여요', '서로 물러서지 않으면 자존심 싸움이 되기 쉬워요', '차이를 잘 맞춰가면 서로 많이 성장할 수 있어요'],
       friend: ['친해도 종종 티격태격할 수 있어요', '서로의 부족한 점을 빠르게 지적하는 편이에요', '가까운 만큼 피곤하게 느껴지는 순간도 있어요'],
       quote: '좋아하긴 하는데 왜 이렇게 싸우지?',
+      friendQuote: '친하긴 한데 만나면 꼭 한 번은 티격태격해.',
       caveat: '※ 상극이라고 해서 꼭 나쁜 관계는 아니에요. 서로 다른 점을 이해하는 과정에서 함께 성장하기도 해요.',
     },
     동기: {
       emoji: '🤝',
       title: '동기 — 닮은 점이 많아 금방 통하는 관계',
+      friendTitle: '동기 — 관심사와 반응이 비슷한 친구',
       lover: ['취향과 생각이 비슷한 부분이 많아요', '대화의 흐름이 잘 이어져요', '서로의 반응을 빠르게 이해해요', '둘 다 고집을 부리면 먼저 양보하기 어려울 수 있어요'],
       friend: ['가까운 친구가 되기 쉬워요', '같이 놀면 시간이 빠르게 가요', '관심사가 비슷해서 편하게 느껴져요'],
       quote: '너랑 있으면 나를 보는 것 같아.',
+      friendQuote: '설명하지 않아도 바로 알아듣는 친구야.',
     },
     중립: {
       emoji: '⚖️',
       title: '중립 — 천천히 편안해지는 관계',
+      friendTitle: '중립 — 부담 없이 오래 보기 좋은 친구',
       lover: ['크게 싸우지도, 감정이 급하게 달아오르지도 않아요', '안정적이지만 가끔은 심심하게 느껴질 수 있어요', '시간을 함께 보내면서 정이 깊어지는 편이에요'],
       friend: ['만나면 반갑지만 연락이 뜸할 수 있어요', '필요할 때 부담 없이 만날 수 있어요'],
       quote: '편하긴 한데, 엄청 특별한 느낌은 아니야.',
+      friendQuote: '오랜만에 만나도 어색하지 않은 친구야.',
     },
   };
   const RELATION_GENERAL_CAVEAT = '사주에서 이 관계를 볼 때는 오행 궁합 하나만으로 판단하지 않아요. 상극이라도 전체 사주가 잘 맞으면 좋은 인연이 될 수 있고, 상생이라도 다른 요소가 맞지 않으면 어려움을 겪을 수 있어요. 상생·상극은 두 사람 관계의 한 가지 성향을 보여주는 지표로 이해해주세요.';
@@ -270,16 +294,16 @@
     const daySignal = getJijiSignal(day);
 
     if (daySignal > 0 && yearSignal > 0) {
-      return `일지의 ${day.type}과 년지의 ${year.type}이 모두 좋은 방향으로 이어져요. 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬운 조합이에요.`;
+      return `일지 관계는 ${day.type}, 년지 관계는 ${year.type}에 해당해요. 두 관계 모두 좋은 흐름이라 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬워요.`;
     }
     if (daySignal > 0 && yearSignal < 0) {
-      return `둘만 있을 때의 정서적 호흡은 일지 ${day.type}으로 좋은 편이지만, 년지 ${year.type}의 영향으로 가족관계·사회생활·생활 습관에서는 차이가 커질 수 있어요. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
+      return `일지 관계에서는 ${day.type}의 편안함이 드러나 둘만 있을 때 정서적 호흡이 좋은 편이에요. 다만 년지 관계에서는 ${year.type}의 영향으로 가족관계·사회생활·생활 습관의 차이가 커질 수 있어요. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
     }
     if (daySignal < 0 && yearSignal > 0) {
-      return `겉으로 보이는 생활 방향과 사회적 호흡은 년지 ${year.type}으로 잘 맞지만, 가까워질수록 일지 ${day.type}의 긴장이 드러날 수 있어요. 바깥에서는 좋은 팀인데 사적인 감정 문제를 미루기 쉬운 조합이므로, 둘만의 대화 시간을 따로 확보하는 것이 좋아요.`;
+      return `년지 관계에서는 ${year.type}의 장점이 드러나 생활 방향과 사회적 호흡이 잘 맞아요. 다만 가까워질수록 일지 관계의 ${day.type} 긴장이 드러날 수 있어요. 바깥에서는 좋은 팀인데 사적인 감정 문제를 미루기 쉬우니 둘만의 대화 시간을 따로 확보하는 편이 좋아요.`;
     }
     if (daySignal < 0 && yearSignal < 0) {
-      return `일지 ${day.type}과 년지 ${year.type}이 모두 마찰 신호를 보여, 감정 표현과 생활 방식 양쪽에서 차이가 반복될 가능성이 있어요. 끌림이 강하더라도 관계 규칙을 구체적으로 정하지 않으면 같은 갈등이 되풀이될 수 있어요.`;
+      return `일지 관계는 ${day.type}, 년지 관계는 ${year.type}에 해당해요. 두 관계 모두 마찰 신호가 있어 감정 표현과 생활 방식의 차이가 반복될 수 있어요. 끌림이 강하더라도 관계 규칙을 구체적으로 정하지 않으면 같은 갈등이 되풀이될 수 있어요.`;
     }
     if (day.type === '동일' || year.type === '동일') {
       return `지지에 동일 관계가 있어 익숙함과 친밀감이 빠르게 생기기 쉬워요. 다만 비슷한 약점과 생활 습관도 함께 증폭될 수 있어, 서로가 못하는 부분을 상대가 자동으로 채워줄 것이라 기대하지 않는 편이 좋아요.`;
@@ -325,22 +349,40 @@
     if (direction === 'aControlsB' || direction === 'bControlsA') {
       const controller = direction === 'aControlsB' ? profileA : profileB;
       const receiver = direction === 'aControlsB' ? profileB : profileA;
-      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하고, ${receiver.name}님은 통제받는다고 느끼는 상황이 반복될 수 있어요.`);
+      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하면, ${receiver.name}님은 자신의 방식이 무시되거나 통제받는다고 느낄 수 있어요.`);
     } else if (direction === 'same') {
-      base.push('두 사람이 같은 논리와 감정으로 동시에 버티면 작은 문제가 자존심 대결로 길어질 수 있어요.');
+      base.push('두 사람이 비슷한 논리와 감정으로 동시에 버티면 작은 문제가 자존심 대결로 길어질 수 있어요.');
     } else if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
       const giver = direction === 'aGeneratesB' ? profileA : profileB;
       const receiver = direction === 'aGeneratesB' ? profileB : profileA;
-      base.push(`${giver.name}님이 계속 이해하고 북돋우다가 먼저 지치고, ${receiver.name}님은 그 사실을 늦게 알아차릴 수 있어요.`);
+      base.push(`${giver.name}님이 계속 이해하고 분위기를 맞추다가 먼저 지칠 수 있고, ${receiver.name}님은 그 피로를 뒤늦게 알아차릴 수 있어요.`);
     } else {
-      base.push('서로를 나쁘게 생각하지 않아도 기대하는 방식이 달라, 말하지 않고 기다리다가 서운함이 쌓일 수 있어요.');
+      base.push('서로를 나쁘게 생각하지 않아도 기대하는 표현 방식이 달라, 먼저 말하지 않고 기다리다가 서운함이 쌓일 수 있어요.');
     }
 
-    if (dayTone === 'clash') base.push('특히 감정이 가까워질수록 즉각 반응하지 말고, 사실·감정·요청을 나누어 말하는 방식이 잘 맞아요.');
-    else if (dayTone === 'friction') base.push('큰 사건보다 잔소리, 말투, 연락 속도 같은 작은 마찰을 그날그날 짧게 풀어두는 게 좋아요.');
+    if (profileA.dominant === profileB.dominant) {
+      base.push(`두 사람 모두 ${profileA.dominant}(${OHAENG_HANJA[profileA.dominant]}) 성향이 강해서 잘 맞는 부분은 빠르게 통하지만, 같은 약점이 드러나는 순간에는 먼저 물러설 사람이 없어질 수 있어요.`);
+    } else {
+      base.push(`${profileA.name}님은 ‘${profileA.trait.love}’를 중요하게 느끼고, ${profileB.name}님은 ‘${profileB.trait.love}’를 중요하게 느껴요. 상대가 원하는 방식과 내가 표현하는 방식이 다르면 충분히 사랑받지 못한다고 오해할 수 있어요.`);
+    }
 
-    if (yearTone === 'clash' || yearTone === 'friction') base.push('가족, 돈, 시간 사용, 공개적인 관계 방식은 초기에 기준을 맞춰두는 것이 좋아요.');
-    return base;
+    base.push(`갈등이 생겼을 때 ${profileA.name}님에게는 ${profileA.trait.shadow}가, ${profileB.name}님에게는 ${profileB.trait.shadow}가 나타나기 쉬워요. 두 반응이 동시에 나오면 대화의 내용보다 말투와 태도 때문에 싸움이 커질 수 있어요.`);
+
+    if (dayTone === 'clash') {
+      base.push('가까운 사이일수록 즉시 답을 요구하거나 감정적으로 결론을 내리기 쉬워요. 사실, 느낀 감정, 원하는 행동을 한 문장씩 나누어 말하는 편이 좋아요.');
+    } else if (dayTone === 'friction') {
+      base.push('큰 사건보다 잔소리, 말투, 답장 속도, 약속 변경처럼 작은 일이 반복되면서 피로가 쌓일 수 있어요. 불편했던 일을 그날 짧게 말하고 넘기는 습관이 필요해요.');
+    } else {
+      base.push('크게 싸우지 않는 대신 불편한 일을 대충 넘기기 쉬워요. 괜찮다고 말하기 전에 정말 괜찮은지 한 번 더 확인하면 뒤늦은 폭발을 줄일 수 있어요.');
+    }
+
+    if (yearTone === 'clash' || yearTone === 'friction') {
+      base.push('가족과 친구를 만나는 방식, 돈을 쓰는 기준, 주말 시간을 보내는 방식에서 차이가 드러날 수 있어요. 감정이 좋을 때 미리 기준을 맞춰두는 편이 좋아요.');
+    } else {
+      base.push('데이트 일정과 연락을 한 사람이 계속 정하면 편한 사람과 부담을 떠안는 사람이 나뉠 수 있어요. 장소 선택과 약속 준비를 번갈아 맡아보세요.');
+    }
+
+    return [...new Set(base)].slice(0, 5);
   }
 
   function buildRelationshipFlow(profileA, profileB, compat) {
@@ -368,8 +410,8 @@
 
   function buildActionTips(profileA, profileB, direction, compat) {
     const tips = [];
-    tips.push(`${profileA.name}님에게는 ${profileA.trait.repair}이 효과가 좋아요.`);
-    tips.push(`${profileB.name}님에게는 ${profileB.trait.repair}이 효과가 좋아요.`);
+    tips.push(`${profileA.name}님과 이야기할 때는 ‘${profileA.trait.repair}’ 방식을 써보세요.`);
+    tips.push(`${profileB.name}님과 이야기할 때는 ‘${profileB.trait.repair}’ 방식을 써보세요.`);
 
     if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
       tips.push('배려를 받은 사람이 “고마워”에서 끝내지 않고, 다음 행동으로 되돌려주는 순환을 만드는 것이 좋아요.');
@@ -521,24 +563,25 @@
     `;
   }
 
-  function relationExplainHtml(relationKey, nameA, nameB) {
+  function relationExplainHtml(relationKey, nameA, nameB, mode) {
     const r = RELATION_EXPLAIN[relationKey];
     if (!r) return '';
+    const selectedMode = mode === 'friend' ? 'friend' : 'lover';
+    const list = r[selectedMode] || [];
     const li = arr => arr.map(x => `<li>${x}</li>`).join('');
     const namesLabel = (nameA && nameB) ? `${escapeHtml(nameA)} · ${escapeHtml(nameB)}` : '';
+    const modeLabel = selectedMode === 'lover' ? '연인으로 보면 ❤️' : '친구로 보면 🤝';
+    const displayTitle = selectedMode === 'friend' ? (r.friendTitle || r.title) : r.title;
+    const quote = selectedMode === 'lover' ? r.quote : (r.friendQuote || '함께 있을 때 편안한 관계예요.');
     return `
-      <div class="re-heading">${r.emoji} ${r.title}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
-      <div class="re-lover-friend">
+      <div class="re-heading">${r.emoji} ${displayTitle}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
+      <div class="re-lover-friend re-single-mode">
         <div class="re-block">
-          <div class="re-label">연인 ❤️</div>
-          <ul>${li(r.lover)}</ul>
-        </div>
-        <div class="re-block">
-          <div class="re-label">친구 🤝</div>
-          <ul>${li(r.friend)}</ul>
+          <div class="re-label">${modeLabel}</div>
+          <ul>${li(list)}</ul>
         </div>
       </div>
-      <div class="re-quote">"${r.quote}"</div>
+      <div class="re-quote">"${quote}"</div>
       ${r.caveat ? `<div class="re-block" style="margin-top:10px;">${r.caveat}</div>` : ''}
       <div class="re-caveat">${RELATION_GENERAL_CAVEAT}</div>
     `;
@@ -665,10 +708,78 @@
   // ---------------------------------------------------------------
   // 계산 실행
   // ---------------------------------------------------------------
+
+
+  function ensureRelationshipModeSelector(calcButton) {
+    if (!calcButton || document.getElementById('relationshipModeSelector')) return;
+    const style = document.createElement('style');
+    style.id = 'relationship-mode-styles';
+    style.textContent = `
+      .relationship-mode-wrap{margin:18px 0 16px;padding:14px 15px;border:1px solid rgba(163,128,63,.18);border-radius:15px;background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(163,128,63,.055))}
+      .relationship-mode-title{font-weight:800;font-size:14px;color:#5d503d;margin-bottom:10px}
+      .relationship-mode-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .relationship-mode-option{position:relative;cursor:pointer}
+      .relationship-mode-option input{position:absolute;opacity:0;pointer-events:none}
+      .relationship-mode-option span{display:flex;align-items:center;justify-content:center;min-height:42px;border:1px solid rgba(107,99,85,.18);border-radius:12px;background:rgba(255,255,255,.72);font-size:14px;font-weight:700;color:#6a6257;transition:.18s ease}
+      .relationship-mode-option input:checked + span{border-color:rgba(163,128,63,.48);background:rgba(163,128,63,.12);color:#654d25;box-shadow:0 4px 13px rgba(79,73,63,.06)}
+      .relationship-mode-note{margin-top:8px;font-size:11.5px;line-height:1.55;color:#7a7267}
+      .re-single-mode{grid-template-columns:1fr!important}
+      #result.friend-result-mode .lover-only-block{display:none!important}
+    `;
+    document.head.appendChild(style);
+
+    const wrap = document.createElement('div');
+    wrap.id = 'relationshipModeSelector';
+    wrap.className = 'relationship-mode-wrap';
+    wrap.innerHTML = `
+      <div class="relationship-mode-title">두 사람은 어떤 관계인가요?</div>
+      <div class="relationship-mode-options">
+        <label class="relationship-mode-option"><input type="radio" name="relationshipMode" value="lover" checked><span>연인 ❤️</span></label>
+        <label class="relationship-mode-option"><input type="radio" name="relationshipMode" value="friend"><span>친구 🤝</span></label>
+      </div>
+      <div class="relationship-mode-note">친구를 선택하면 친구 관계 해설만 보여드려요. 연애·데이트 관련 추가 해설은 연인 선택에서만 확인할 수 있어요.</div>
+    `;
+    calcButton.parentNode.insertBefore(wrap, calcButton);
+
+    wrap.querySelectorAll('input[name="relationshipMode"]').forEach(input => {
+      input.addEventListener('change', event => {
+        relationshipMode = event.target.value === 'friend' ? 'friend' : 'lover';
+        if (lastRenderPayload) {
+          renderResult(...lastRenderPayload);
+        }
+      });
+    });
+  }
+
+  function markLoverOnlyBlocks() {
+    const result = document.getElementById('result');
+    if (!result) return;
+    result.classList.toggle('friend-result-mode', relationshipMode === 'friend');
+
+    const recHero = document.getElementById('recHero');
+    const relationBody = document.getElementById('relationExplainBody');
+    const recParent = recHero?.parentElement;
+    if (recParent && recParent.id !== 'result' && !(relationBody && recParent.contains(relationBody))) {
+      recParent.classList.add('lover-only-block');
+    }
+
+    ['deepCompat', 'recHero', 'recTime', 'recTimeDetail', 'recColors', 'recFlowers', 'recPlaces', 'supportNote', 'recDateIdeasBlock', 'flowerMeaningDetails']
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const block = id === 'deepCompat' || id === 'recHero' || id === 'supportNote' || id === 'recDateIdeasBlock' || id === 'flowerMeaningDetails'
+          ? el
+          : (el.parentElement || el);
+        block.classList.add('lover-only-block');
+      });
+  }
+
   const calcBtn = document.getElementById('calcBtn');
   const errorMsg = document.getElementById('errorMsg');
   const loading = document.getElementById('loading');
   const resultEl = document.getElementById('result');
+
+  ensureRelationshipModeSelector(calcBtn);
 
   calcBtn.addEventListener('click', () => {
     errorMsg.textContent = '';
@@ -856,20 +967,53 @@
     const style = document.createElement('style');
     style.id = 'flower-recommendation-styles';
     style.textContent = `
-      .flower-meaning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%;margin-top:2px}
-      .flower-meaning-card{min-width:0;padding:12px 13px;border:1px solid rgba(163,128,63,.18);border-radius:13px;background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(163,128,63,.055));box-shadow:0 4px 13px rgba(79,73,63,.035)}
-      .flower-meaning-name{font-weight:800;font-size:14px;color:#594b34;line-height:1.4}
-      .flower-meaning-theme{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;background:rgba(163,128,63,.10);color:#765d32;font-size:11px;line-height:1.35}
-      .flower-meaning-text{margin-top:8px;font-size:12.5px;line-height:1.58;color:#514c44}
-      .flower-meaning-text b{color:#7a5d2e}
-      .flower-meaning-reason{margin-top:7px;padding-top:7px;border-top:1px dashed rgba(107,99,85,.16);font-size:11.5px;line-height:1.55;color:#71695d}
-      @media (max-width:760px){.flower-meaning-grid{grid-template-columns:1fr}}
+      .rec-date-ideas{margin-top:12px;padding:14px 15px;border:1px solid rgba(163,128,63,.18);border-radius:14px;background:rgba(255,255,255,.58)}
+      .rec-extra-title{display:flex;align-items:center;gap:7px;margin-bottom:9px;font-size:14px;font-weight:800;color:#6b5328}
+      .rec-extra-title::before{content:'';width:6px;height:6px;border-radius:50%;background:#a3803f;box-shadow:0 0 0 4px rgba(163,128,63,.09)}
+      .rec-date-list{margin:0;padding-left:20px;line-height:1.72;color:#554f46;font-size:13px}
+      .flower-detail-section{margin-top:16px;padding:15px 16px;border:1px solid rgba(163,128,63,.20);border-radius:15px;background:linear-gradient(135deg,rgba(163,128,63,.065),rgba(255,255,255,.65))}
+      .flower-detail-title{font-size:15px;font-weight:800;color:#5f4d2f;margin-bottom:11px}
+      .flower-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+      .flower-detail-item{min-width:0;padding:12px 13px;border:1px solid rgba(107,99,85,.14);border-radius:13px;background:rgba(255,255,255,.72);box-shadow:0 4px 13px rgba(79,73,63,.035)}
+      .flower-detail-name{font-weight:800;font-size:14px;color:#594b34;line-height:1.4}
+      .flower-detail-row{margin-top:8px;font-size:12.5px;line-height:1.6;color:#514c44}
+      .flower-detail-row b{display:block;margin-bottom:2px;color:#7a5d2e;font-size:11.5px}
+      .flower-detail-reason{padding-top:8px;border-top:1px dashed rgba(107,99,85,.16)}
+      @media (max-width:760px){.flower-detail-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(style);
   }
 
+  function ensureDateIdeasBlock() {
+    let block = document.getElementById('recDateIdeasBlock');
+    if (block) return block;
+    const placesEl = document.getElementById('recPlaces');
+    if (!placesEl) return null;
+    block = document.createElement('div');
+    block.id = 'recDateIdeasBlock';
+    block.className = 'rec-date-ideas lover-only-block';
+    block.innerHTML = '<div class="rec-extra-title">추천하는 데이트</div><ul id="recDateIdeas" class="rec-date-list"></ul>';
+    const anchor = placesEl.parentElement || placesEl;
+    anchor.insertAdjacentElement('afterend', block);
+    return block;
+  }
+
+  function ensureFlowerMeaningDetails() {
+    let section = document.getElementById('flowerMeaningDetails');
+    if (section) return section;
+    const supportNote = document.getElementById('supportNote');
+    if (!supportNote) return null;
+    section = document.createElement('section');
+    section.id = 'flowerMeaningDetails';
+    section.className = 'flower-detail-section lover-only-block';
+    supportNote.insertAdjacentElement('afterend', section);
+    return section;
+  }
+
   function renderResult(entryA, entryB, rec, inputA, inputB) {
+    lastRenderPayload = [entryA, entryB, rec, inputA, inputB];
     const anyApprox = !!(entryA.approx || entryB.approx);
+    const isLover = relationshipMode === 'lover';
 
     document.getElementById('pillarsDividerLabel').textContent = anyApprox ? '오행 경향 추정' : '사주팔자 명식';
 
@@ -911,24 +1055,31 @@
       document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
       explainEl.innerHTML =
         '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계는 단정하지 않아요. 대신 현재 확인 가능한 오행 경향만으로 제한적인 참고 궁합을 보여드려요.</div>' +
-        buildApproxCompatHtml(entryA, entryB, nameA, nameB);
+        (isLover ? buildApproxCompatHtml(entryA, entryB, nameA, nameB) : '');
       // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
       deepCompatEl.style.display = 'none';
     } else {
-      const relationLabels = {
+      const loverRelationLabels = {
         상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
         상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
         동기: `${nameA}님과 ${nameB}님은 반응 방식이 비슷한 동기(同氣) 관계예요`,
-        중립: `${nameA}님과 ${nameB}님은 특별한 상호작용 없이 독립적인 관계예요`,
+        중립: `${nameA}님과 ${nameB}님은 천천히 가까워지는 중립 관계예요`,
       };
+      const friendRelationLabels = {
+        상생: `${nameA}님과 ${nameB}님은 서로 힘이 되어주는 친구 관계예요`,
+        상극: `${nameA}님과 ${nameB}님은 친해도 자주 티격태격할 수 있는 친구 관계예요`,
+        동기: `${nameA}님과 ${nameB}님은 관심사와 반응이 비슷한 친구 관계예요`,
+        중립: `${nameA}님과 ${nameB}님은 부담 없이 오래 보기 좋은 친구 관계예요`,
+      };
+      const relationLabels = isLover ? loverRelationLabels : friendRelationLabels;
       document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
       explainEl.innerHTML =
-        relationExplainHtml(rec.compat.relation, nameA, nameB) +
-        buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB);
+        relationExplainHtml(rec.compat.relation, nameA, nameB, relationshipMode) +
+        (isLover ? buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB) : '');
 
-      // 더 깊이 본 궁합: 년지(띠)/일지(부부궁) 관계 + 서로에게 도움이 되는 방식
-      renderDeepCompat(rec.compat, nameA, nameB);
-      deepCompatEl.style.display = 'block';
+      // 년지(띠)/일지(부부궁)와 연애용 심층 해설은 연인 선택에서만 보여줘요.
+      if (isLover) renderDeepCompat(rec.compat, nameA, nameB);
+      deepCompatEl.style.display = isLover ? 'block' : 'none';
     }
 
     // 메인 추천
@@ -949,21 +1100,20 @@
     const flowerDetails = Array.isArray(p.flowerDetails) && p.flowerDetails.length
       ? p.flowerDetails
       : (p.flowers || []).map(name => ({ name, meaning: '', theme: '', reason: '' }));
-    flowersEl.innerHTML = `
-      <div class="flower-meaning-grid">
-        ${flowerDetails.map(item => `
-          <div class="flower-meaning-card">
-            <div class="flower-meaning-name">${escapeHtml(item.name)}</div>
-            ${item.theme ? `<span class="flower-meaning-theme">${escapeHtml(item.theme)}</span>` : ''}
-            ${item.meaning ? `<div class="flower-meaning-text"><b>꽃말</b> · ${escapeHtml(item.meaning)}</div>` : ''}
-            ${item.reason ? `<div class="flower-meaning-reason">${escapeHtml(item.reason)}</div>` : ''}
-          </div>
-        `).join('')}
-      </div>
-    `;
+    flowersEl.innerHTML = flowerDetails.map(item => `<span class="tag">${escapeHtml(item.name)}</span>`).join('');
 
     const placesEl = document.getElementById('recPlaces');
-    placesEl.innerHTML = p.places.map(pl => `<span class="tag">${pl}</span>`).join('');
+    placesEl.innerHTML = (p.places || []).map(pl => `<span class="tag">${escapeHtml(pl)}</span>`).join('');
+
+    const dateIdeasBlock = ensureDateIdeasBlock();
+    const dateIdeasEl = document.getElementById('recDateIdeas');
+    const dateIdeas = Array.isArray(p.dateIdeas) && p.dateIdeas.length
+      ? p.dateIdeas
+      : [p.dateTip].filter(Boolean);
+    if (dateIdeasEl) {
+      dateIdeasEl.innerHTML = dateIdeas.map(idea => `<li>${escapeHtml(idea)}</li>`).join('');
+    }
+    if (dateIdeasBlock) dateIdeasBlock.style.display = dateIdeas.length ? '' : 'none';
 
     // 글로우 컬러
     document.getElementById('recHero').style.setProperty('--accent-glow', OHAENG_GLOW[rec.primaryOhaeng]);
@@ -978,24 +1128,37 @@
       수: '서둘러 결론을 내리지 않고 서로의 이야기를 끝까지 듣는 모습',
     }[rec.primaryOhaeng];
 
-    const primarySummary = escapeHtml(p.summary || fallbackSummary);
+    const primarySummaryRaw = p.summary || fallbackSummary;
+    const primarySummary = escapeHtml(withSubjectParticle(primarySummaryRaw));
     const primaryPlaces = (p.places || []).slice(0, 2).map(escapeHtml).join(' 또는 ');
     const primaryColors = (p.colors || []).slice(0, 2).map(escapeHtml).join('·');
-    const primaryTip = escapeHtml(p.dateTip || '');
-    const supportPlace = escapeHtml((s.places || [])[0] || '');
-    const supportTip = escapeHtml(s.dateTip || '');
-
     let note =
-      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${primarySummary}</b>이 상대적으로 덜 나타나는 편이에요. ` +
-      `${primaryPlaces ? `${primaryPlaces}처럼 실제로 함께 움직이거나 머물 수 있는 데이트를 골라보세요. ` : ''}` +
+      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${primarySummary}</b> 상대적으로 덜 나타나는 편이에요. ` +
+      `${primaryPlaces ? `추천 장소는 ${primaryPlaces} 중에서 골라보세요. ` : ''}` +
       `${primaryColors ? `옷이나 작은 소품은 ${primaryColors} 계열 중 하나만 가볍게 활용해도 충분해요. ` : ''}` +
-      `${primaryTip ? `<br><b>이번 데이트에서 해볼 일:</b> ${primaryTip}` : ''}` +
-      `${supportPlace || supportTip ? `<br><b>분위기를 바꾸고 싶을 때:</b> ${supportPlace ? `${supportPlace}도 잘 맞아요. ` : ''}${supportTip}` : ''}` +
-      `<br><span style="opacity:.78;">같은 부족 오행이 나오더라도 두 사람의 일간 관계, 강한 오행, 년지·일지 관계가 다르면 시간·색상·꽃·장소와 실천 팁도 달라져요.</span>`;
+      `<br><span style="opacity:.78;">아래 추천은 두 사람의 일간 관계, 강한 오행, 년지·일지 관계를 함께 반영한 결과예요.</span>`;
     if (anyApprox) {
       note += ' <span style="opacity:.78;">연도 미상 추정치를 포함한 결과예요.</span>';
     }
     document.getElementById('supportNote').innerHTML = note;
+
+    const flowerMeaningSection = ensureFlowerMeaningDetails();
+    if (flowerMeaningSection) {
+      flowerMeaningSection.innerHTML = `
+        <div class="flower-detail-title">추천 꽃에 담긴 의미</div>
+        <div class="flower-detail-grid">
+          ${flowerDetails.map(item => `
+            <article class="flower-detail-item">
+              <div class="flower-detail-name">${escapeHtml(item.name)}</div>
+              <div class="flower-detail-row"><b>꽃말</b>${escapeHtml(item.meaning || '두 사람에게 필요한 마음을 담은 꽃이에요.')}</div>
+              <div class="flower-detail-row flower-detail-reason"><b>추천 이유</b>${escapeHtml(item.reason || '두 사람의 관계 흐름과 잘 어울려 추천했어요.')}</div>
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    markLoverOnlyBlocks();
   }
 
   // 년지(띠)/일지(부부궁) 관계 뱃지와 서로에게 도움이 되는 방식를 렌더링
