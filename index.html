@@ -780,4 +780,191 @@
       <div class="photo-upload-actions">
         <input type="file" id="couple-photo" accept="image/*" style="display:none;">
         <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
-        <button type="button" class="photo-remove-btn" id="couple-photo-remove" sty
+        <button type="button" class="photo-remove-btn" id="couple-photo-remove" style="display:none;">제거</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="input-stage">
+    <div class="person-card person-a">
+      <div class="person-label">Person A</div>
+      <div class="field" style="margin-bottom:20px;">
+        <label for="a-name">이름 (선택)</label>
+        <input type="text" id="a-name" placeholder="첫 번째 사람" maxlength="12" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="a-date">생년월일 (양력)</label>
+        <div class="field-row">
+          <select id="a-year"></select>
+          <select id="a-month"></select>
+          <select id="a-day"></select>
+        </div>
+        <div class="year-unknown-row">
+          <input type="checkbox" id="a-year-unknown">
+          <label for="a-year-unknown" style="margin:0;">태어난 연도를 몰라요 (월/일만으로 경향 추정)</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="a-time">태어난 시각</label>
+        <div class="field-row-time">
+          <select id="a-hour"></select>
+          <select id="a-minute"></select>
+        </div>
+        <div class="unknown-time">
+          <input type="checkbox" id="a-unknown">
+          <label for="a-unknown" style="margin:0;">태어난 시간을 몰라요 (정오 12시로 계산)</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector">×</div>
+
+    <div class="person-card person-b">
+      <div class="person-label">Person B</div>
+      <div class="field" style="margin-bottom:20px;">
+        <label for="b-name">이름 (선택)</label>
+        <input type="text" id="b-name" placeholder="두 번째 사람" maxlength="12" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="b-date">생년월일 (양력)</label>
+        <div class="field-row">
+          <select id="b-year"></select>
+          <select id="b-month"></select>
+          <select id="b-day"></select>
+        </div>
+        <div class="year-unknown-row">
+          <input type="checkbox" id="b-year-unknown">
+          <label for="b-year-unknown" style="margin:0;">태어난 연도를 몰라요 (월/일만으로 경향 추정)</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="b-time">태어난 시각</label>
+        <div class="field-row-time">
+          <select id="b-hour"></select>
+          <select id="b-minute"></select>
+        </div>
+        <div class="unknown-time">
+          <input type="checkbox" id="b-unknown">
+          <label for="b-unknown" style="margin:0;">태어난 시간을 몰라요 (정오 12시로 계산)</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta-row">
+    <button class="primary" id="calcBtn">사주 계산하기</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="loading-overlay" id="loading">
+    <div class="spin"></div>
+    <div>육십갑자를 맞춰보는 중…</div>
+  </div>
+
+  <div id="result">
+
+    <div class="divider"><span id="pillarsDividerLabel">사주팔자 명식</span></div>
+    <div class="approx-note" id="approxNote" style="display:none;"></div>
+    <div class="pillars-section">
+      <div class="pillars-grid">
+        <div class="pillar-card" id="pillarCardA">
+          <h3 id="pillarTitleA">Person A</h3>
+          <div class="pillar-chars" id="pillarCharsA"></div>
+          <div class="ohaeng-bar" id="ohaengBarA"></div>
+        </div>
+        <div class="pillar-card" id="pillarCardB">
+          <h3 id="pillarTitleB">Person B</h3>
+          <div class="pillar-chars" id="pillarCharsB"></div>
+          <div class="ohaeng-bar" id="ohaengBarB"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wheel-section">
+      <div class="wheel-title">두 사람의 오행 분포</div>
+      <div class="wheel-desc">여덟 글자씩, 총 열여섯 글자에 담긴 기운의 균형입니다</div>
+      <svg id="wheelSvg" viewBox="0 0 400 400"></svg>
+    </div>
+
+    <div class="divider"><span>추천 궁합 기운</span></div>
+
+    <div class="rec-hero" id="recHero">
+      <div class="rec-photo-wrap" id="recPhotoWrap" style="display:none;">
+        <div class="rec-photo-frame" id="recPhotoFrame"><div class="rec-photo-inner" id="recPhotoInner"></div></div>
+      </div>
+      <div class="relation-badge" id="relationBadge"></div>
+      <div class="rec-kicker">What you both need most</div>
+      <div class="rec-hanja" id="recHanja"></div>
+      <div class="rec-season" id="recSeason"></div>
+      <div class="rec-keyword" id="recKeyword"></div>
+
+      <div class="rec-details">
+        <div class="rec-detail-card">
+          <div class="dk">Time · 시간대</div>
+          <div class="dv" id="recTime"></div>
+          <div class="dv-sub" id="recTimeDetail"></div>
+        </div>
+        <div class="rec-detail-card">
+          <div class="dk">Color · 색상</div>
+          <div class="tag-list" id="recColors"></div>
+        </div>
+        <div class="rec-detail-card">
+          <div class="dk">Flower · 꽃</div>
+          <div class="tag-list" id="recFlowers"></div>
+        </div>
+        <div class="rec-detail-card" style="text-align:left;">
+          <div class="dk">Place · 추천 장소</div>
+          <div class="tag-list" id="recPlaces"></div>
+        </div>
+      </div>
+
+      <div class="rec-detail-card relation-explain" id="relationExplain" style="text-align:left; margin-top:20px;">
+        <div class="dk" id="relationExplainTitle">Relation · 관계 궁합</div>
+        <div class="relation-explain-body" id="relationExplainBody"></div>
+      </div>
+
+      <div class="deep-compat" id="deepCompat" style="display:none;">
+        <div class="dc-title">🧭 더 깊이 본 궁합</div>
+        <div class="dc-grid">
+          <div class="dc-item" id="dcYearItem">
+            <div class="dc-label">Year Branch · 띠 궁합 (년지)</div>
+            <div id="dcYearBadge"></div>
+            <div class="dc-desc" id="dcYearDesc"></div>
+          </div>
+          <div class="dc-item" id="dcDayItem">
+            <div class="dc-label">Day Branch · 부부궁 궁합 (일지)</div>
+            <div id="dcDayBadge"></div>
+            <div class="dc-desc" id="dcDayDesc"></div>
+          </div>
+        </div>
+        <div class="dc-complement" id="dcComplement"></div>
+      </div>
+
+      <div class="support-note" id="supportNote"></div>
+    </div>
+
+    <div class="save-image-row">
+      <button class="secondary" id="saveImageBtn" type="button">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        결과 이미지로 저장
+      </button>
+      <div class="save-image-note">추천 궁합 기운 요약까지만 이미지로 저장돼요</div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div>오행 배속 이론(계절·시간·색·방위)을 바탕으로 색상·꽃·장소를 현대적으로 해석해 구성했습니다. 재미로 즐겨주세요.</div>
+  <div style="margin-top:6px;">절기 계산은 천문 근사식을 사용하여, 절입 시각 당일 출생인 경우 ±1시간 오차가 있을 수 있습니다.</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="saju-core-browser.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
