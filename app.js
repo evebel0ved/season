@@ -109,6 +109,14 @@
   };
   const RELATION_GENERAL_CAVEAT = '사주에서 이 관계를 볼 때는 오행 궁합 하나만으로 판단하지 않아요. 상극이라도 전체 사주가 잘 맞으면 좋은 인연이 될 수 있고, 상생이라도 다른 요소가 맞지 않으면 어려움을 겪을 수 있어요. 상생·상극은 두 사람 관계의 한 가지 성향을 보여주는 지표로 이해해주세요.';
 
+
+  const RELATION_SUMMARY_TEXT = {
+    상생: '🌱 서로를 자연스럽게 북돋는 사이예요',
+    상극: '⚡ 강하게 끌리지만 자주 부딪힐 수 있어요',
+    동기: '🪞 닮은 점이 많아 쉽게 통하는 사이예요',
+    중립: '🍃 부담 없이 편안한 사이예요',
+  };
+
   // 지지(地支) 관계 유형별 부가 설명 — getJijiRelation()의 결과(type)에 매칭
   const JIJI_RELATION_DESC = {
     육합: '두 지지가 짝을 이뤄 화합하는 자리예요. 함께 있으면 자연스럽게 안정감이 들고, 큰 노력 없이도 손발이 잘 맞는 궁합으로 봐요.',
@@ -688,10 +696,10 @@
     const li = arr => arr.map(x => `<li>${x}</li>`).join('');
     const namesLabel = (nameA && nameB) ? `${escapeHtml(nameA)} · ${escapeHtml(nameB)}` : '';
     const modeLabel = selectedMode === 'lover' ? '연인으로 보면 ❤️' : '친구로 보면 🤝';
-    const displayTitle = selectedMode === 'friend' ? (r.friendTitle || r.title) : r.title;
+    const displayTitle = RELATION_SUMMARY_TEXT[relationKey] || `${r.emoji} ${selectedMode === 'friend' ? (r.friendTitle || r.title) : r.title}`;
     const quote = selectedMode === 'lover' ? r.quote : (r.friendQuote || '함께 있을 때 편안한 관계예요.');
     return `
-      <div class="re-heading">${r.emoji} ${displayTitle}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
+      <div class="re-heading">${displayTitle}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
       <div class="re-lover-friend re-single-mode">
         <div class="re-block">
           <div class="re-label">${modeLabel}</div>
@@ -919,10 +927,19 @@
   const loading = document.getElementById('loading');
   const resultEl = document.getElementById('result');
 
-  // 모바일·태블릿에서도 결과값은 PC 레이아웃(992px)을 그대로 유지한 채
-  // 화면 너비에 맞춰 결과 영역 전체를 같은 비율로 축소합니다.
+  // 데스크톱은 기존 992px 결과를 유지하고, 모바일·태블릿은 1200px 기준의
+  // 더 촘촘한 동일 레이아웃을 화면 폭에 맞춰 축소합니다. 저장 이미지도 같은 기준을 사용합니다.
   const RESULT_DESKTOP_WIDTH = 992;
+  const RESULT_MOBILE_WIDTH = 1200;
   let resultScaleFrame = 0;
+
+  function usesMobileResultLayout() {
+    return isMobileOrTabletDevice() || (window.innerWidth || 0) <= 900;
+  }
+
+  function getCurrentResultLayoutWidth() {
+    return usesMobileResultLayout() ? RESULT_MOBILE_WIDTH : RESULT_DESKTOP_WIDTH;
+  }
 
   function updateResultDesktopScale() {
     if (!resultEl) return;
@@ -935,12 +952,16 @@
       ? parent.clientWidth - horizontalPadding
       : (window.innerWidth || RESULT_DESKTOP_WIDTH);
     const availableWidth = Math.max(240, Math.floor(parentInnerWidth));
-    const scale = Math.min(1, availableWidth / RESULT_DESKTOP_WIDTH);
+    const mobileLayout = usesMobileResultLayout();
+    const layoutWidth = mobileLayout ? RESULT_MOBILE_WIDTH : RESULT_DESKTOP_WIDTH;
+    const scale = Math.min(1, availableWidth / layoutWidth);
     const needsScale = scale < 0.999;
 
+    resultEl.dataset.resultLayoutWidth = String(layoutWidth);
+    resultEl.classList.toggle('result-mobile-layout', mobileLayout);
     resultEl.classList.toggle('result-desktop-layout', needsScale);
     if (needsScale) {
-      resultEl.style.width = `${RESULT_DESKTOP_WIDTH}px`;
+      resultEl.style.width = `${layoutWidth}px`;
       resultEl.style.maxWidth = 'none';
       resultEl.style.zoom = String(scale);
     } else {
@@ -1571,20 +1592,8 @@
       // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
       deepCompatEl.style.display = 'none';
     } else {
-      const loverRelationLabels = {
-        상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
-        상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
-        동기: `${nameA}님과 ${nameB}님은 반응 방식이 비슷한 동기(同氣) 관계예요`,
-        중립: `${nameA}님과 ${nameB}님은 천천히 가까워지는 중립 관계예요`,
-      };
-      const friendRelationLabels = {
-        상생: `${nameA}님과 ${nameB}님은 서로 힘이 되어주는 친구 관계예요`,
-        상극: `${nameA}님과 ${nameB}님은 친해도 자주 티격태격할 수 있는 친구 관계예요`,
-        동기: `${nameA}님과 ${nameB}님은 관심사와 반응이 비슷한 친구 관계예요`,
-        중립: `${nameA}님과 ${nameB}님은 부담 없이 오래 보기 좋은 친구 관계예요`,
-      };
-      const relationLabels = isLover ? loverRelationLabels : friendRelationLabels;
-      document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
+      document.getElementById('relationBadge').textContent =
+        RELATION_SUMMARY_TEXT[rec.compat.relation] || '🍃 부담 없이 편안한 사이예요';
       explainEl.innerHTML =
         relationExplainHtml(rec.compat.relation, nameA, nameB, relationshipMode) +
         (isLover ? buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB) : '');
@@ -1765,7 +1774,7 @@
       }
 
       .capture-sandbox .capture-clean {
-        width: 992px !important;
+        width: var(--capture-width, 992px) !important;
         margin: 0 !important;
         /* ::before 대신 실제 카드 배경에 계절색을 적용해 html2canvas 오류 방지 */
         background-color: #ffffff !important;
@@ -1796,11 +1805,11 @@
       /* 실제 기기 화면 폭과 무관하게 저장 이미지는 PC 레이아웃으로 고정 */
       .capture-sandbox .capture-clean .rec-hero-top.has-photo {
         display: grid !important;
-        grid-template-columns: 184px minmax(0, 1fr) !important;
+        grid-template-columns: 232px minmax(0, 1fr) !important;
         align-items: center !important;
         width: 100% !important;
         text-align: left !important;
-        gap: 40px !important;
+        gap: 68px !important;
       }
       .capture-sandbox .capture-clean .rec-hero-top.has-photo .rec-photo-wrap {
         margin: 0 !important;
@@ -1814,6 +1823,9 @@
       .capture-sandbox .capture-clean .dc-grid,
       .capture-sandbox .capture-clean .compat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      .capture-sandbox .capture-clean .relation-explain-body .re-lover-friend.re-single-mode {
+        grid-template-columns: 1fr !important;
       }
       .capture-sandbox .capture-clean .flower-detail-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1932,7 +1944,10 @@
     const clone = recHero.cloneNode(true);
     clone.removeAttribute('id');
     clone.classList.add('capture-clean');
+    const mobileResultLayout = resultEl?.classList.contains('result-mobile-layout') || usesMobileResultLayout();
+    if (mobileResultLayout) clone.classList.add('result-mobile-layout');
     clone.style.setProperty('--capture-accent-glow', accentGlow);
+    clone.style.setProperty('--capture-width', `${Number(resultEl?.dataset.resultLayoutWidth) || getCurrentResultLayoutWidth()}px`);
     clone.style.setProperty('--accent-glow', accentGlow);
     clone.style.borderRadius = '24px';
     clone.style.overflow = 'hidden';
@@ -1949,8 +1964,8 @@
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
 
-    /* 모바일·태블릿에서도 PC와 동일한 992px 레이아웃으로 저장 */
-    const captureWidth = RESULT_DESKTOP_WIDTH;
+    /* 현재 화면과 동일한 기준 폭으로 저장: 모바일·태블릿 1200px, 데스크톱 992px */
+    const captureWidth = Number(resultEl?.dataset.resultLayoutWidth) || getCurrentResultLayoutWidth();
     sandbox.style.width = `${captureWidth}px`;
     clone.style.width = `${captureWidth}px`;
     sandbox.appendChild(clone);
@@ -1975,7 +1990,8 @@
           if (!captured) return;
 
           /* 가상 요소 없이도 화면과 같은 계절색과 둥근 테두리가 저장되도록 고정 */
-          captured.style.width = `${captureWidth}px`;
+          captured.style.setProperty('width', `${captureWidth}px`, 'important');
+          captured.style.setProperty('--capture-width', `${captureWidth}px`);
           captured.style.maxWidth = 'none';
           captured.style.zoom = '1';
           captured.style.setProperty('--capture-accent-glow', accentGlow);
