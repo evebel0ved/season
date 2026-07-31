@@ -1565,6 +1565,8 @@
     const hasPhoto = !!(inputA.photo || inputB.photo);
     photoInner.innerHTML = hasPhoto ? `<img src="${inputA.photo || inputB.photo}" alt="${escapeHtml(nameA)} · ${escapeHtml(nameB)}">` : '';
     photoWrap.style.display = hasPhoto ? 'flex' : 'none';
+    const heroTopEl = document.getElementById('recHeroTop');
+    if (heroTopEl) heroTopEl.classList.toggle('has-photo', hasPhoto);
 
     document.getElementById('recTime').textContent = p.timeRange;
     document.getElementById('recTimeDetail').textContent = p.timeDetail;
