@@ -531,8 +531,10 @@
 
   /* ---------- Relation explanation (full-width third row) ---------- */
   .relation-explain {
-    /* 웜톤 상단 그라데이션 없이, Flower 카드 하단의 쿨톤 회색만 사용 */
-    background: #ececf0 !important;
+    /* Flower · 꽃 카드와 완전히 동일한 쿨톤 회색 */
+    position: relative;
+    z-index: 1;
+    background: var(--bg-panel-raised) !important;
     background-image: none !important;
     border: 1px solid var(--line);
   }
@@ -820,6 +822,172 @@
     .dc-grid { grid-template-columns: 1fr !important; gap: 12px; }
     .dc-title, .dc-item, .dc-complement, .support-note { text-align: left !important; }
     .dc-item .dc-desc, .dc-complement, .support-note { font-size: 12.5px; }
+  }
+
+  /* ---------- Mobile readability refinement ---------- */
+  @media (max-width: 900px) {
+    /* 결과 영역의 바깥 여백과 카드 안쪽 여백을 줄여 실제 글 영역을 넓힙니다. */
+    .wrap { padding-left: 10px !important; padding-right: 10px !important; }
+    #result { margin-top: 38px !important; }
+    #result .divider { margin: 34px 0 22px !important; }
+    #result .divider span {
+      font-size: 10.5px !important;
+      letter-spacing: 0.08em !important;
+    }
+
+    #result .pillar-card { padding: 16px 12px !important; }
+    #result .pillar-card h3 { font-size: 13.5px !important; }
+    #result .pillar-char .hanja { font-size: 17px !important; }
+    #result .pillar-char .hangul,
+    #result .pillar-meta { font-size: 10.5px !important; }
+
+    #result .wheel-section { margin: 34px 0 !important; }
+    #result .wheel-title { font-size: 16px !important; }
+    #result .wheel-desc {
+      font-size: 11.5px !important;
+      margin-bottom: 18px !important;
+    }
+
+    #result .rec-hero {
+      padding: 24px 12px !important;
+      border-radius: 18px !important;
+    }
+    #result .rec-kicker { font-size: 10px !important; }
+    #result .rec-hanja { font-size: 42px !important; }
+    #result .rec-season { font-size: 18px !important; }
+    #result .rec-keyword {
+      font-size: 11px !important;
+      margin-bottom: 20px !important;
+    }
+    #result .relation-badge {
+      max-width: 100% !important;
+      padding: 7px 10px !important;
+      font-size: 9.5px !important;
+      line-height: 1.5 !important;
+      white-space: normal !important;
+    }
+
+    #result .rec-details {
+      gap: 9px !important;
+      margin-top: 20px !important;
+    }
+    #result .rec-detail-card {
+      padding: 14px 11px !important;
+      border-radius: 13px !important;
+    }
+    #result .rec-detail-card .dk {
+      font-size: 9.5px !important;
+      margin-bottom: 7px !important;
+    }
+    #result .rec-detail-card .dv {
+      font-size: 12.5px !important;
+      line-height: 1.55 !important;
+    }
+    #result .rec-detail-card .dv-sub,
+    #result .tag {
+      font-size: 10.5px !important;
+      line-height: 1.55 !important;
+    }
+
+    #result .relation-explain-body {
+      font-size: 11px !important;
+      line-height: 1.68 !important;
+    }
+    #result .relation-explain-body .re-heading {
+      font-size: 12px !important;
+      line-height: 1.55 !important;
+    }
+
+    #result .compat-detail-wrap .compat-detail-title {
+      font-size: 14px !important;
+      line-height: 1.45 !important;
+    }
+    #result .compat-detail-wrap .compat-summary-card,
+    #result .compat-detail-wrap .compat-card {
+      padding: 13px 11px !important;
+    }
+    #result .compat-detail-wrap .compat-card h4 {
+      font-size: 12px !important;
+    }
+    #result .compat-detail-wrap .compat-card p,
+    #result .compat-detail-wrap .compat-list {
+      font-size: 11px !important;
+      line-height: 1.68 !important;
+    }
+    #result .compat-detail-wrap .compat-chip {
+      font-size: 9.5px !important;
+    }
+
+    #result .deep-compat { padding: 16px 11px !important; }
+    #result .dc-title { font-size: 14px !important; }
+    #result .dc-item { padding: 13px 11px !important; }
+    #result .dc-label { font-size: 10px !important; }
+    #result .dc-item .dc-desc,
+    #result .dc-complement,
+    #result .support-note {
+      font-size: 11.5px !important;
+      line-height: 1.68 !important;
+    }
+
+    /* 모바일 스킨십 영역은 제목, 농도, 설명, 목록, 주의 문구까지 전부 왼쪽 정렬합니다. */
+    #result .rec-touch-card,
+    #result .rec-touch-card .dk,
+    #result .rec-touch-card .rec-touch-level,
+    #result .rec-touch-card .rec-touch-level-copy,
+    #result .rec-touch-card .rec-touch-level-label,
+    #result .rec-touch-card .rec-touch-level-value,
+    #result .rec-touch-card .rec-touch-summary,
+    #result .rec-touch-card .rec-touch-list,
+    #result .rec-touch-card .rec-touch-list li,
+    #result .rec-touch-card .rec-touch-why,
+    #result .rec-touch-card .rec-touch-caution {
+      text-align: left !important;
+    }
+    #result .rec-touch-card {
+      padding: 14px 11px !important;
+    }
+    #result .rec-touch-card .rec-touch-level {
+      align-items: flex-start !important;
+      justify-content: flex-start !important;
+      flex-direction: column !important;
+      gap: 7px !important;
+      padding: 8px 9px !important;
+    }
+    #result .rec-touch-card .rec-touch-meter {
+      justify-content: flex-start !important;
+    }
+    #result .rec-touch-card .rec-touch-level-label {
+      font-size: 9.5px !important;
+    }
+    #result .rec-touch-card .rec-touch-level-value {
+      font-size: 11.5px !important;
+    }
+    #result .rec-touch-card .rec-touch-summary {
+      font-size: 10.5px !important;
+      line-height: 1.62 !important;
+    }
+    #result .rec-touch-card .rec-touch-list {
+      padding-left: 17px !important;
+      margin-left: 0 !important;
+      font-size: 10.5px !important;
+      line-height: 1.65 !important;
+    }
+    #result .rec-touch-card .rec-touch-why,
+    #result .rec-touch-card .rec-touch-caution {
+      font-size: 9.5px !important;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .wrap { padding-left: 8px !important; padding-right: 8px !important; }
+    #result .rec-hero {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
+    #result .rec-detail-card {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
