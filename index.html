@@ -126,15 +126,16 @@
   /* ---------- Input Section ---------- */
   .input-stage {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto 1fr auto 1fr;
     gap: 20px;
     align-items: stretch;
     margin: 40px 0;
   }
 
-  @media (max-width: 760px) {
+  @media (max-width: 900px) {
     .input-stage { grid-template-columns: 1fr; }
     .connector { display: none; }
+    .photo-column { order: -1; }
   }
 
   .person-card {
@@ -259,19 +260,52 @@
   .photo-upload-btn:hover, .photo-remove-btn:hover { border-color: var(--accent-2); background: #ffffff; }
   .photo-remove-btn { color: var(--hwa); }
 
+  /* 사진첨부 칼럼 — input-stage 맨 왼쪽에 person-card와 나란히 배치 */
+  .photo-column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .couple-photo-field {
-    max-width: 420px;
-    margin: 0 auto 28px;
+    width: 148px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 16px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(28,29,33,0.03), 0 8px 24px rgba(28,29,33,0.03);
   }
   .couple-photo-field label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 12.5px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    line-height: 1.5;
     color: var(--ink-dim);
   }
+  .couple-photo-field .photo-upload-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .couple-photo-field .photo-upload-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .couple-photo-field .photo-upload-btn,
+  .couple-photo-field .photo-remove-btn {
+    width: 100%;
+  }
   .couple-photo-preview {
-    width: 64px;
-    height: 64px;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .couple-photo-field { width: 100%; max-width: 420px; margin: 0 auto; }
+    .couple-photo-field .photo-upload-row { flex-direction: row; }
+    .couple-photo-field .photo-upload-actions { flex-direction: row; }
+    .couple-photo-field .photo-upload-btn,
+    .couple-photo-field .photo-remove-btn { width: auto; }
   }
 
   .approx-badge {
@@ -509,6 +543,32 @@
   }
   .rec-keyword { color: var(--ink-dim); font-size: 13px; margin-bottom: 28px; }
 
+  /* ---------- Rec hero top (사진 + 텍스트 영역) ---------- */
+  .rec-hero-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .rec-hero-text { width: 100%; }
+
+  /* 사진이 첨부된 경우: 사진 왼쪽 / 내용 오른쪽으로 가로 배치 */
+  .rec-hero-top.has-photo {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 32px;
+  }
+  .rec-hero-top.has-photo .rec-photo-wrap { margin: 0; flex-shrink: 0; }
+  .rec-hero-top.has-photo .rec-hero-text { text-align: left; }
+  @media (max-width: 560px) {
+    .rec-hero-top.has-photo {
+      flex-direction: column;
+      text-align: center;
+      gap: 18px;
+    }
+    .rec-hero-top.has-photo .rec-hero-text { text-align: center; }
+  }
+
   /* ---------- Couple photo frame (원형 사진 프레임) ---------- */
   .rec-photo-wrap {
     display: flex;
@@ -573,6 +633,16 @@
   }
   .rec-detail-card .dv { font-size: 15px; color: var(--ink); }
   .rec-detail-card .dv-sub { font-size: 12.5px; color: var(--ink-dim); margin-top: 6px; }
+
+  /* Time · 시간대 카드 — 다른 블록들의 포인트 컬러(accent-grad)로 그라데이션 강조 */
+  .rec-detail-card--time {
+    background: var(--accent-grad-soft);
+    border-color: transparent;
+  }
+  .rec-detail-card--time .dk { color: rgba(255,255,255,0.82); }
+  .rec-detail-card--time .dv { color: #ffffff; font-weight: 600; }
+  .rec-detail-card--time .dv-sub { color: rgba(255,255,255,0.85); }
+  .rec-detail-card--time:hover { box-shadow: 0 10px 24px rgba(120,123,136,0.28); }
   .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .tag {
     font-size: 12.5px;
@@ -773,19 +843,21 @@
     </div>
   </header>
 
-  <section class="couple-photo-field">
-    <label for="couple-photo">두 사람 사진 (선택)</label>
-    <div class="photo-upload-row">
-      <div class="photo-preview couple-photo-preview" id="couple-photo-preview"><span>+</span></div>
-      <div class="photo-upload-actions">
-        <input type="file" id="couple-photo" accept="image/*" style="display:none;">
-        <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
-        <button type="button" class="photo-remove-btn" id="couple-photo-remove" style="display:none;">제거</button>
+  <section class="input-stage">
+    <div class="photo-column">
+      <div class="couple-photo-field">
+        <label for="couple-photo">두 사람 사진<br>(선택)</label>
+        <div class="photo-upload-row">
+          <div class="photo-preview couple-photo-preview" id="couple-photo-preview"><span>+</span></div>
+          <div class="photo-upload-actions">
+            <input type="file" id="couple-photo" accept="image/*" style="display:none;">
+            <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
+            <button type="button" class="photo-remove-btn" id="couple-photo-remove" style="display:none;">제거</button>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
 
-  <section class="input-stage">
     <div class="person-card person-a">
       <div class="person-label">Person A</div>
       <div class="field" style="margin-bottom:20px;">
@@ -893,17 +965,21 @@
     <div class="divider"><span>추천 궁합 기운</span></div>
 
     <div class="rec-hero" id="recHero">
-      <div class="rec-photo-wrap" id="recPhotoWrap" style="display:none;">
-        <div class="rec-photo-frame" id="recPhotoFrame"><div class="rec-photo-inner" id="recPhotoInner"></div></div>
+      <div class="rec-hero-top" id="recHeroTop">
+        <div class="rec-photo-wrap" id="recPhotoWrap" style="display:none;">
+          <div class="rec-photo-frame" id="recPhotoFrame"><div class="rec-photo-inner" id="recPhotoInner"></div></div>
+        </div>
+        <div class="rec-hero-text" id="recHeroText">
+          <div class="relation-badge" id="relationBadge"></div>
+          <div class="rec-kicker">What you both need most</div>
+          <div class="rec-hanja" id="recHanja"></div>
+          <div class="rec-season" id="recSeason"></div>
+          <div class="rec-keyword" id="recKeyword"></div>
+        </div>
       </div>
-      <div class="relation-badge" id="relationBadge"></div>
-      <div class="rec-kicker">What you both need most</div>
-      <div class="rec-hanja" id="recHanja"></div>
-      <div class="rec-season" id="recSeason"></div>
-      <div class="rec-keyword" id="recKeyword"></div>
 
       <div class="rec-details">
-        <div class="rec-detail-card">
+        <div class="rec-detail-card rec-detail-card--time">
           <div class="dk">Time · 시간대</div>
           <div class="dv" id="recTime"></div>
           <div class="dv-sub" id="recTimeDetail"></div>
