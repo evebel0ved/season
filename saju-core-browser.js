@@ -482,77 +482,475 @@ function analyzeCompatibility(sajuA, sajuB) {
 }
 
 // ===================================================================
-// 오행별 상징 매칭 데이터
-// 명리학의 오행-계절-방위-색-사물 배속(配屬) 이론을 기반으로,
-// 색상/꽃/장소는 그 상징을 현대적으로 확장 해석한 것입니다.
+// 오행별 추천 후보 데이터
+// 계절은 오행별로 고정하되, 그 밖의 시간·색상·꽃·장소·데이트 방식은
+// 두 사람의 실제 사주 조합을 시드로 삼아 여러 후보 중에서 안정적으로 선택한다.
+// 같은 두 사람은 다시 계산해도 같은 추천을 받고, 다른 조합은 같은 부족 오행이어도
+// 서로 다른 세부 추천을 받을 수 있다.
 // ===================================================================
 const OHAENG_INFO = {
   목: {
     season: '봄',
     seasonDetail: '새싹이 움트는 이른 봄',
-    timeRange: '새벽 3시~7시',
-    timeDetail: '해가 뜨기 시작하는 인시·묘시',
-    colors: ['초록색', '연두색', '청록색'],
-    flowers: ['튤립', '개나리', '연둣빛 유칼립투스'],
-    places: ['숲길 산책로', '식물원', '대나무 숲', '차밭'],
-    keyword: '성장과 시작',
+    timeRange: '오전 7시~10시',
+    timeDetail: '하루를 시작하며 계획을 세우기 좋은 시간',
+    keyword: '새로운 시작',
+    colors: [
+      '초록색', '연두색', '청록색', '세이지그린', '올리브색', '민트색',
+      '포레스트그린', '피스타치오색', '이끼색', '에메랄드색', '카키색', '라임색'
+    ],
+    flowers: [
+      '튤립', '개나리', '유칼립투스', '프리지어', '라넌큘러스', '스위트피',
+      '아이비', '몬스테라', '수선화', '은엽아카시아', '그린벨', '리시안셔스',
+      '작은 야생화 다발', '허브 화분', '올리브나무'
+    ],
+    places: [
+      '수목원에서 천천히 걷기', '식물원 온실 구경하기', '처음 가보는 동네 골목 산책',
+      '강변 자전거 코스 달리기', '북카페에서 다음 여행 계획 세우기', '플리마켓 구경하기',
+      '원데이클래스에서 작은 소품 만들기', '숲길 피크닉', '캠핑장에서 아침 산책',
+      '차밭이나 허브 농원 방문', '새로 생긴 카페 찾아가기', '둘만의 산책 코스 만들기',
+      '서점에서 서로 읽을 책 골라주기', '사진 산책하며 같은 장면 찍기',
+      '근교 드라이브 후 가벼운 트레킹', '정원 카페에서 올해 하고 싶은 일 적기',
+      '자전거 대여해 공원 한 바퀴 돌기', '작은 화분을 함께 고르고 키우기',
+      '여행 박람회나 지역 축제 둘러보기', '새로운 운동을 체험 수업으로 배워보기'
+    ],
+    timeOptions: [
+      { range: '오전 7시~9시', detail: '사람이 붐비기 전 산책이나 가벼운 아침 데이트에 어울려요.' },
+      { range: '오전 9시~11시', detail: '새 장소를 찾아가거나 함께 계획을 세우기 좋은 시간이에요.' },
+      { range: '오전 10시~낮 12시', detail: '브런치 뒤 전시·산책처럼 일정을 이어가기 편한 시간이에요.' },
+      { range: '주말 오전', detail: '하루를 길게 쓸 수 있어 근교 나들이나 체험 활동에 잘 맞아요.' },
+      { range: '해 뜬 뒤 2~3시간', detail: '몸과 마음이 깨어나는 시간이라 새로운 일을 시작하기 좋아요.' },
+      { range: '오후 2시~4시', detail: '복잡하지 않은 장소에서 다음 계획을 이야기하기 좋아요.' },
+      { range: '퇴근 직후 1~2시간', detail: '짧은 산책이나 새 카페 방문처럼 부담 없는 변화에 어울려요.' },
+      { range: '맑은 날 오전', detail: '야외 활동을 곁들이면 서로의 반응과 취향을 자연스럽게 알 수 있어요.' }
+    ],
+    keywords: [
+      '새로운 시작', '함께 세우는 계획', '가벼운 변화', '성장하는 관계',
+      '첫걸음을 내딛는 용기', '새로운 취미', '움직이며 가까워지는 시간', '앞으로의 기대'
+    ],
+    summaryPool: [
+      '둘이 먼저 계획을 꺼내고 새로운 경험을 시작하는 모습',
+      '익숙한 데이트에서 벗어나 새로운 장소를 찾아보는 모습',
+      '생각만 하던 일을 실제 약속으로 옮기는 추진력',
+      '앞으로 함께 해보고 싶은 일을 자연스럽게 이야기하는 분위기',
+      '서로의 관심사를 넓혀주고 새로운 취미를 만드는 과정',
+      '관계가 정체되지 않도록 작은 변화를 자주 만드는 습관'
+    ],
+    dateTips: [
+      '한 사람씩 번갈아 새로운 장소를 하나씩 골라보세요.',
+      '이번 달에 함께 해볼 일을 세 가지 적고 하나를 바로 예약해보세요.',
+      '익숙한 동네에서도 한 번도 가보지 않은 길로 산책해보세요.',
+      '서로 배우고 싶었던 취미를 하나 골라 체험 수업부터 들어보세요.',
+      '다음 여행의 지역만 먼저 정하고 각자 가고 싶은 곳을 두 군데씩 찾아보세요.',
+      '작은 화분이나 허브를 함께 골라 꾸준히 돌보는 공동 목표를 만들어보세요.',
+      '데이트가 반복된다고 느껴질 때는 장소보다 이동 방식부터 바꿔보세요.',
+      '상대가 제안한 계획에 바로 평가하기보다 한 번은 실제로 해보는 편이 좋아요.',
+      '한 달에 한 번은 사진·지도 기록이 남는 새로운 경험을 만들어보세요.',
+      '서로의 버킷리스트에서 당장 가능한 항목 하나를 골라 실행해보세요.',
+      '새로운 계획은 크게 잡기보다 이번 주 안에 끝낼 수 있는 크기로 정해보세요.',
+      '데이트가 끝난 뒤 다음에 이어서 해볼 일을 하나만 정해두세요.'
+    ],
     direction: '동쪽',
   },
   화: {
     season: '여름',
     seasonDetail: '태양이 가장 뜨거운 한여름',
-    timeRange: '오전 9시~오후 1시',
-    timeDetail: '해가 가장 높이 뜨는 사시·오시',
-    colors: ['빨간색', '주황색', '핑크색'],
-    flowers: ['장미', '해바라기', '작약'],
-    places: ['노을 지는 해변', '루프탑 바', '불꽃놀이 명소'],
-    keyword: '열정과 표현',
+    timeRange: '오후 3시~6시',
+    timeDetail: '함께 웃고 반응을 나누기 좋은 활기찬 시간',
+    keyword: '솔직한 표현',
+    colors: [
+      '빨간색', '주황색', '핑크색', '코랄색', '살구색', '로즈핑크',
+      '체리레드', '버건디', '주홍색', '와인색', '복숭아색', '자주색'
+    ],
+    flowers: [
+      '장미', '해바라기', '작약', '거베라', '다알리아', '카네이션',
+      '맨드라미', '금어초', '알스트로메리아', '백일홍', '코스모스',
+      '글라디올러스', '라즈베리색 리시안셔스', '주황 튤립', '붉은 아마릴리스'
+    ],
+    places: [
+      '라이브 공연에서 함께 좋아하는 곡 듣기', '야시장 먹거리 하나씩 골라보기',
+      '노을 지는 해변 산책', '스포츠 경기장에서 같이 응원하기',
+      '놀이공원에서 사진 남기기', '노래방에서 서로의 애창곡 듣기',
+      '루프탑에서 야경과 음악 즐기기', '댄스나 리듬 운동 체험하기',
+      '쿠킹 클래스에서 매운 요리 만들기', '지역 축제나 퍼레이드 구경하기',
+      '코미디 공연이나 토크쇼 보기', '포토부스에서 장난스러운 사진 찍기',
+      '보드게임 카페에서 팀플레이 게임하기', '즉석 사진을 찍으며 하루 기록하기',
+      '색감이 강한 전시 관람하기', '드라이브하며 서로 좋아하는 음악 틀기',
+      '야외 영화제나 불꽃놀이 보기', '활기찬 번화가에서 맛집 두 곳 이어가기',
+      '친구들과 가벼운 모임 함께하기', '테마가 있는 파티룸에서 기념일 보내기'
+    ],
+    timeOptions: [
+      { range: '낮 12시~오후 2시', detail: '활동적인 데이트를 시작하고 반응을 바로 나누기 좋은 시간이에요.' },
+      { range: '오후 3시~5시', detail: '공연·축제·맛집처럼 에너지가 필요한 일정에 잘 맞아요.' },
+      { range: '해 질 무렵', detail: '노을이나 야외 풍경을 보며 자연스럽게 애정을 표현하기 좋아요.' },
+      { range: '오후 6시~8시', detail: '식사와 공연을 이어가며 즐거운 분위기를 만들기 쉬워요.' },
+      { range: '주말 늦은 오후', detail: '사진과 추억이 남는 활동적인 데이트를 계획하기 좋아요.' },
+      { range: '기념일 저녁', detail: '평소보다 분명하게 마음을 표현하고 기억에 남는 장면을 만들기 좋아요.' },
+      { range: '공연 시작 1시간 전', detail: '식사나 산책을 곁들이면 설렘이 자연스럽게 이어져요.' },
+      { range: '맑은 날 해질녘', detail: '밝은 분위기와 감성적인 대화를 함께 가져가기 좋아요.' }
+    ],
+    keywords: [
+      '솔직한 표현', '함께 웃는 시간', '설렘과 반응', '따뜻한 애정 표현',
+      '기억에 남는 장면', '활기찬 데이트', '서로를 향한 관심', '분위기를 바꾸는 웃음'
+    ],
+    summaryPool: [
+      '좋아하는 마음을 말과 표정으로 분명하게 보여주는 모습',
+      '둘이 함께 웃고 즉각적으로 반응을 주고받는 분위기',
+      '평범한 하루에도 기억에 남는 장면을 만드는 활기',
+      '서운함보다 고마움과 애정을 먼저 표현하는 습관',
+      '관계가 심심해지지 않도록 작은 이벤트를 만드는 모습',
+      '상대가 기뻐할 때 함께 크게 기뻐해주는 반응'
+    ],
+    dateTips: [
+      '데이트가 끝나기 전에 오늘 가장 좋았던 순간을 한 가지씩 말해보세요.',
+      '고맙거나 보고 싶다는 말은 상대가 눈치채길 기다리지 말고 바로 표현해보세요.',
+      '기념일이 아니어도 작은 간식이나 사진처럼 가벼운 깜짝 선물을 준비해보세요.',
+      '공연·경기·축제처럼 같은 장면에 함께 반응할 수 있는 일정을 골라보세요.',
+      '서운한 일이 있을 때는 비난보다 “나는 그때 조금 외로웠어”처럼 감정을 먼저 말해보세요.',
+      '둘만 아는 노래나 사진 포즈처럼 반복할 수 있는 작은 의식을 만들어보세요.',
+      '무표정하게 넘어가기보다 상대의 제안에 좋고 싫은 반응을 분명하게 보여주세요.',
+      '일주일에 한 번은 칭찬이나 고마운 점을 구체적인 행동과 함께 말해보세요.',
+      '사진만 찍고 끝내지 말고 왜 좋았는지 한 문장씩 기록해보세요.',
+      '싸운 뒤에는 사과만 하지 말고 다음에 어떻게 다르게 행동할지도 함께 말해보세요.',
+      '서로 좋아하는 음악을 세 곡씩 골라 함께 듣는 시간을 가져보세요.',
+      '평소보다 조금 밝은 옷이나 소품을 맞춰 입고 사진을 남겨보세요.'
+    ],
     direction: '남쪽',
   },
   토: {
     season: '환절기(늦여름·환절기)',
     seasonDetail: '계절과 계절 사이, 환절기의 안정된 기운',
-    timeRange: '오후 1시~오후 5시 / 각 계절의 마지막 18일',
-    timeDetail: '미시·신시, 균형이 잡히는 시간대',
-    colors: ['갈색', '황토색', '베이지'],
-    flowers: ['해바라기(늦여름형)', '국화', '메리골드'],
-    places: ['도자기 공방', '한옥 마을', '흙길 정원', '온천'],
-    keyword: '안정과 신뢰',
+    timeRange: '오후 1시~4시',
+    timeDetail: '서두르지 않고 오래 머물며 대화하기 좋은 시간',
+    keyword: '편안한 안정',
+    colors: [
+      '갈색', '황토색', '베이지', '크림색', '카멜색', '테라코타',
+      '머스터드색', '모래색', '브라운', '아이보리', '오트밀색', '웜그레이'
+    ],
+    flowers: [
+      '국화', '메리골드', '황금색 해바라기', '천일홍', '밀 이삭',
+      '팜파스그래스', '브라운 장미', '골든볼', '카라', '목화',
+      '드라이플라워 다발', '헬리크리섬', '노란 프리지어', '베이지 리시안셔스', '솔리다고'
+    ],
+    places: [
+      '도자기 공방에서 컵 만들기', '한옥 마을 천천히 걷기',
+      '온천이나 찜질방에서 쉬기', '브런치 카페에서 오래 대화하기',
+      '베이킹 클래스에서 같은 메뉴 만들기', '전통시장에서 장을 보고 함께 요리하기',
+      '근교 숙소에서 아무 일정 없이 쉬기', '공원 피크닉에서 간단한 도시락 먹기',
+      '집에서 영화와 저녁을 함께 준비하기', '가구·생활용품 매장을 둘러보기',
+      '한식 맛집에서 익숙한 메뉴 나눠 먹기', '농장 체험이나 과일 따기',
+      '보드게임 카페에서 차분한 전략 게임하기', '동네 단골 카페를 정해 정기적으로 가기',
+      '향초나 비누 공방 체험하기', '전통찻집에서 천천히 차 마시기',
+      '쿠킹 스튜디오에서 일주일 반찬 만들기', '산책 뒤 족욕 카페 가기',
+      '둘만의 월간 데이트 예산 정하기', '집 안 작은 공간을 함께 정리하고 꾸미기'
+    ],
+    timeOptions: [
+      { range: '오전 11시~오후 1시', detail: '브런치와 산책을 이어가며 서두르지 않고 이야기하기 좋아요.' },
+      { range: '오후 1시~3시', detail: '공방·카페처럼 한곳에 오래 머무는 일정에 잘 맞아요.' },
+      { range: '오후 3시~5시', detail: '복잡한 일정 없이 차분한 활동을 함께 하기 좋아요.' },
+      { range: '주말 오후', detail: '요리·정리·체험처럼 생활에 가까운 데이트를 하기 좋아요.' },
+      { range: '비 오는 날 낮', detail: '실내에서 오래 머물며 편안한 대화를 나누기 좋아요.' },
+      { range: '식사 전후 2시간', detail: '같이 먹고 준비하는 과정에서 안정감을 느끼기 좋아요.' },
+      { range: '휴일 늦은 오전', detail: '시간을 재촉하지 않고 익숙한 장소에서 쉬기 좋아요.' },
+      { range: '약속이 없는 오후', detail: '계획을 빽빽하게 채우지 않고 서로의 생활 속도를 맞추기 좋아요.' }
+    ],
+    keywords: [
+      '편안한 안정', '꾸준한 신뢰', '함께 만드는 일상', '오래 머무는 시간',
+      '생활 속 배려', '예측 가능한 약속', '따뜻한 휴식', '차분히 쌓이는 친밀감'
+    ],
+    summaryPool: [
+      '약속과 일정을 꾸준히 지키며 관계를 편안하게 만드는 모습',
+      '특별한 이벤트보다 반복되는 일상에서 신뢰를 쌓는 과정',
+      '돈·시간·생활 문제를 미루지 않고 함께 정리하는 습관',
+      '서두르지 않고 한 공간에 오래 머물며 편하게 대화하는 분위기',
+      '상대가 힘들 때 말보다 실제 행동으로 챙겨주는 모습',
+      '둘만의 안정적인 데이트 리듬과 생활 규칙을 만드는 과정'
+    ],
+    dateTips: [
+      '매번 장소를 새로 찾기보다 둘 다 편한 단골 장소를 하나 만들어보세요.',
+      '데이트 일정은 시작 시간뿐 아니라 돌아갈 시간까지 미리 맞춰보세요.',
+      '여행이나 큰 지출 전에는 예산과 우선순위를 함께 적어보세요.',
+      '한 달에 한 번은 같이 요리하거나 생활용품을 고르는 일상형 데이트를 해보세요.',
+      '상대가 지쳤을 때 해결책부터 말하기보다 밥과 휴식부터 챙겨주세요.',
+      '집안일이나 공동 일정은 기억에 맡기지 말고 캘린더에 역할을 나눠 적어보세요.',
+      '싸운 뒤에는 누가 맞았는지보다 다음부터 반복하지 않을 행동을 하나 정해보세요.',
+      '서로의 수면·식사·업무 리듬을 알아두면 불필요한 서운함이 줄어들어요.',
+      '기념일보다 평소 약속을 지키는 모습을 더 중요하게 여겨주세요.',
+      '무리한 일정 대신 한 장소에서 식사와 대화를 길게 이어가보세요.',
+      '둘만의 월간 데이트 예산과 꼭 하고 싶은 일 하나를 함께 정해보세요.',
+      '상대가 부담스러워하는 생활 문제는 작은 단위로 나누어 같이 처리해보세요.'
+    ],
     direction: '중앙',
   },
   금: {
     season: '가을',
     seasonDetail: '결실을 맺는 청명한 가을',
-    timeRange: '오후 5시~오후 9시',
-    timeDetail: '해가 지는 신시·유시',
-    colors: ['흰색', '금색', '은색·그레이'],
-    flowers: ['백합', '은방울꽃', '흰 국화'],
-    places: ['미술관', '전망대', '고즈넉한 사찰', '금속공예 갤러리'],
-    keyword: '결실과 완성',
+    timeRange: '오후 5시~8시',
+    timeDetail: '하루를 정리하며 차분한 결론을 내리기 좋은 시간',
+    keyword: '분명한 약속',
+    colors: [
+      '흰색', '금색', '은색·그레이', '샴페인골드', '펄그레이', '쿨그레이',
+      '라이트그레이', '스틸색', '아이보리화이트', '백금색', '차콜그레이', '크림화이트'
+    ],
+    flowers: [
+      '백합', '은방울꽃', '흰 국화', '카라', '흰 장미', '안개꽃',
+      '화이트 리시안셔스', '델피늄 화이트', '목화', '은엽 유칼립투스',
+      '화이트 튤립', '스카비오사', '흰 작약', '실버 브루니아', '스타티스 화이트'
+    ],
+    places: [
+      '미술관에서 작품 하나씩 골라 이야기하기', '전망대에서 하루를 정리하기',
+      '고즈넉한 사찰이나 정원 걷기', '금속공예나 주얼리 공방 체험하기',
+      '깔끔한 분위기의 레스토랑에서 예약 데이트하기', '사진관에서 단정한 커플 사진 남기기',
+      '향수 공방에서 서로 어울리는 향 고르기', '클래식 공연이나 소규모 연주회 보기',
+      '디자인 편집숍에서 취향 비교하기', '전시 도록이나 엽서 한 장씩 골라주기',
+      '정돈된 북카페에서 각자 읽고 대화하기', '건축물이 인상적인 공간 둘러보기',
+      '야경이 잘 보이는 전망 카페 가기', '재정·여행 계획을 노트에 함께 정리하기',
+      '옷이나 액세서리를 하나씩 골라주기', '기념품을 오래 쓸 물건으로 고르기',
+      '차분한 와인바 대신 무알코올 페어링 식당 가기', '공예 전시나 디자인 페어 관람하기',
+      '둘의 사진을 골라 작은 앨범 만들기', '한 달 동안 지킬 공동 목표 정하기'
+    ],
+    timeOptions: [
+      { range: '오후 4시~6시', detail: '전시를 보고 식사로 이어가며 생각을 정리하기 좋은 시간이에요.' },
+      { range: '오후 5시~7시', detail: '하루의 분위기가 차분해져 중요한 이야기를 꺼내기 좋아요.' },
+      { range: '오후 6시~8시', detail: '예약한 장소에서 집중도 높은 데이트를 하기 좋아요.' },
+      { range: '해 진 직후', detail: '전망대나 정돈된 공간에서 서로의 계획을 나누기 좋아요.' },
+      { range: '주말 늦은 오후', detail: '전시·공연·식사를 깔끔하게 이어가기 편한 시간이에요.' },
+      { range: '한 달을 마무리하는 저녁', detail: '지출·일정·다음 달 계획을 함께 정리하기 좋아요.' },
+      { range: '기념일 전날 저녁', detail: '선물보다 서로 원하는 방식을 미리 확인하기 좋아요.' },
+      { range: '약속 시간보다 20분 이른 때', detail: '서두르지 않고 차분하게 하루 일정을 시작하기 좋아요.' }
+    ],
+    keywords: [
+      '분명한 약속', '서로 존중하는 기준', '깔끔한 마무리', '함께 이루는 목표',
+      '신뢰할 수 있는 태도', '정돈된 대화', '선명한 선택', '오래 남는 결과'
+    ],
+    summaryPool: [
+      '연락·약속·돈 문제의 기준을 분명하게 맞추는 모습',
+      '복잡한 문제를 미루지 않고 결론과 역할을 정하는 과정',
+      '상대의 선택과 경계를 존중하며 신뢰를 쌓는 태도',
+      '서로 원하는 것을 추측하지 않고 정확하게 확인하는 습관',
+      '계획한 일을 끝까지 마무리해 함께 성취감을 느끼는 모습',
+      '감정적인 지적보다 구체적인 요청으로 대화하는 분위기'
+    ],
+    dateTips: [
+      '연락 빈도나 약속 변경 기준은 문제가 생기기 전에 구체적으로 맞춰보세요.',
+      '상대의 잘못을 지적하기 전에 내가 원하는 행동을 한 문장으로 말해보세요.',
+      '여행·지출·선물은 각자 중요하게 보는 기준을 먼저 세 가지씩 적어보세요.',
+      '함께 찍은 사진이나 기록을 정리해 작은 결과물로 남겨보세요.',
+      '한 달에 하나씩 끝낼 수 있는 공동 목표를 정하고 완료 여부를 확인해보세요.',
+      '데이트 장소는 분위기뿐 아니라 소음·대기 시간·이동 거리도 함께 고려해보세요.',
+      '칭찬할 때는 “좋았어”보다 어떤 행동이 좋았는지 구체적으로 말해주세요.',
+      '상대가 거절했을 때 이유를 캐묻기보다 가능한 다른 선택지를 두 개 정도 제안해보세요.',
+      '싸울 때 과거의 일을 모아 말하지 말고 지금 해결할 문제 하나만 다뤄보세요.',
+      '약속을 바꿔야 한다면 사과와 함께 새 시간까지 바로 제안해주세요.',
+      '서로의 개인 시간과 연락이 필요한 시간을 구분해 합의해보세요.',
+      '선택지가 많을 때는 각자 양보하기 어려운 조건 하나씩만 먼저 정해보세요.'
+    ],
     direction: '서쪽',
   },
   수: {
     season: '겨울',
     seasonDetail: '고요히 응축되는 깊은 겨울',
-    timeRange: '밤 9시~새벽 1시',
-    timeDetail: '해시·자시, 만물이 쉬는 밤',
-    colors: ['검은색', '남색', '짙은 파란색'],
-    flowers: ['수국', '동백꽃', '블루 델피늄'],
-    places: ['야경 명소', '호숫가', '스파·온수풀', '수족관'],
-    keyword: '휴식과 지혜',
+    timeRange: '저녁 8시~밤 11시',
+    timeDetail: '주변이 조용해져 속마음을 천천히 나누기 좋은 시간',
+    keyword: '깊은 대화',
+    colors: [
+      '검은색', '남색', '짙은 파란색', '네이비', '코발트블루', '인디고',
+      '블루그레이', '먹색', '청회색', '군청색', '딥블루', '아쿠아블루'
+    ],
+    flowers: [
+      '수국', '동백꽃', '블루 델피늄', '아이리스', '블루 스타',
+      '라벤더', '아네모네 블루', '히아신스', '푸른 리시안셔스',
+      '에린지움', '블루 데이지', '무스카리', '짙은 보라 장미',
+      '청보라 스타티스', '옥시페탈룸'
+    ],
+    places: [
+      '강변 야경을 보며 천천히 걷기', '수족관에서 말없이 풍경 함께 보기',
+      '조용한 카페 구석자리에서 오래 대화하기', '호숫가 드라이브',
+      '스파나 온수풀에서 쉬기', '심야 영화 뒤 감상 나누기',
+      '재즈 공연이나 잔잔한 라이브 듣기', '북카페에서 각자 읽다가 이야기하기',
+      '비 오는 날 창가 카페 가기', '천문대나 별이 보이는 곳 방문하기',
+      '조용한 해변에서 파도 소리 듣기', '한강이나 하천 산책로 야간 걷기',
+      '숙소에서 휴대폰을 내려놓고 쉬기', '서로의 어린 시절 사진 보며 이야기하기',
+      '차분한 보드게임이나 퍼즐 맞추기', '뮤지엄 야간 개장 관람하기',
+      '심야 드라이브하며 플레이리스트 듣기', '족욕이나 마사지로 피로 풀기',
+      '조용한 찻집에서 질문 카드 나누기', '서로의 고민을 끊지 않고 10분씩 들어주기'
+    ],
+    timeOptions: [
+      { range: '저녁 7시~9시', detail: '하루의 긴장이 풀려 속마음을 천천히 꺼내기 좋아요.' },
+      { range: '저녁 8시~10시', detail: '주변이 조용해져 깊은 대화나 야경 산책에 잘 맞아요.' },
+      { range: '밤 9시~11시', detail: '결론을 재촉하지 않고 서로의 이야기를 끝까지 듣기 좋아요.' },
+      { range: '비 오는 날 저녁', detail: '실내에서 차분히 머물며 감정을 정리하기 좋아요.' },
+      { range: '주말 밤', detail: '다음 날 부담이 적어 늦은 영화나 긴 대화를 하기 좋아요.' },
+      { range: '해 진 뒤 1~2시간', detail: '야경·산책·드라이브처럼 조용한 활동에 어울려요.' },
+      { range: '잠들기 2시간 전', detail: '민감한 문제를 해결하기보다 마음을 나누는 대화에 좋아요.' },
+      { range: '사람이 적은 평일 저녁', detail: '붐비지 않는 공간에서 서로에게 집중하기 좋아요.' }
+    ],
+    keywords: [
+      '깊은 대화', '충분한 휴식', '말없이도 편한 시간', '감정을 정리하는 여유',
+      '서로의 속마음', '차분한 공감', '기다려주는 태도', '조용히 쌓이는 신뢰'
+    ],
+    summaryPool: [
+      '서둘러 결론을 내리지 않고 서로의 이야기를 끝까지 듣는 모습',
+      '말이 적어져도 무시하지 않고 다시 대화할 시간을 정하는 습관',
+      '바쁜 일정 속에서 둘만 조용히 쉬어가는 시간을 확보하는 모습',
+      '상대의 감정을 해결하려 들기보다 충분히 이해해주는 태도',
+      '겉으로 드러난 말보다 그 안의 이유를 천천히 확인하는 과정',
+      '함께 있어도 각자의 생각과 휴식 시간을 존중하는 분위기'
+    ],
+    dateTips: [
+      '민감한 이야기는 이동 중보다 조용히 앉아 있을 수 있는 장소에서 꺼내보세요.',
+      '상대가 생각할 시간이 필요하다고 하면 언제 다시 이야기할지만 약속해주세요.',
+      '서로 번갈아 10분씩 말하고 중간에 해결책을 제안하지 않는 대화를 해보세요.',
+      '야경 산책이나 드라이브처럼 침묵이 어색하지 않은 일정을 골라보세요.',
+      '피곤한 날에는 새로운 활동보다 온수욕·마사지·조용한 식사처럼 회복을 우선해보세요.',
+      '싸운 직후 메시지를 길게 보내기보다 감정이 가라앉은 뒤 짧고 분명하게 말해보세요.',
+      '서로의 고민을 들은 뒤 “내가 들어주면 될까, 해결 방법을 같이 찾을까?”라고 물어보세요.',
+      '휴대폰을 내려놓고 30분만 서로에게 집중하는 시간을 만들어보세요.',
+      '같은 영화를 보고 각자 인상 깊었던 장면을 이야기해보세요.',
+      '말수가 줄었을 때 괜찮다고 단정하지 말고 필요한 것이 있는지 한 번 확인해주세요.',
+      '데이트 사이에 혼자 쉬는 시간이 필요하다는 점을 자연스럽게 인정해주세요.',
+      '결론 없는 대화도 괜찮다는 마음으로 감정과 상황을 구분해 들어보세요.'
+    ],
     direction: '북쪽',
   },
 };
 
 // 오행 상생 관계: 부족한 오행을 "낳아주는" 관계의 오행을 함께 제안하기 위함
-const SANGSAENG_PARENT = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' }; // 무엇이 이 오행을 생하는가
+const SANGSAENG_PARENT = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
+
+// 문자열을 항상 같은 32비트 숫자로 바꾸는 간단한 해시
+function stableHash(value) {
+  const str = String(value);
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+// 같은 시드에서는 항상 같은 순서를 내는 난수 생성기
+function createSeededRandom(seed) {
+  let state = (Number(seed) >>> 0) || 0x6d2b79f5;
+  return function () {
+    state += 0x6d2b79f5;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function pickOne(pool, random) {
+  if (!Array.isArray(pool) || pool.length === 0) return '';
+  return pool[Math.floor(random() * pool.length)];
+}
+
+function pickMany(pool, count, random) {
+  if (!Array.isArray(pool) || pool.length === 0) return [];
+  const copy = [...pool];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(count, copy.length));
+}
+
+function pillarSignature(pillar) {
+  if (!pillar) return 'x';
+  return [
+    pillar.cheonganIdx ?? pillar.cheongan ?? 'x',
+    pillar.jijiIdx ?? pillar.jiji ?? 'x',
+    pillar.ohaengCheongan ?? 'x',
+    pillar.ohaengJiji ?? 'x'
+  ].join(':');
+}
+
+function exactSajuSignature(saju) {
+  const countText = ['목', '화', '토', '금', '수']
+    .map(k => `${k}${saju?.ohaengCount?.[k] || 0}`)
+    .join('');
+  return [
+    pillarSignature(saju?.year),
+    pillarSignature(saju?.month),
+    pillarSignature(saju?.day),
+    pillarSignature(saju?.hour),
+    countText
+  ].join('|');
+}
+
+function approxEntrySignature(entry) {
+  if (entry?.exact) return exactSajuSignature(entry.exact);
+  const approx = entry?.approx;
+  if (!approx) return 'unknown';
+  const dist = ['목', '화', '토', '금', '수']
+    .map(k => `${k}${approx.day?.percent?.[k] || 0}`)
+    .join('');
+  return [
+    approx.month?.jijiIdx ?? 'x',
+    approx.month?.ohaeng ?? 'x',
+    approx.hour?.jijiIdx ?? 'x',
+    approx.hour?.ohaeng ?? 'x',
+    dist
+  ].join('|');
+}
+
+function buildRecommendationVariant(ohaeng, seed, context) {
+  const info = OHAENG_INFO[ohaeng];
+  const contextText = [
+    context?.relation || '',
+    context?.maxOhaeng || '',
+    context?.yearJijiRelation?.type || '',
+    context?.dayJijiRelation?.type || '',
+    context?.variantRole || ''
+  ].join('|');
+  const random = createSeededRandom(stableHash(`${seed}|${ohaeng}|${contextText}`));
+  const time = pickOne(info.timeOptions, random);
+
+  return {
+    season: info.season,
+    seasonDetail: info.seasonDetail,
+    timeRange: time?.range || info.timeRange,
+    timeDetail: time?.detail || info.timeDetail,
+    colors: pickMany(info.colors, 3, random),
+    flowers: pickMany(info.flowers, 3, random),
+    places: pickMany(info.places, 4, random),
+    keyword: pickOne(info.keywords, random) || info.keyword,
+    summary: pickOne(info.summaryPool, random),
+    dateTip: pickOne(info.dateTips, random),
+    direction: info.direction,
+    variantId: stableHash(`${seed}|${ohaeng}|${contextText}`).toString(36),
+  };
+}
 
 // 두 사람의 사주로부터 최종 데이트/궁합 추천 세트를 생성
 function generateCoupleRecommendation(sajuA, sajuB) {
   const compat = analyzeCompatibility(sajuA, sajuB);
-  const primary = OHAENG_INFO[compat.minOhaeng]; // 커플에게 부족해서 보완이 필요한 오행
+
+  // 입력 순서를 바꿔도 같은 두 사람에게 같은 추천이 나오도록 서명을 정렬한다.
+  const pairSignature = [exactSajuSignature(sajuA), exactSajuSignature(sajuB)]
+    .sort()
+    .join('||');
+  const baseSeed = stableHash([
+    pairSignature,
+    compat.minOhaeng,
+    compat.maxOhaeng,
+    compat.relation,
+    compat.yearJijiRelation?.type,
+    compat.dayJijiRelation?.type
+  ].join('|'));
+
   const supportOhaeng = SANGSAENG_PARENT[compat.minOhaeng];
-  const support = OHAENG_INFO[supportOhaeng];
+  const primary = buildRecommendationVariant(
+    compat.minOhaeng,
+    `${baseSeed}|primary`,
+    { ...compat, variantRole: 'primary' }
+  );
+  const support = buildRecommendationVariant(
+    supportOhaeng,
+    `${baseSeed}|support`,
+    { ...compat, variantRole: 'support' }
+  );
 
   return {
     compat,
@@ -560,6 +958,7 @@ function generateCoupleRecommendation(sajuA, sajuB) {
     primary,
     supportOhaeng,
     support,
+    recommendationSeed: baseSeed,
   };
 }
 
@@ -673,22 +1072,37 @@ function generateCoupleRecommendationApprox(entryA, entryB) {
   Object.keys(totalCount).forEach(k => totalCount[k] = countA[k] + countB[k]);
 
   let minOhaeng = '목', minVal = Infinity;
+  let maxOhaeng = '목', maxVal = -Infinity;
   Object.entries(totalCount).forEach(([k, v]) => {
     if (v < minVal) { minVal = v; minOhaeng = k; }
+    if (v > maxVal) { maxVal = v; maxOhaeng = k; }
   });
 
-  const SANGSAENG_PARENT_LOCAL = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
-  const primary = OHAENG_INFO[minOhaeng];
-  const supportOhaeng = SANGSAENG_PARENT_LOCAL[minOhaeng];
-  const support = OHAENG_INFO[supportOhaeng];
+  const pairSignature = [approxEntrySignature(entryA), approxEntrySignature(entryB)]
+    .sort()
+    .join('||');
+  const baseSeed = stableHash(`${pairSignature}|${minOhaeng}|${maxOhaeng}|approx`);
+  const supportOhaeng = SANGSAENG_PARENT[minOhaeng];
+
+  const primary = buildRecommendationVariant(
+    minOhaeng,
+    `${baseSeed}|primary`,
+    { relation: '근사', maxOhaeng, variantRole: 'primary-approx' }
+  );
+  const support = buildRecommendationVariant(
+    supportOhaeng,
+    `${baseSeed}|support`,
+    { relation: '근사', maxOhaeng, variantRole: 'support-approx' }
+  );
 
   return {
     isApprox: true,
-    compat: { totalCount, minOhaeng },
+    compat: { totalCount, minOhaeng, maxOhaeng },
     primaryOhaeng: minOhaeng,
     primary,
     supportOhaeng,
     support,
+    recommendationSeed: baseSeed,
   };
 }
 
