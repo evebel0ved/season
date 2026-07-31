@@ -1705,10 +1705,82 @@
     const style = document.createElement('style');
     style.id = 'save-image-styles';
     style.textContent = `
-      .capture-sandbox{position:fixed;left:-9999px;top:0;width:1040px;background:#ffffff;padding:32px;}
-      .capture-sandbox #recHero{margin:0;}
+      /* 화면에는 영향을 주지 않고 저장용 복제본에만 적용 */
+      .capture-sandbox {
+        position: fixed;
+        left: -100000px;
+        top: 0;
+        width: 1040px;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        overflow: visible;
+        pointer-events: none;
+      }
+
+      .capture-sandbox .capture-clean {
+        width: 100%;
+        margin: 0 !important;
+        /* ::before 대신 실제 카드 배경에 계절색을 적용해 html2canvas 오류 방지 */
+        background-color: #ffffff !important;
+        background-image: radial-gradient(
+          ellipse 95% 85% at 50% 0%,
+          var(--capture-accent-glow, rgba(148,151,163,0.16)),
+          transparent 75%
+        ) !important;
+        background-repeat: no-repeat !important;
+        border: 1px solid var(--line) !important;
+        border-radius: 24px !important;
+        overflow: hidden !important;
+        box-shadow: none !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+        isolation: isolate;
+      }
+
+      /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
+      .capture-sandbox .capture-clean::before,
+      .capture-sandbox .capture-clean::after {
+        content: none !important;
+        display: none !important;
+      }
+
+      /* 애니메이션/호버 변형만 정지하고 카드 내부 디자인은 유지 */
+      .capture-sandbox .capture-clean *,
+      .capture-sandbox .capture-clean *::before,
+      .capture-sandbox .capture-clean *::after {
+        animation: none !important;
+        transition: none !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transform: none !important;
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  async function waitForCaptureAssets(root) {
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (_) {}
+    }
+
+    const images = Array.from(root.querySelectorAll('img'));
+    await Promise.all(images.map(img => {
+      if (img.complete) {
+        if (typeof img.decode === 'function') return img.decode().catch(() => {});
+        return Promise.resolve();
+      }
+      return new Promise(resolve => {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    }));
+
+    /* 복제본의 최종 레이아웃이 확정된 다음 프레임에 캡처 */
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   }
 
   async function handleSaveResultImage(btn) {
@@ -1719,6 +1791,10 @@
     const recHero = document.getElementById('recHero');
     if (!recHero) return;
 
+    /* 현재 화면에 표시된 계절색을 저장용 실제 배경에도 그대로 사용 */
+    const accentGlow = getComputedStyle(recHero).getPropertyValue('--accent-glow').trim()
+      || 'rgba(148,151,163,0.16)';
+
     ensureSaveImageStyles();
     const originalLabel = btn.innerHTML;
     btn.disabled = true;
@@ -1727,6 +1803,11 @@
     // 캡처용으로 rec-hero를 복제한 뒤, 관계궁합 이후의 자세한 설명 블록들은 제거
     const clone = recHero.cloneNode(true);
     clone.removeAttribute('id');
+    clone.classList.add('capture-clean');
+    clone.style.setProperty('--capture-accent-glow', accentGlow);
+    clone.style.setProperty('--accent-glow', accentGlow);
+    clone.style.borderRadius = '24px';
+    clone.style.overflow = 'hidden';
 
     // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
     // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
@@ -1739,14 +1820,43 @@
 
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
+
+    /* 현재 화면의 카드 폭을 유지하되 최대 저장 폭은 1040px로 제한 */
+    const captureWidth = Math.min(1040, Math.max(320, Math.ceil(recHero.getBoundingClientRect().width)));
+    sandbox.style.width = `${captureWidth}px`;
     sandbox.appendChild(clone);
     document.body.appendChild(sandbox);
 
     try {
-      const canvas = await html2canvas(sandbox, {
+      await waitForCaptureAssets(clone);
+
+      /* 바깥 sandbox가 아니라 정리된 카드 자체만 캡처해 여백/모서리 잔상을 차단 */
+      const canvas = await html2canvas(clone, {
         backgroundColor: '#ffffff',
         scale: Math.min(2, window.devicePixelRatio || 2),
         useCORS: true,
+        allowTaint: false,
+        logging: false,
+        imageTimeout: 15000,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: captureWidth,
+        onclone: clonedDocument => {
+          const captured = clonedDocument.querySelector('.capture-clean');
+          if (!captured) return;
+
+          /* 가상 요소 없이도 화면과 같은 계절색과 둥근 테두리가 저장되도록 고정 */
+          captured.style.setProperty('--capture-accent-glow', accentGlow);
+          captured.style.setProperty('--accent-glow', accentGlow);
+          captured.style.backgroundColor = '#ffffff';
+          captured.style.backgroundImage = `radial-gradient(ellipse 95% 85% at 50% 0%, ${accentGlow}, transparent 75%)`;
+          captured.style.backgroundRepeat = 'no-repeat';
+          captured.style.border = '1px solid #e6e7eb';
+          captured.style.borderRadius = '24px';
+          captured.style.overflow = 'hidden';
+          captured.style.boxShadow = 'none';
+          captured.style.filter = 'none';
+        },
       });
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
