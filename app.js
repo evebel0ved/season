@@ -44,19 +44,22 @@
   };
   const RELATION_GENERAL_CAVEAT = '사주에서 이 관계를 볼 때는 오행 궁합 하나만으로 판단하지 않아요. 상극이라도 전체 사주가 잘 맞으면 좋은 인연이 될 수 있고, 상생이라도 다른 요소가 맞지 않으면 어려움을 겪을 수 있어요. 상생·상극은 두 사람 관계의 한 가지 성향을 보여주는 지표로 이해해주세요.';
 
-  function relationExplainHtml(relationKey) {
+  function relationExplainHtml(relationKey, nameA, nameB) {
     const r = RELATION_EXPLAIN[relationKey];
     if (!r) return '';
     const li = arr => arr.map(x => `<li>${x}</li>`).join('');
+    const namesLabel = (nameA && nameB) ? `${nameA} · ${nameB}` : '';
     return `
-      <div class="re-heading">${r.emoji} ${r.title}</div>
-      <div class="re-block">
-        <div class="re-label">연인 ❤️</div>
-        <ul>${li(r.lover)}</ul>
-      </div>
-      <div class="re-block">
-        <div class="re-label">친구 🤝</div>
-        <ul>${li(r.friend)}</ul>
+      <div class="re-heading">${r.emoji} ${r.title}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
+      <div class="re-lover-friend">
+        <div class="re-block">
+          <div class="re-label">연인 ❤️</div>
+          <ul>${li(r.lover)}</ul>
+        </div>
+        <div class="re-block">
+          <div class="re-label">친구 🤝</div>
+          <ul>${li(r.friend)}</ul>
+        </div>
       </div>
       <div class="re-quote">"${r.quote}"</div>
       ${r.caveat ? `<div class="re-block" style="margin-top:10px;">${r.caveat}</div>` : ''}
@@ -133,6 +136,10 @@
   // 입력값 읽기 + 검증
   // ---------------------------------------------------------------
   function readPerson(prefix) {
+    const nameInput = document.getElementById(prefix + '-name').value.trim();
+    const defaultName = prefix === 'a' ? '첫 번째 사람' : '두 번째 사람';
+    const name = nameInput || defaultName;
+
     const yearUnknown = document.getElementById(prefix + '-year-unknown').checked;
     const month = parseInt(document.getElementById(prefix + '-month').value, 10);
     const day = parseInt(document.getElementById(prefix + '-day').value, 10);
@@ -146,17 +153,17 @@
       const leapCheckYear = 2024; // 2/29 검증용 임의 윤년
       const d = new Date(leapCheckYear, month - 1, day);
       if (d.getMonth() !== month - 1 || d.getDate() !== day) {
-        return { error: `존재하지 않는 날짜입니다 (${month}월 ${day}일)` };
+        return { error: `존재하지 않는 날짜입니다 (${month}월 ${day}일)`, name };
       }
-      return { yearUnknown: true, month, day, hour, minute, hourUnknown };
+      return { yearUnknown: true, month, day, hour, minute, hourUnknown, name };
     }
 
     const year = parseInt(document.getElementById(prefix + '-year').value, 10);
     const d = new Date(year, month - 1, day);
     if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) {
-      return { error: `존재하지 않는 날짜입니다 (${year}년 ${month}월 ${day}일)` };
+      return { error: `존재하지 않는 날짜입니다 (${year}년 ${month}월 ${day}일)`, name };
     }
-    return { yearUnknown: false, year, month, day, hour, minute, hourUnknown };
+    return { yearUnknown: false, year, month, day, hour, minute, hourUnknown, name };
   }
 
   // ---------------------------------------------------------------
@@ -172,8 +179,8 @@
     const a = readPerson('a');
     const b = readPerson('b');
 
-    if (a.error) { errorMsg.textContent = 'Person A: ' + a.error; return; }
-    if (b.error) { errorMsg.textContent = 'Person B: ' + b.error; return; }
+    if (a.error) { errorMsg.textContent = `${a.name}: ` + a.error; return; }
+    if (b.error) { errorMsg.textContent = `${b.name}: ` + b.error; return; }
 
     calcBtn.disabled = true;
     resultEl.style.display = 'none';
@@ -365,11 +372,11 @@
     }
 
     const labelA = inputA.yearUnknown
-      ? `Person A · ${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')} (연도 미상)`
-      : `Person A · ${inputA.year}.${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')}`;
+      ? `${inputA.name} · ${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')} (연도 미상)`
+      : `${inputA.name} · ${inputA.year}.${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')}`;
     const labelB = inputB.yearUnknown
-      ? `Person B · ${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')} (연도 미상)`
-      : `Person B · ${inputB.year}.${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')}`;
+      ? `${inputB.name} · ${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')} (연도 미상)`
+      : `${inputB.name} · ${inputB.year}.${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')}`;
 
     if (entryA.approx) renderPillarCardApprox('A', entryA.approx, labelA);
     else renderPillarCardExact('A', entryA.exact, labelA);
@@ -384,18 +391,19 @@
 
     // 관계 배지 (근사 모드에서는 일간 비교가 불확실하므로 문구를 다르게)
     const explainEl = document.getElementById('relationExplainBody');
+    const nameA = inputA.name, nameB = inputB.name;
     if (anyApprox) {
       document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
       explainEl.innerHTML = '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계 궁합은 이번 결과에서 제공하지 않아요.</div>';
     } else {
       const relationLabels = {
-        상생: '두 일간이 서로를 북돋는 상생(相生) 관계예요',
-        상극: '두 일간이 팽팽하게 부딪히는 상극(相剋) 관계예요',
-        동기: '두 일간이 같은 기운을 공유하는 동기(同氣) 관계예요',
-        중립: '두 일간이 특별한 상호작용 없이 독립적인 관계예요',
+        상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
+        상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
+        동기: `${nameA}님과 ${nameB}님은 같은 기운을 공유하는 동기(同氣) 관계예요`,
+        중립: `${nameA}님과 ${nameB}님은 특별한 상호작용 없이 독립적인 관계예요`,
       };
       document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
-      explainEl.innerHTML = relationExplainHtml(rec.compat.relation);
+      explainEl.innerHTML = relationExplainHtml(rec.compat.relation, nameA, nameB);
     }
 
     // 메인 추천
@@ -423,7 +431,7 @@
     // 보완 설명
     const s = rec.support;
     let note =
-      `두 분의 사주 기운 중 <b>${rec.primaryOhaeng}(${hanjaMap[rec.primaryOhaeng]}) 기운이 가장 적어</b> 이를 보완할 상징들을 우선 추천했습니다. ` +
+      `${nameA}님과 ${nameB}님의 사주 기운 중 <b>${rec.primaryOhaeng}(${hanjaMap[rec.primaryOhaeng]}) 기운이 가장 적어</b> 이를 보완할 상징들을 우선 추천했습니다. ` +
       `오행 상생 이론에 따르면 <b>${rec.supportOhaeng}(${hanjaMap[rec.supportOhaeng]})의 기운이 ${rec.primaryOhaeng}을 낳아 북돋우므로</b>, ` +
       `${s.season}(${s.timeRange})의 분위기나 ${s.colors[0]} 계열을 함께 곁들이는 것도 좋은 조합이에요.`;
     if (anyApprox) {
