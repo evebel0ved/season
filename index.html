@@ -224,6 +224,56 @@
   }
   .year-unknown-row input { width: auto; }
 
+  /* ---------- Photo upload ---------- */
+  .photo-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .photo-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-panel-raised);
+    border: 1px dashed var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .photo-preview span { font-size: 18px; color: var(--ink-faint); font-weight: 300; }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-upload-actions { display: flex; align-items: center; gap: 8px; }
+  .photo-upload-btn, .photo-remove-btn {
+    background: #f7f7f9;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .photo-upload-btn:hover, .photo-remove-btn:hover { border-color: var(--accent-2); background: #ffffff; }
+  .photo-remove-btn { color: var(--hwa); }
+
+  .couple-photo-field {
+    max-width: 420px;
+    margin: 0 auto 28px;
+  }
+  .couple-photo-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+  }
+  .couple-photo-preview {
+    width: 64px;
+    height: 64px;
+  }
+
   .approx-badge {
     display: inline-block;
     font-size: 11.5px;
@@ -434,30 +484,64 @@
   .rec-hero::before {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse 60% 50% at 50% 0%, var(--accent-glow, rgba(148,151,163,0.10)), transparent);
+    background: radial-gradient(ellipse 95% 85% at 50% 0%, var(--accent-glow, rgba(148,151,163,0.16)), transparent 75%);
     pointer-events: none;
   }
   .rec-kicker {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     color: var(--ink-faint);
-    font-size: 14px;
+    font-size: 12px;
     letter-spacing: 0.1em;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .rec-hanja {
     font-family: 'Noto Serif KR', serif;
-    font-size: 72px;
+    font-size: 56px;
     font-weight: 900;
     line-height: 1;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .rec-season {
     font-family: 'Noto Serif KR', serif;
-    font-size: 28px;
-    margin-bottom: 6px;
+    font-size: 22px;
+    margin-bottom: 5px;
   }
-  .rec-keyword { color: var(--ink-dim); font-size: 15px; margin-bottom: 32px; }
+  .rec-keyword { color: var(--ink-dim); font-size: 13px; margin-bottom: 28px; }
+
+  /* ---------- Couple photo frame (원형 사진 프레임) ---------- */
+  .rec-photo-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: -14px;
+    margin: 0 auto 18px;
+  }
+  .rec-photo-frame {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    padding: 4px;
+    background: var(--photo-ring-color, var(--su-dim));
+  }
+  .rec-photo-frame .rec-photo-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-panel-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 3px var(--bg-panel);
+  }
+  .rec-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   .rec-details {
     display: grid;
@@ -638,13 +722,13 @@
 
   .relation-badge {
     display: inline-block;
-    font-size: 12.5px;
-    padding: 5px 14px;
+    font-size: 11px;
+    padding: 4px 12px;
     border-radius: 20px;
     background: var(--bg-panel-raised);
     border: 1px solid var(--line);
     color: var(--accent-3);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   footer {
@@ -689,183 +773,11 @@
     </div>
   </header>
 
-  <section class="input-stage">
-    <div class="person-card person-a">
-      <div class="person-label">Person A</div>
-      <div class="field" style="margin-bottom:20px;">
-        <label for="a-name">이름 (선택)</label>
-        <input type="text" id="a-name" placeholder="첫 번째 사람" maxlength="12" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="a-date">생년월일 (양력)</label>
-        <div class="field-row">
-          <select id="a-year"></select>
-          <select id="a-month"></select>
-          <select id="a-day"></select>
-        </div>
-        <div class="year-unknown-row">
-          <input type="checkbox" id="a-year-unknown">
-          <label for="a-year-unknown" style="margin:0;">태어난 연도를 몰라요 (월/일만으로 경향 추정)</label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="a-time">태어난 시각</label>
-        <div class="field-row-time">
-          <select id="a-hour"></select>
-          <select id="a-minute"></select>
-        </div>
-        <div class="unknown-time">
-          <input type="checkbox" id="a-unknown">
-          <label for="a-unknown" style="margin:0;">태어난 시간을 몰라요 (정오 12시로 계산)</label>
-        </div>
-      </div>
-    </div>
-
-    <div class="connector">×</div>
-
-    <div class="person-card person-b">
-      <div class="person-label">Person B</div>
-      <div class="field" style="margin-bottom:20px;">
-        <label for="b-name">이름 (선택)</label>
-        <input type="text" id="b-name" placeholder="두 번째 사람" maxlength="12" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="b-date">생년월일 (양력)</label>
-        <div class="field-row">
-          <select id="b-year"></select>
-          <select id="b-month"></select>
-          <select id="b-day"></select>
-        </div>
-        <div class="year-unknown-row">
-          <input type="checkbox" id="b-year-unknown">
-          <label for="b-year-unknown" style="margin:0;">태어난 연도를 몰라요 (월/일만으로 경향 추정)</label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="b-time">태어난 시각</label>
-        <div class="field-row-time">
-          <select id="b-hour"></select>
-          <select id="b-minute"></select>
-        </div>
-        <div class="unknown-time">
-          <input type="checkbox" id="b-unknown">
-          <label for="b-unknown" style="margin:0;">태어난 시간을 몰라요 (정오 12시로 계산)</label>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="cta-row">
-    <button class="primary" id="calcBtn">사주 계산하기</button>
-    <div class="error-msg" id="errorMsg"></div>
-  </div>
-
-  <div class="loading-overlay" id="loading">
-    <div class="spin"></div>
-    <div>육십갑자를 맞춰보는 중…</div>
-  </div>
-
-  <div id="result">
-
-    <div class="divider"><span id="pillarsDividerLabel">사주팔자 명식</span></div>
-    <div class="approx-note" id="approxNote" style="display:none;"></div>
-    <div class="pillars-section">
-      <div class="pillars-grid">
-        <div class="pillar-card" id="pillarCardA">
-          <h3 id="pillarTitleA">Person A</h3>
-          <div class="pillar-chars" id="pillarCharsA"></div>
-          <div class="ohaeng-bar" id="ohaengBarA"></div>
-        </div>
-        <div class="pillar-card" id="pillarCardB">
-          <h3 id="pillarTitleB">Person B</h3>
-          <div class="pillar-chars" id="pillarCharsB"></div>
-          <div class="ohaeng-bar" id="ohaengBarB"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="wheel-section">
-      <div class="wheel-title">두 사람의 오행 분포</div>
-      <div class="wheel-desc">여덟 글자씩, 총 열여섯 글자에 담긴 기운의 균형입니다</div>
-      <svg id="wheelSvg" viewBox="0 0 400 400"></svg>
-    </div>
-
-    <div class="divider"><span>추천 궁합 기운</span></div>
-
-    <div class="rec-hero" id="recHero">
-      <div class="relation-badge" id="relationBadge"></div>
-      <div class="rec-kicker">두 사람에게 가장 필요한 기운은</div>
-      <div class="rec-hanja" id="recHanja"></div>
-      <div class="rec-season" id="recSeason"></div>
-      <div class="rec-keyword" id="recKeyword"></div>
-
-      <div class="rec-details">
-        <div class="rec-detail-card">
-          <div class="dk">Time · 시간대</div>
-          <div class="dv" id="recTime"></div>
-          <div class="dv-sub" id="recTimeDetail"></div>
-        </div>
-        <div class="rec-detail-card">
-          <div class="dk">Color · 색상</div>
-          <div class="tag-list" id="recColors"></div>
-        </div>
-        <div class="rec-detail-card">
-          <div class="dk">Flower · 꽃</div>
-          <div class="tag-list" id="recFlowers"></div>
-        </div>
-        <div class="rec-detail-card" style="text-align:left;">
-          <div class="dk">Place · 추천 장소</div>
-          <div class="tag-list" id="recPlaces"></div>
-        </div>
-      </div>
-
-      <div class="rec-detail-card relation-explain" id="relationExplain" style="text-align:left; margin-top:20px;">
-        <div class="dk" id="relationExplainTitle">Relation · 관계 궁합</div>
-        <div class="relation-explain-body" id="relationExplainBody"></div>
-      </div>
-
-      <div class="deep-compat" id="deepCompat" style="display:none;">
-        <div class="dc-title">🧭 더 깊이 본 궁합</div>
-        <div class="dc-grid">
-          <div class="dc-item" id="dcYearItem">
-            <div class="dc-label">Year Branch · 띠 궁합 (년지)</div>
-            <div id="dcYearBadge"></div>
-            <div class="dc-desc" id="dcYearDesc"></div>
-          </div>
-          <div class="dc-item" id="dcDayItem">
-            <div class="dc-label">Day Branch · 부부궁 궁합 (일지)</div>
-            <div id="dcDayBadge"></div>
-            <div class="dc-desc" id="dcDayDesc"></div>
-          </div>
-        </div>
-        <div class="dc-complement" id="dcComplement"></div>
-      </div>
-
-      <div class="support-note" id="supportNote"></div>
-    </div>
-
-    <div class="save-image-row">
-      <button class="secondary" id="saveImageBtn" type="button">
-        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        결과 이미지로 저장
-      </button>
-      <div class="save-image-note">추천 궁합 기운 요약까지만 이미지로 저장돼요</div>
-    </div>
-
-  </div>
-</div>
-
-<footer>
-  <div>오행 배속 이론(계절·시간·색·방위)을 바탕으로 색상·꽃·장소를 현대적으로 해석해 구성했습니다. 재미로 즐겨주세요.</div>
-  <div style="margin-top:6px;">절기 계산은 천문 근사식을 사용하여, 절입 시각 당일 출생인 경우 ±1시간 오차가 있을 수 있습니다.</div>
-</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="saju-core-browser.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+  <section class="couple-photo-field">
+    <label for="couple-photo">두 사람 사진 (선택)</label>
+    <div class="photo-upload-row">
+      <div class="photo-preview couple-photo-preview" id="couple-photo-preview"><span>+</span></div>
+      <div class="photo-upload-actions">
+        <input type="file" id="couple-photo" accept="image/*" style="display:none;">
+        <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
+        <button type="button" class="photo-remove-btn" id="couple-photo-remove" sty
