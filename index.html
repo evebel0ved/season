@@ -27,6 +27,12 @@
     --su: #7ba0c4;
     --su-dim: #dde8f1;
 
+    /* 첫 번째/두 번째 사람 구분 컬러 (오행 컬러와 별개) */
+    --person-a: #d98aa8;
+    --person-a-dim: #f6dde8;
+    --person-b: #7ba0c4;
+    --person-b-dim: #dde8f1;
+
     /* 포인트 컬러 — 은은한 연회색 그라데이션 */
     --gold: #9497a3;
     --accent-1: #b7bac4;
@@ -144,8 +150,8 @@
     box-shadow: 0 2px 4px rgba(28,29,33,0.04), 0 16px 32px rgba(28,29,33,0.06);
     transform: translateY(-2px);
   }
-  .person-card.person-a { border-top: 2px solid var(--hwa-dim); }
-  .person-card.person-b { border-top: 2px solid var(--su-dim); }
+  .person-card.person-a { border-top: 2px solid var(--person-a-dim); }
+  .person-card.person-b { border-top: 2px solid var(--person-b-dim); }
 
   .person-label {
     font-family: 'Noto Serif KR', serif;
@@ -155,8 +161,8 @@
     text-transform: uppercase;
     margin-bottom: 4px;
   }
-  .person-a .person-label { color: var(--hwa); }
-  .person-b .person-label { color: var(--su); }
+  .person-a .person-label { color: var(--person-a); }
+  .person-b .person-label { color: var(--person-b); }
 
   .person-title {
     font-family: 'Noto Serif KR', serif;
@@ -177,7 +183,7 @@
   .field-row { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
   .field-row-time { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-  input[type="number"], select {
+  input[type="number"], input[type="text"], select {
     width: 100%;
     background: #f7f7f9;
     border: 1px solid var(--line);
@@ -432,8 +438,8 @@
 
   .rec-details {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     text-align: left;
     margin-top: 32px;
     position: relative;
@@ -470,15 +476,12 @@
     background: #fff;
   }
 
-  /* ---------- Place + Relation explanation pair ---------- */
-  .rec-pair-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 20px;
-    align-items: stretch;
+  /* ---------- Relation explanation (full-width third row) ---------- */
+  .relation-explain {
+    background: linear-gradient(160deg, var(--bg-panel-raised) 0%, var(--bg-panel) 100%);
+    border: 1px solid var(--line);
   }
-  @media (max-width: 700px) { .rec-pair-row { grid-template-columns: 1fr; } }
+  .relation-explain:hover { transform: none; box-shadow: none; }
 
   .relation-explain-body {
     font-size: 13px;
@@ -486,32 +489,44 @@
     line-height: 1.75;
   }
   .relation-explain-body .re-heading {
-    font-size: 14.5px;
+    font-size: 15.5px;
     font-weight: 600;
     color: var(--ink);
-    margin-bottom: 10px;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
   }
-  .relation-explain-body .re-block { margin-bottom: 12px; }
-  .relation-explain-body .re-block:last-of-type { margin-bottom: 0; }
+  .relation-explain-body .re-names {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.01em;
+  }
+  .relation-explain-body .re-lover-friend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 560px) { .relation-explain-body .re-lover-friend { grid-template-columns: 1fr; gap: 14px; } }
+  .relation-explain-body .re-block { margin-bottom: 0; }
   .relation-explain-body .re-label {
     font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--ink-faint);
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
   .relation-explain-body ul {
     margin: 0 0 0 18px;
     padding: 0;
   }
-  .relation-explain-body li { margin-bottom: 2px; }
+  .relation-explain-body li { margin-bottom: 3px; }
   .relation-explain-body .re-quote {
-    margin-top: 10px;
-    padding: 10px 12px;
+    margin-top: 16px;
+    padding: 10px 14px;
     background: var(--bg-panel);
     border-left: 2px solid var(--accent-2);
     border-radius: 4px;
@@ -594,7 +609,10 @@
   <section class="input-stage">
     <div class="person-card person-a">
       <div class="person-label">Person A</div>
-      <div class="person-title">첫 번째 사람</div>
+      <div class="field" style="margin-bottom:20px;">
+        <label for="a-name">이름 (선택)</label>
+        <input type="text" id="a-name" placeholder="첫 번째 사람" maxlength="12" autocomplete="off">
+      </div>
 
       <div class="field">
         <label for="a-date">생년월일 (양력)</label>
@@ -626,7 +644,10 @@
 
     <div class="person-card person-b">
       <div class="person-label">Person B</div>
-      <div class="person-title">두 번째 사람</div>
+      <div class="field" style="margin-bottom:20px;">
+        <label for="b-name">이름 (선택)</label>
+        <input type="text" id="b-name" placeholder="두 번째 사람" maxlength="12" autocomplete="off">
+      </div>
 
       <div class="field">
         <label for="b-date">생년월일 (양력)</label>
@@ -713,18 +734,15 @@
           <div class="dk">Flower · 꽃</div>
           <div class="tag-list" id="recFlowers"></div>
         </div>
-      </div>
-
-      <div class="rec-pair-row">
         <div class="rec-detail-card" style="text-align:left;">
           <div class="dk">Place · 추천 장소</div>
           <div class="tag-list" id="recPlaces"></div>
         </div>
+      </div>
 
-        <div class="rec-detail-card relation-explain" id="relationExplain" style="text-align:left;">
-          <div class="dk" id="relationExplainTitle">Relation · 관계 궁합</div>
-          <div class="relation-explain-body" id="relationExplainBody"></div>
-        </div>
+      <div class="rec-detail-card relation-explain" id="relationExplain" style="text-align:left; margin-top:20px;">
+        <div class="dk" id="relationExplainTitle">Relation · 관계 궁합</div>
+        <div class="relation-explain-body" id="relationExplainBody"></div>
       </div>
 
       <div class="support-note" id="supportNote"></div>
