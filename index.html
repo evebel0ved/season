@@ -990,6 +990,61 @@
     }
   }
 
+
+  /* ---------- Mobile result typography: compact and consistent ---------- */
+  @media (max-width: 900px) {
+    /* 결과 카드의 실제 설명 본문은 모두 같은 크기로 통일합니다. */
+    #result .rec-detail-card .dv,
+    #result .rec-detail-card .dv-sub,
+    #result .relation-explain-body,
+    #result .relation-explain-body .re-heading,
+    #result .relation-explain-body .re-block,
+    #result .relation-explain-body .re-quote,
+    #result .relation-explain-body .re-caveat,
+    #result .compat-summary-card,
+    #result .compat-detail-wrap .compat-card p,
+    #result .compat-detail-wrap .compat-list,
+    #result .compat-detail-wrap .compat-muted,
+    #result .dc-item .dc-desc,
+    #result .dc-complement,
+    #result .support-note,
+    #result .rec-date-list,
+    #result .rec-touch-summary,
+    #result .rec-touch-list,
+    #result .rec-touch-why,
+    #result .rec-touch-caution,
+    #result .flower-detail-row {
+      font-size: 10.5px !important;
+      line-height: 1.65 !important;
+    }
+
+    /* 카드 안의 소제목도 한 가지 크기로 맞춥니다. */
+    #result .rec-detail-card .dk,
+    #result .relation-explain-body .re-heading,
+    #result .compat-detail-wrap .compat-card h4,
+    #result .rec-extra-title,
+    #result .flower-detail-name {
+      font-size: 11.5px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 보조 라벨과 칩은 본문보다 한 단계 작게 통일합니다. */
+    #result .relation-explain-body .re-names,
+    #result .relation-explain-body .re-label,
+    #result .compat-detail-wrap .compat-chip,
+    #result .dc-label,
+    #result .rec-touch-level-label,
+    #result .flower-detail-row b {
+      font-size: 9.5px !important;
+      line-height: 1.45 !important;
+    }
+
+    #result .rec-touch-level-value {
+      font-size: 10.5px !important;
+      line-height: 1.5 !important;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
