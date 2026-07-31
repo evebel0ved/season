@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Season — 사주로 찾는 우리의 계절</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+Infant:ital,wght@0,500;0,600;1,500;1,600;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-void: #fbfbfc;
     --bg-panel: #ffffff;
     --bg-panel-raised: #f4f4f6;
-    --ink: #5f626b;
+    --ink: #1c1d21;
     --ink-dim: #6b6d76;
     --ink-faint: #9fa1a9;
     --line: #e6e7eb;
@@ -40,7 +40,6 @@
     --accent-3: #6f727e;
     --accent-grad: linear-gradient(135deg, #c7cad3 0%, #9a9dab 52%, #767a88 100%);
     --accent-grad-soft: linear-gradient(120deg, #d6d8df 0%, #aeb1bd 55%, #90939f 100%);
-    --flower-grad: linear-gradient(135deg, var(--bg-panel-raised) 0%, #ececf0 100%);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -84,21 +83,13 @@
     color: var(--ink);
   }
 
-  .season-title {
-    margin: 0;
-    font-family: 'Cormorant Infant', 'Cormorant Garamond', serif;
-    font-size: clamp(38px, 6vw, 62px);
-    font-weight: 600;
-    font-style: italic;
-    line-height: 1.08;
-    letter-spacing: 0.015em;
-    background: linear-gradient(120deg, #858893 0%, #666a74 55%, #8f929c 100%);
+  h1 em {
+    font-style: normal;
+    background: var(--accent-grad-soft);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-
-  li::marker { color: var(--accent-2); }
 
   .sub {
     margin-top: 18px;
@@ -135,16 +126,15 @@
   /* ---------- Input Section ---------- */
   .input-stage {
     display: grid;
-    grid-template-columns: auto 1fr auto 1fr;
+    grid-template-columns: 1fr auto 1fr;
     gap: 20px;
     align-items: stretch;
     margin: 40px 0;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 760px) {
     .input-stage { grid-template-columns: 1fr; }
     .connector { display: none; }
-    .photo-column { order: -1; }
   }
 
   .person-card {
@@ -269,52 +259,19 @@
   .photo-upload-btn:hover, .photo-remove-btn:hover { border-color: var(--accent-2); background: #ffffff; }
   .photo-remove-btn { color: var(--hwa); }
 
-  /* 사진첨부 칼럼 — input-stage 맨 왼쪽에 person-card와 나란히 배치 */
-  .photo-column {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
   .couple-photo-field {
-    width: 148px;
-    background: var(--bg-panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 22px 16px;
-    text-align: center;
-    box-shadow: 0 1px 2px rgba(28,29,33,0.03), 0 8px 24px rgba(28,29,33,0.03);
+    max-width: 420px;
+    margin: 0 auto 28px;
   }
   .couple-photo-field label {
     display: block;
-    margin-bottom: 14px;
-    font-size: 12px;
-    line-height: 1.5;
+    margin-bottom: 8px;
+    font-size: 12.5px;
     color: var(--ink-dim);
   }
-  .couple-photo-field .photo-upload-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .couple-photo-field .photo-upload-actions {
-    flex-direction: column;
-    gap: 6px;
-  }
-  .couple-photo-field .photo-upload-btn,
-  .couple-photo-field .photo-remove-btn {
-    width: 100%;
-  }
   .couple-photo-preview {
-    width: 76px;
-    height: 76px;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 900px) {
-    .couple-photo-field { width: 100%; max-width: 420px; margin: 0 auto; }
-    .couple-photo-field .photo-upload-row { flex-direction: row; }
-    .couple-photo-field .photo-upload-actions { flex-direction: row; }
-    .couple-photo-field .photo-upload-btn,
-    .couple-photo-field .photo-remove-btn { width: auto; }
+    width: 64px;
+    height: 64px;
   }
 
   .approx-badge {
@@ -383,9 +340,9 @@
   .cta-row { text-align: center; margin: 44px 0 8px; }
 
   button.primary {
-    background: var(--flower-grad);
-    color: #666a73;
-    border: 1px solid var(--line);
+    background: var(--accent-grad);
+    color: #ffffff;
+    border: none;
     padding: 16px 44px;
     font-size: 15.5px;
     font-weight: 600;
@@ -393,15 +350,10 @@
     border-radius: 999px;
     cursor: pointer;
     font-family: 'Noto Sans KR', sans-serif;
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s, background 0.2s;
-    box-shadow: 0 8px 22px rgba(120,123,136,0.14);
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 24px rgba(120,123,136,0.22);
   }
-  button.primary:hover {
-    transform: translateY(-1px);
-    background: linear-gradient(135deg, #f8f8fa 0%, #e6e6eb 100%);
-    border-color: #d5d6dc;
-    box-shadow: 0 10px 26px rgba(120,123,136,0.20);
-  }
+  button.primary:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(120,123,136,0.32); }
   button.primary:active { transform: translateY(0); }
   button.primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
@@ -557,32 +509,6 @@
   }
   .rec-keyword { color: var(--ink-dim); font-size: 13px; margin-bottom: 28px; }
 
-  /* ---------- Rec hero top (사진 + 텍스트 영역) ---------- */
-  .rec-hero-top {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .rec-hero-text { width: 100%; }
-
-  /* 사진이 첨부된 경우: 사진 왼쪽 / 내용 오른쪽으로 가로 배치 */
-  .rec-hero-top.has-photo {
-    flex-direction: row;
-    align-items: center;
-    text-align: left;
-    gap: 32px;
-  }
-  .rec-hero-top.has-photo .rec-photo-wrap { margin: 0; flex-shrink: 0; }
-  .rec-hero-top.has-photo .rec-hero-text { text-align: left; }
-  @media (max-width: 560px) {
-    .rec-hero-top.has-photo {
-      flex-direction: column;
-      text-align: center;
-      gap: 18px;
-    }
-    .rec-hero-top.has-photo .rec-hero-text { text-align: center; }
-  }
-
   /* ---------- Couple photo frame (원형 사진 프레임) ---------- */
   .rec-photo-wrap {
     display: flex;
@@ -647,7 +573,6 @@
   }
   .rec-detail-card .dv { font-size: 15px; color: var(--ink); }
   .rec-detail-card .dv-sub { font-size: 12.5px; color: var(--ink-dim); margin-top: 6px; }
-
   .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .tag {
     font-size: 12.5px;
@@ -660,8 +585,7 @@
 
   /* ---------- Relation explanation (full-width third row) ---------- */
   .relation-explain {
-    /* Flower · 꽃 카드와 동일한 회색 배경 계열의 은은한 그라데이션 */
-    background: var(--flower-grad);
+    background: linear-gradient(160deg, var(--bg-panel-raised) 0%, var(--bg-panel) 100%);
     border: 1px solid var(--line);
   }
   .relation-explain:hover { transform: none; box-shadow: none; }
@@ -842,28 +766,26 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Saju &amp; Elements</div>
-    <h1 class="season-title">Finding the Colors of Our Season</h1>
+    <em>Finding the Colors of Our Season</em>
     <p class="sub">생년월일시를 입력하면 명리학의 오행(五行) 이론에 따라 두 사람에게 부족한 기운을 찾아, 어울리는 계절·시간대·색·꽃·장소를 알려드립니다.</p>
     <div class="ring-deco">
       <span>木</span><span>火</span><span>土</span><span>金</span><span>水</span>
     </div>
   </header>
 
-  <section class="input-stage">
-    <div class="photo-column">
-      <div class="couple-photo-field">
-        <label for="couple-photo">두 사람 사진<br>(선택)</label>
-        <div class="photo-upload-row">
-          <div class="photo-preview couple-photo-preview" id="couple-photo-preview"><span>+</span></div>
-          <div class="photo-upload-actions">
-            <input type="file" id="couple-photo" accept="image/*" style="display:none;">
-            <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
-            <button type="button" class="photo-remove-btn" id="couple-photo-remove" style="display:none;">제거</button>
-          </div>
-        </div>
+  <section class="couple-photo-field">
+    <label for="couple-photo">두 사람 사진 (선택)</label>
+    <div class="photo-upload-row">
+      <div class="photo-preview couple-photo-preview" id="couple-photo-preview"><span>+</span></div>
+      <div class="photo-upload-actions">
+        <input type="file" id="couple-photo" accept="image/*" style="display:none;">
+        <button type="button" class="photo-upload-btn" id="couple-photo-btn">사진 선택</button>
+        <button type="button" class="photo-remove-btn" id="couple-photo-remove" style="display:none;">제거</button>
       </div>
     </div>
+  </section>
 
+  <section class="input-stage">
     <div class="person-card person-a">
       <div class="person-label">Person A</div>
       <div class="field" style="margin-bottom:20px;">
@@ -971,18 +893,14 @@
     <div class="divider"><span>추천 궁합 기운</span></div>
 
     <div class="rec-hero" id="recHero">
-      <div class="rec-hero-top" id="recHeroTop">
-        <div class="rec-photo-wrap" id="recPhotoWrap" style="display:none;">
-          <div class="rec-photo-frame" id="recPhotoFrame"><div class="rec-photo-inner" id="recPhotoInner"></div></div>
-        </div>
-        <div class="rec-hero-text" id="recHeroText">
-          <div class="relation-badge" id="relationBadge"></div>
-          <div class="rec-kicker">What you both need most</div>
-          <div class="rec-hanja" id="recHanja"></div>
-          <div class="rec-season" id="recSeason"></div>
-          <div class="rec-keyword" id="recKeyword"></div>
-        </div>
+      <div class="rec-photo-wrap" id="recPhotoWrap" style="display:none;">
+        <div class="rec-photo-frame" id="recPhotoFrame"><div class="rec-photo-inner" id="recPhotoInner"></div></div>
       </div>
+      <div class="relation-badge" id="relationBadge"></div>
+      <div class="rec-kicker">What you both need most</div>
+      <div class="rec-hanja" id="recHanja"></div>
+      <div class="rec-season" id="recSeason"></div>
+      <div class="rec-keyword" id="recKeyword"></div>
 
       <div class="rec-details">
         <div class="rec-detail-card">
