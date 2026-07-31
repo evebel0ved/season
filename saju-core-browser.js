@@ -816,6 +816,43 @@ const OHAENG_INFO = {
 };
 
 
+// 장소 이름과 실제 데이트 행동을 분리하기 위한 후보군
+// places에는 화면에 짧게 표시할 장소명만 담고,
+// 기존 OHAENG_INFO.places의 구체적인 행동 문장은 dateIdeas로 활용한다.
+const OHAENG_LOCATION_OPTIONS = {
+  목: [
+    '식물원', '수목원', '숲길 산책로', '대나무 숲', '차밭',
+    '허브 농원', '정원 카페', '한강공원', '근교 둘레길', '자전거 공원',
+    '독립서점', '플라워 마켓', '야외 식물 전시', '캠핑장', '도심 생태공원',
+    '지역 축제장', '여행 박람회', '공방 거리', '새로 생긴 카페', '사진 산책길'
+  ],
+  화: [
+    '라이브 공연장', '야시장', '노을 해변', '스포츠 경기장', '놀이공원',
+    '노래방', '루프탑', '댄스 스튜디오', '쿠킹 스튜디오', '지역 축제장',
+    '코미디 공연장', '포토부스', '보드게임 카페', '야외 영화제', '불꽃놀이 명소',
+    '번화가 맛집 거리', '테마 파티룸', '색감이 강한 전시관', '드라이브 코스', '공연장 인근 거리'
+  ],
+  토: [
+    '도자기 공방', '한옥 마을', '온천', '찜질방', '브런치 카페',
+    '베이킹 스튜디오', '전통시장', '근교 숙소', '공원 피크닉장', '전통찻집',
+    '생활용품 편집숍', '농장 체험장', '보드게임 카페', '향초 공방', '비누 공방',
+    '족욕 카페', '쿠킹 스튜디오', '한식당', '동네 단골 카페', '조용한 정원'
+  ],
+  금: [
+    '미술관', '전망대', '사찰', '정원', '금속공예 공방',
+    '주얼리 공방', '예약제 레스토랑', '사진관', '향수 공방', '클래식 공연장',
+    '디자인 편집숍', '북카페', '건축 전시관', '전망 카페', '디자인 페어',
+    '공예 전시장', '소규모 연주회장', '기념품 숍', '앨범 제작 공방', '정돈된 산책로'
+  ],
+  수: [
+    '강변 산책로', '수족관', '조용한 카페', '호숫가', '스파',
+    '온수풀', '심야 영화관', '재즈 공연장', '북카페', '천문대',
+    '조용한 해변', '야간 산책로', '근교 숙소', '족욕 카페', '마사지 숍',
+    '뮤지엄 야간 개장', '심야 드라이브 코스', '전통찻집', '별빛 명소', '창가가 있는 카페'
+  ],
+};
+
+
 // ===================================================================
 // 꽃말 기반 추천
 //
@@ -1077,7 +1114,7 @@ function complementFlowerTheme(ohaeng, context) {
       key: 'complement',
       title: '서로 주고받는 도움에 대한 감사',
       tags: ['mutualSupport', 'gratitude', 'partnership', 'support', 'devotion', 'trust'],
-      intro: '두 사람이 서로 다른 방식으로 힘을 보태는 관계이므로, 받은 배려를 당연하게 여기지 말고 다시 돌려주라는 의미로',
+      intro: '두 사람이 서로 다른 방식으로 힘을 보태는 관계라서, 받은 배려를 당연하게 여기지 말고 다시 돌려주라는 의미로',
     };
   }
   if (aFillsB.length > 0 || bFillsA.length > 0) {
@@ -1151,7 +1188,7 @@ function selectFlowersByMeaning(pool, ohaeng, seed, context) {
       meaning: best.candidate.meaning,
       tags: best.candidate.tags,
       theme: theme.title,
-      reason: `${theme.intro} ${withObjectParticle(best.candidate.name)} 골랐어요. 꽃말은 ‘${best.candidate.meaning}’이에요.${matchText}`,
+      reason: `${theme.intro} ${withObjectParticle(best.candidate.name)} 골랐어요.${matchText}`,
       score: Math.floor(best.score),
     });
   });
@@ -1269,7 +1306,8 @@ function buildRecommendationVariant(ohaeng, seed, context) {
     flowers: flowerDetails.map(item => item.name),
     flowerDetails,
     flowerSelectionMethod: 'meaning-score',
-    places: pickMany(info.places, 4, random),
+    places: pickMany(OHAENG_LOCATION_OPTIONS[ohaeng] || [], 4, random),
+    dateIdeas: pickMany(info.places, 3, random),
     keyword: pickOne(info.keywords, random) || info.keyword,
     summary: pickOne(info.summaryPool, random),
     dateTip: pickOne(info.dateTips, random),
