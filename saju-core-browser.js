@@ -343,6 +343,85 @@ function calculateSaju(year, month, day, hour, minute) {
   return result;
 }
 
+// ===================================================================
+// 지지(地支) 관계 — 육합(六合)/삼합(三合)/충(沖)/형(刑)/해(害)
+// 명리학에서 두 사람의 궁합을 볼 때 일간(오행) 관계뿐 아니라
+// 년지(띠)와 일지(부부궁)의 지지 관계도 함께 본다.
+// ===================================================================
+
+// 육합(六合): 지지끼리 짝을 이뤄 화합하는 관계. 서로를 편안하게 해주는 궁합.
+// 자축합토, 인해합목, 묘술합화, 진유합금, 사신합수, 오미합화
+const YUKHAP_PAIRS = [
+  [0, 1],  // 자-축
+  [2, 11], // 인-해
+  [3, 10], // 묘-술
+  [4, 9],  // 진-유
+  [5, 8],  // 사-신
+  [6, 7],  // 오-미
+];
+
+// 삼합(三合): 세 지지가 모여 하나의 강한 오행 기운을 이루는 관계 중 두 지지만 겹쳐도
+// "반합(半合)"으로 통하는 좋은 궁합으로 본다. 여기서는 삼합 그룹 소속 여부로 판정.
+// 신자진(수국), 인오술(화국), 사유축(금국), 해묘미(목국)
+const SAMHAP_GROUPS = [
+  [8, 0, 4],  // 신-자-진 (水局)
+  [2, 6, 10], // 인-오-술 (火局)
+  [5, 9, 1],  // 사-유-축 (金局)
+  [11, 3, 7], // 해-묘-미 (木局)
+];
+
+// 충(沖): 정반대 방향의 지지끼리 강하게 부딪히는 관계. 서로 다른 기질이 정면충돌.
+// 자오충, 축미충, 인신충, 묘유충, 진술충, 사해충 (지지 순서상 6칸씩 차이)
+const CHUNG_PAIRS = [
+  [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11],
+];
+
+// 형(刑): 서로를 은근히 갉아먹거나 트집 잡기 쉬운 껄끄러운 관계.
+// 인사신(무은지형), 축술미(지세지형), 자묘(무례지형), 진오유해(자형 포함 간소화)
+const HYEONG_GROUPS = [
+  [2, 5, 8],  // 인-사-신
+  [1, 10, 7], // 축-술-미
+  [0, 3],     // 자-묘
+];
+const JAHYEONG = [4, 6, 9, 11]; // 진/오/유/해는 같은 지지끼리 만나면 자형(自刑)
+
+// 해(害): 육합을 방해하는 자리에서 생기는, 은근하고 사소하게 거슬리는 관계.
+// 자미해, 축오해, 인사해, 묘진해, 신해해, 유술해
+const HAE_PAIRS = [
+  [0, 7], [1, 6], [2, 5], [3, 4], [8, 11], [9, 10],
+];
+
+function hasPair(list, a, b) {
+  return list.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+}
+
+// 두 지지(jijiIdx 0~11) 사이의 관계를 판정.
+// 여러 관계가 동시에 성립할 수 있는 이론이지만, 여기서는 실사용성을 위해
+// "가장 특징적인 관계 하나"를 우선순위(합 > 충 > 형 > 해 > 없음)로 뽑는다.
+function getJijiRelation(idxA, idxB) {
+  if (idxA === idxB) {
+    return { type: '동일', label: '같은 지지', tone: 'neutral' };
+  }
+  if (hasPair(YUKHAP_PAIRS, idxA, idxB)) {
+    return { type: '육합', label: '육합(六合) — 찰떡같이 화합', tone: 'good' };
+  }
+  const samhap = SAMHAP_GROUPS.find(g => g.includes(idxA) && g.includes(idxB));
+  if (samhap) {
+    return { type: '삼합', label: '삼합(三合) — 같은 방향을 보는 궁합', tone: 'good' };
+  }
+  if (hasPair(CHUNG_PAIRS, idxA, idxB)) {
+    return { type: '충', label: '충(沖) — 정면으로 부딪히는 자리', tone: 'clash' };
+  }
+  const hyeong = HYEONG_GROUPS.find(g => g.includes(idxA) && g.includes(idxB));
+  if (hyeong) {
+    return { type: '형', label: '형(刑) — 은근히 신경전이 생기는 자리', tone: 'friction' };
+  }
+  if (hasPair(HAE_PAIRS, idxA, idxB)) {
+    return { type: '해', label: '해(害) — 사소하게 거슬리는 자리', tone: 'friction' };
+  }
+  return { type: '평', label: '특별한 상호작용 없이 무난한 자리', tone: 'neutral' };
+}
+
 // 두 사람의 사주를 비교하여 궁합 관련 정보 산출
 function analyzeCompatibility(sajuA, sajuB) {
   // 오행 상생 관계: 목생화, 화생토, 토생금, 금생수, 수생목
@@ -374,12 +453,31 @@ function analyzeCompatibility(sajuA, sajuB) {
   else if (SANGSAENG[ilganA] === ilganB || SANGSAENG[ilganB] === ilganA) relation = '상생';
   else if (SANGGEUK[ilganA] === ilganB || SANGGEUK[ilganB] === ilganA) relation = '상극';
 
+  // 년지(年支) 관계 = 흔히 말하는 "띠 궁합"
+  const yearJijiRelation = getJijiRelation(sajuA.year.jijiIdx, sajuB.year.jijiIdx);
+
+  // 일지(日支) 관계 = 부부궁(配偶宮)끼리의 궁합. 명리학에서는 배우자 자리인
+  // 일지의 상성을 연애/결혼 궁합에서 특히 중요하게 본다.
+  const dayJijiRelation = getJijiRelation(sajuA.day.jijiIdx, sajuB.day.jijiIdx);
+
+  // 오행 상호보완도: 각자 부족한 오행을 상대가 채워주는지 확인.
+  // A에게 부족한(0~1개) 오행 중 B가 넉넉히(2개 이상) 가진 것이 있으면 "서로 채워주는 궁합".
+  const OHAENG_KEYS = ['목', '화', '토', '금', '수'];
+  const complement = { aFillsB: [], bFillsA: [] };
+  OHAENG_KEYS.forEach(k => {
+    if (sajuB.ohaengCount[k] <= 1 && sajuA.ohaengCount[k] >= 2) complement.aFillsB.push(k);
+    if (sajuA.ohaengCount[k] <= 1 && sajuB.ohaengCount[k] >= 2) complement.bFillsA.push(k);
+  });
+
   return {
     totalCount,
     minOhaeng, // 커플에게 부족한 오행 -> 보완 추천의 핵심
     maxOhaeng,
     relation,
     ilganA, ilganB,
+    yearJijiRelation,
+    dayJijiRelation,
+    complement,
   };
 }
 
