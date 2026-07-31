@@ -1,973 +1,700 @@
-(function () {
-  const { calculateSaju, calculateSajuApprox, generateCoupleRecommendation,
-          generateCoupleRecommendationApprox, OHAENG_INFO } = window.SajuCore;
+// ===================================================================
+// 사주 계산 핵심 엔진 (Saju / Four Pillars Calculation Engine)
+// ===================================================================
 
-  const OHAENG_COLOR = {
-    목: '#7fa473', 화: '#d98a7c', 토: '#b3a077', 금: '#a6a190', 수: '#7ba0c4',
-  };
-  const OHAENG_GLOW = {
-    목: 'rgba(127,164,115,0.10)', 화: 'rgba(217,138,124,0.10)', 토: 'rgba(179,160,119,0.10)',
-    금: 'rgba(166,161,144,0.09)', 수: 'rgba(123,160,196,0.10)',
-  };
+// 천간 (Heavenly Stems) - 10개
+const CHEONGAN = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
+const CHEONGAN_HANJA = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+// 천간의 오행
+const CHEONGAN_OHAENG = ['목', '목', '화', '화', '토', '토', '금', '금', '수', '수'];
+// 천간의 음양 (true = 양)
+const CHEONGAN_YINYANG = [true, false, true, false, true, false, true, false, true, false];
 
-  // 일간 관계(상생/상극/동기/중립)에 대한 연인·친구 궁합 해설
-  const RELATION_EXPLAIN = {
-    상생: {
-      emoji: '🌱',
-      title: '상생 — 가장 편안하고 오래가는 관계',
-      lover: ['함께 있으면 서로 더 좋은 사람이 되는 느낌', '자연스럽게 응원하고 배려함', '싸워도 금방 풀림', '서로의 장점을 키워줌'],
-      friend: ['힘들 때 가장 먼저 찾게 되는 친구', '같이 있으면 에너지가 충전됨', '서로 도움을 주고받으며 오래 감'],
-      quote: '너랑 있으면 내가 더 좋아지는 것 같아.',
-    },
-    상극: {
-      emoji: '⚔️',
-      title: '상극 — 강하게 끌리기도 하지만 자주 부딪히는 관계',
-      lover: ['첫인상이 강렬하거나 끌릴 수도 있음', '하지만 가치관이나 생활 방식이 자주 충돌', '자존심 싸움이 생기기 쉬움', '서로 맞춰가면 크게 성장하기도 함'],
-      friend: ['친하지만 자주 티격태격', '서로 지적을 많이 함', '가끔은 스트레스를 주기도 함'],
-      quote: '좋아하긴 하는데 왜 이렇게 싸우지?',
-      caveat: '※ 상극이 반드시 나쁜 관계는 아닙니다. 서로를 변화시키고 성장시키는 계기가 되기도 합니다.',
-    },
-    동기: {
-      emoji: '🤝',
-      title: '동기 — 너무 잘 통하는 관계',
-      lover: ['취향과 생각이 비슷함', '말이 잘 통함', '서로를 잘 이해함', '하지만 둘 다 고집이 세면 양보를 안 할 수도 있음'],
-      friend: ['베스트프렌드가 되기 쉬움', '같이 놀면 시간 가는 줄 모름', '관심사가 비슷해서 편함'],
-      quote: '너랑 있으면 나를 보는 것 같아.',
-    },
-    중립: {
-      emoji: '⚖️',
-      title: '중립 — 편안하지만 특별한 자극은 적은 관계',
-      lover: ['크게 싸우지도 않고 크게 불타지도 않음', '안정적이지만 심심하게 느껴질 수도 있음', '시간이 지나며 정이 드는 스타일'],
-      friend: ['만나면 반갑지만 자주 연락하지는 않음', '필요할 때 편하게 만날 수 있음'],
-      quote: '편하긴 한데, 엄청 특별한 느낌은 아니야.',
-    },
-  };
-  const RELATION_GENERAL_CAVEAT = '사주에서 이 관계를 볼 때는 오행 궁합 하나만으로 판단하지 않아요. 상극이라도 전체 사주가 잘 맞으면 좋은 인연이 될 수 있고, 상생이라도 다른 요소가 맞지 않으면 어려움을 겪을 수 있어요. 상생·상극은 두 사람 관계의 한 가지 성향을 보여주는 지표로 이해해주세요.';
+// 지지 (Earthly Branches) - 12개
+const JIJI = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
+const JIJI_HANJA = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+// 지지의 오행
+const JIJI_OHAENG = ['수', '토', '목', '목', '토', '화', '화', '토', '금', '금', '토', '수'];
+// 지지의 음양
+const JIJI_YINYANG = [true, false, true, false, true, false, true, false, true, false, true, false];
+// 지지가 담당하는 시간대 (24시간제 시작 시각, 각 지지는 2시간씩)
+// 자시: 23:00~01:00, 축시: 01:00~03:00 ... 해시: 21:00~23:00
+const JIJI_TIME_RANGE = [
+  [23, 1], [1, 3], [3, 5], [5, 7], [7, 9], [9, 11],
+  [11, 13], [13, 15], [15, 17], [17, 19], [19, 21], [21, 23]
+];
 
-  // 지지(地支) 관계 유형별 부가 설명 — getJijiRelation()의 결과(type)에 매칭
-  const JIJI_RELATION_DESC = {
-    육합: '두 지지가 짝을 이뤄 화합하는 자리예요. 함께 있으면 자연스럽게 안정감이 들고, 큰 노력 없이도 손발이 잘 맞는 궁합으로 봐요.',
-    삼합: '관심사나 목표 방향이 비슷한 지지끼리 만난 자리예요. 여행 계획, 공부, 운동처럼 함께 목표를 정하고 움직일 때 특히 손발이 잘 맞아요.',
-    충: '정반대 자리에서 마주보는 지지끼리 만난, 명리학에서 가장 강하게 부딪히는 관계예요. 서로 기질이나 방식이 뚜렷하게 달라 자주 의견 차이가 생길 수 있지만, 그만큼 강하게 끌리는 경우도 많아요.',
-    형: '겉으로는 무난해 보여도 은근히 신경전이나 잔소리가 쌓이기 쉬운 자리예요. 대화로 오해를 자주 풀어주는 게 좋아요.',
-    해: '크게 부딪히진 않지만 사소한 데서 자꾸 어긋나는 느낌을 줄 수 있는 자리예요. 서로의 속도나 방식 차이를 이해해주면 무난해져요.',
-    동일: '같은 지지라 기질이 서로 닮아 있어요. 통하는 부분이 많지만, 같은 약점도 공유할 수 있어요.',
-    평: '합도 충도 아닌, 특별한 상호작용이 없는 무난한 자리예요. 좋고 나쁨보다는 다른 요소들로 궁합을 살펴보는 게 좋아요.',
-  };
+// ---------------------------------------------------------------
+// 절기(節氣) 정밀 계산 - 24절기 중 사주 계산에 필요한 "절"(각 달의 시작점) 12개
+//
+// [이전 버전의 문제점]
+// 과거에는 "2000년 anchor + 연도 차이 × 365.2422일" 방식의 평균 운동 근사식을
+// 사용했는데, 실제 절입 시각과 대조 검증한 결과 anchor(2000년)에서 멀어질수록
+// 오차가 누적되어(anchor 자체 오차 포함 시 약 -7~8시간, 심한 경우 최대 하루)
+// 절기 경계 근처 생일에서는 연주·월주가 통째로 잘못 나오는 문제가 있었다.
+//
+// [현재 버전]
+// Jean Meeus, "Astronomical Algorithms"(2nd ed.)의 태양 겉보기 황경(apparent
+// longitude) 저정밀 공식(오차 약 0.01도, 시간으로 대략 ±1분 내외)을 사용해
+// 태양이 각 절기의 목표 황경(입춘=315°, 15° 간격)에 도달하는 정확한 시각을
+// 뉴턴-랩슨 방식으로 역산한다. 실제 공식 절입시각과 대조 검증한 결과 오차는
+// 대부분 ±10분 이내였다. 외부 API 없이도 어느 연도(과거/미래)든 계산 가능하다.
+// ---------------------------------------------------------------
 
+const DEG2RAD = Math.PI / 180;
 
-  // 상세 궁합 문장을 결과값에 따라 조합하기 위한 데이터
-  const OHAENG_ORDER = ['목', '화', '토', '금', '수'];
-  const OHAENG_HANJA = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
-  const SANGSAENG_NEXT = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
-  const SANGGEUK_TARGET = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
+// 각 절기 이름 + "절(節)"의 태양황경(도). 입춘부터 15도 간격.
+const JUL_NAMES = [
+  { name: '소한', longitude: 285 }, // 축월 시작
+  { name: '입춘', longitude: 315 }, // 인월 시작 = 연주 기준점
+  { name: '경칩', longitude: 345 }, // 묘월 시작
+  { name: '청명', longitude: 15 },  // 진월 시작
+  { name: '입하', longitude: 45 },  // 사월 시작
+  { name: '망종', longitude: 75 },  // 오월 시작
+  { name: '소서', longitude: 105 }, // 미월 시작
+  { name: '입추', longitude: 135 }, // 신월 시작
+  { name: '백로', longitude: 165 }, // 유월 시작
+  { name: '한로', longitude: 195 }, // 술월 시작
+  { name: '입동', longitude: 225 }, // 해월 시작
+  { name: '대설', longitude: 255 }, // 자월 시작
+];
 
-  const OHAENG_RELATION_TRAITS = {
-    목: {
-      core: '성장과 가능성을 먼저 보는 편',
-      love: '함께 발전하고 있다는 감각',
-      strength: '새로운 계획을 세우고 관계에 활력을 넣는 능력',
-      shadow: '답답함을 느끼면 상대를 재촉하거나 방향을 정해주려는 태도',
-      repair: '결론부터 강요하기보다 상대가 생각할 시간을 주는 것',
-      activity: '산책, 전시, 여행 계획처럼 새로운 경험을 함께 만드는 활동',
-    },
-    화: {
-      core: '감정과 반응이 빠르고 표현이 분명한 편',
-      love: '즉각적인 호응과 애정 표현',
-      strength: '분위기를 밝히고 관계의 온도를 높이는 능력',
-      shadow: '서운함이 생기면 말이 빨라지거나 감정이 크게 번지는 태도',
-      repair: '감정이 최고조일 때 결론 내리지 않고 잠시 식힌 뒤 대화하는 것',
-      activity: '공연, 축제, 맛집 탐방처럼 반응을 나눌 수 있는 활동',
-    },
-    토: {
-      core: '안정과 책임을 중요하게 여기며 쉽게 흔들리지 않는 편',
-      love: '예측 가능한 태도와 꾸준한 신뢰',
-      strength: '관계를 현실적으로 지키고 상대를 든든하게 받쳐주는 능력',
-      shadow: '익숙한 방식을 고수하거나 서운함을 오래 쌓아두는 태도',
-      repair: '누가 옳은지보다 앞으로 반복하지 않을 약속을 구체적으로 정하는 것',
-      activity: '요리, 집 꾸미기, 정기 데이트처럼 생활 리듬을 만드는 활동',
-    },
-    금: {
-      core: '기준과 원칙이 분명하고 관계에서도 명확함을 원하는 편',
-      love: '약속을 지키는 태도와 서로에 대한 존중',
-      strength: '문제를 정확히 짚고 관계의 경계를 건강하게 세우는 능력',
-      shadow: '실망하면 말이 단호해지거나 상대의 부족한 점을 평가하는 태도',
-      repair: '지적보다 요청의 형태로 말하고, 잘한 점도 같은 비중으로 표현하는 것',
-      activity: '운동, 목표 챌린지, 재정 계획처럼 성취 기준이 분명한 활동',
-    },
-    수: {
-      core: '상황을 오래 관찰하고 속으로 충분히 생각한 뒤 움직이는 편',
-      love: '간섭받지 않는 여유와 깊이 있는 대화',
-      strength: '상대의 속마음을 읽고 상황에 유연하게 대응하는 능력',
-      shadow: '갈등이 부담스러우면 말을 줄이거나 속마음을 감추는 태도',
-      repair: '혼자 정리할 시간을 갖되 언제 다시 이야기할지 시간을 약속하는 것',
-      activity: '야경 산책, 카페 대화, 영화 감상처럼 차분히 감정을 나누는 활동',
-    },
-  };
+// 뉴턴-랩슨 초기 추정값으로 쓸 절기별 평년 그레고리력 월/일
+// (대략적인 시작점일 뿐, 최종 정밀도에는 영향 없음 — 반복 계산으로 실제 시각에 수렴)
+const JUL_APPROX_MONTH_DAY = [
+  [1, 6], [2, 4], [3, 6], [4, 5], [5, 6], [6, 6],
+  [7, 7], [8, 8], [9, 8], [10, 8], [11, 7], [12, 7],
+];
 
-  // 오행 이름을 실제 관계 행동으로 풀어쓴 문장
-  const ELEMENT_LOW_GUIDE = {
-    목: '새로운 데이트를 정하거나 둘의 다음 계획을 세울 때 서로 눈치만 보며 시작이 늦어질 수 있어요. 여행 날짜, 이번 달에 해볼 일처럼 첫 행동을 미리 정해두면 편합니다.',
-    화: '좋아하는 마음이 있어도 말이나 표정으로 잘 드러나지 않아 관계가 심심하게 느껴질 수 있어요. “보고 싶었어”, “오늘 좋았어”처럼 짧은 표현을 자주 해주는 게 도움이 됩니다.',
-    토: '약속, 돈, 일정, 집안일처럼 반복해서 챙겨야 하는 일을 서로 미루기 쉬워요. 누가 무엇을 언제까지 할지 정해두면 사소한 다툼을 줄일 수 있습니다.',
-    금: '싫은 점이나 지켜야 할 선을 분명하게 말하지 못해 문제가 오래 끌 수 있어요. 연락 빈도, 돈 쓰는 방식, 친구 관계처럼 민감한 기준은 미리 말로 맞춰두는 편이 좋습니다.',
-    수: '감정이 올라왔을 때 잠깐 멈추거나 상대 이야기를 끝까지 듣는 여유가 부족할 수 있어요. 바로 결론 내리기보다 20분 정도 쉬고 다시 이야기할 시간을 정해두는 방식이 잘 맞습니다.',
-  };
+function dateToJD(date) {
+  return date.getTime() / 86400000 + 2440587.5;
+}
+function jdToDate(jd) {
+  return new Date((jd - 2440587.5) * 86400000);
+}
 
-  const ELEMENT_HELP_TEXT = {
-    목: (supporter, receiver) => `${supporter}님은 ${receiver}님이 앞으로 무엇을 해야 할지 막막해할 때, 새로운 선택지를 꺼내고 첫 단계를 정하는 데 도움을 주는 편입니다.`,
-    화: (supporter, receiver) => `${supporter}님은 ${receiver}님이 기분이 가라앉거나 표현을 망설일 때, 먼저 말을 걸고 분위기를 풀어주는 역할을 하기 쉽습니다.`,
-    토: (supporter, receiver) => `${supporter}님은 ${receiver}님이 일정·약속·생활 문제로 흔들릴 때, 해야 할 일을 차근차근 정리하고 꾸준히 챙겨주는 편입니다.`,
-    금: (supporter, receiver) => `${supporter}님은 ${receiver}님이 결정을 미루거나 기준을 잡지 못할 때, 선택지를 정리하고 분명한 결론을 내리도록 돕는 편입니다.`,
-    수: (supporter, receiver) => `${supporter}님은 ${receiver}님이 감정이 복잡할 때, 서둘러 답을 요구하기보다 이야기를 들어주고 마음을 정리할 시간을 주는 편입니다.`,
-  };
+// 태양의 겉보기 황경(도, 0~360)을 계산 (Meeus 저정밀 공식)
+function sunApparentLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525.0; // 율리우스 세기(J2000.0 기준)
 
-  const ELEMENT_SHARED_STRONG = {
-    목: '둘 다 새로운 장소나 활동을 찾는 데 적극적이라 데이트가 단조롭지 않은 편입니다. 다만 계획이 자주 바뀌거나 시작만 하고 마무리가 늦어질 수 있어요.',
-    화: '둘 다 반응과 애정 표현이 빠르기 때문에 즐거울 때는 분위기가 금방 달아오릅니다. 반대로 서운할 때도 말이 빨라져 싸움이 커지기 쉬워요.',
-    토: '둘 다 약속과 익숙한 생활을 중요하게 여겨 안정적인 관계를 만들기 쉽습니다. 다만 한 번 정한 방식에서 물러서지 않아 고집 대결이 생길 수 있어요.',
-    금: '둘 다 약속, 예의, 관계의 기준을 중요하게 여겨 서로 믿을 만한 사람이라고 느끼기 쉽습니다. 다만 상대의 부족한 점을 빠르게 지적하는 분위기가 될 수 있어요.',
-    수: '둘 다 조용히 생각하고 깊게 대화하는 시간을 편하게 느낍니다. 다만 속마음을 먼저 꺼내지 않아 서로 괜찮은 줄 알고 지나칠 수 있어요.',
-  };
+  const L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T; // 평균 황경
+  const M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;  // 평균 근점이각
+  const Mrad = M * DEG2RAD;
 
-  const ELEMENT_SHARED_GAP = {
-    목: '둘 다 새로운 계획을 먼저 꺼내는 데 약할 수 있으니, 한 달에 한 번은 번갈아 데이트 장소나 여행 계획을 정하는 방식이 좋습니다.',
-    화: '둘 다 애정 표현을 기다리는 편이 될 수 있으니, 고맙거나 보고 싶을 때는 상대가 알아주길 기다리지 말고 바로 말해주세요.',
-    토: '돈, 일정, 집안일처럼 꾸준히 관리해야 하는 부분이 흐트러질 수 있으니 공동 캘린더나 역할표를 사용하는 편이 좋습니다.',
-    금: '연락 기준이나 서로 지켜야 할 선이 애매해질 수 있으니, 불편한 일이 생기기 전에 구체적인 기준을 말로 정해주세요.',
-    수: '싸운 뒤 감정을 가라앉히고 천천히 대화하는 과정이 부족할 수 있으니, 잠시 쉬었다가 다시 이야기할 시간을 약속하는 것이 좋습니다.',
-  };
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad)
+          + 0.000289 * Math.sin(3 * Mrad); // 중심차
 
-  const SANGSAENG_PAIR_SCENE = {
-    '목>화': (a, b) => `${a}님이 새로운 데이트나 계획을 꺼내면 ${b}님이 반응과 추진력을 더하는 조합입니다. 아이디어만 있던 일을 실제 약속으로 옮길 때 손발이 잘 맞을 수 있어요.`,
-    '화>토': (a, b) => `${a}님이 따뜻한 말과 애정 표현으로 관계의 분위기를 만들면 ${b}님이 그것을 꾸준한 연락과 약속으로 이어가는 조합입니다. 즐거움이 일상의 안정감으로 연결되기 쉬워요.`,
-    '토>금': (a, b) => `${a}님이 차분하게 상황을 정리하고 기다려주면 ${b}님이 기준을 세우고 결정을 내리는 조합입니다. 돈, 일정, 장기 계획처럼 현실적인 문제를 함께 처리할 때 장점이 잘 드러납니다.`,
-    '금>수': (a, b) => `${a}님이 복잡한 문제의 핵심을 정리해주면 ${b}님이 감정과 상황을 살펴 더 부드러운 방법을 찾는 조합입니다. 한 사람은 결론을 잡고 다른 사람은 분위기를 조율하는 식으로 역할이 나뉘기 쉬워요.`,
-    '수>목': (a, b) => `${a}님이 충분히 들어주고 생각할 여유를 만들어주면 ${b}님이 자신감을 얻어 새로운 시도를 시작하는 조합입니다. ${b}님은 ${a}님 곁에서 막막했던 생각을 실제 계획으로 바꾸기 쉬워요.`,
-  };
+  const trueLong = L0 + C;
 
-  const SANGGEUK_PAIR_SCENE = {
-    '목>토': (a, b) => `${a}님은 변화를 빨리 시작하려 하고 ${b}님은 익숙한 방식과 안정성을 지키려는 편이라, ${a}님은 답답함을 느끼고 ${b}님은 재촉받는다고 느낄 수 있습니다. 여행·이사·돈처럼 큰 결정은 바로 결론 내기보다 검토 기간을 함께 정하는 것이 좋아요.`,
-    '토>수': (a, b) => `${a}님은 관계를 분명하고 안정적으로 만들고 싶어 하지만 ${b}님은 상황에 따라 움직일 여유가 필요합니다. ${a}님이 답을 재촉하면 ${b}님이 말을 줄일 수 있으니, 언제까지 생각한 뒤 답할지 시간을 정해주는 방식이 잘 맞습니다.`,
-    '수>화': (a, b) => `${a}님은 먼저 상황을 지켜보고 생각하려 하고 ${b}님은 바로 표현하고 반응하려는 편입니다. ${b}님은 무시당한다고 느끼고 ${a}님은 감정에 압도될 수 있으니, 잠시 쉬되 다시 대화할 시각을 확실히 약속해주세요.`,
-    '화>금': (a, b) => `${a}님은 순간의 감정과 즐거움을 중요하게 여기고 ${b}님은 약속과 기준을 정확히 지키려는 편입니다. ${a}님은 지적받는다고 느끼고 ${b}님은 말이 자주 바뀐다고 느낄 수 있으니, 즉흥적인 선택이 가능한 범위를 미리 정해두면 좋습니다.`,
-    '금>목': (a, b) => `${a}님은 문제를 정확히 짚고 고치려 하지만 ${b}님은 자유롭게 시도하며 배우는 편입니다. ${a}님의 조언이 잦아지면 ${b}님은 통제받는다고 느낄 수 있으니, 지적보다 “나는 이렇게 해줬으면 좋겠어”라는 요청으로 말하는 것이 좋습니다.`,
-  };
+  // 장동(nutation) + 광행차(aberration) 보정 -> 겉보기 황경
+  const omega = 125.04 - 1934.136 * T;
+  const lambda = trueLong - 0.00569 - 0.00478 * Math.sin(omega * DEG2RAD);
 
-  function buildElementHelpSentences(supporter, receiver, elements) {
-    return elements.slice(0, 2).map(k => (ELEMENT_HELP_TEXT[k] ? ELEMENT_HELP_TEXT[k](supporter, receiver) : '')).filter(Boolean);
+  return ((lambda % 360) + 360) % 360;
+}
+
+// 목표 황경(targetDeg)에 태양이 도달하는 정확한 시각(JD)을 뉴턴 방식으로 역산
+function solveForLongitude(targetDeg, approxJD) {
+  let jd = approxJD;
+  for (let i = 0; i < 8; i++) {
+    const lon = sunApparentLongitude(jd);
+    // 황경 차이를 -180~180 범위로 정규화 (0/360도 경계를 넘나드는 문제 방지)
+    let diff = targetDeg - lon;
+    diff = ((diff + 180) % 360 + 360) % 360 - 180;
+    if (Math.abs(diff) < 1e-6) break;
+    jd += diff / 0.9856; // 태양은 하루에 약 0.9856도 이동
   }
+  return jd;
+}
 
-  function buildWeakEverydayText(stats) {
-    const targets = stats.missing.length ? stats.missing : stats.weak.slice(0, 2);
-    return targets.slice(0, 2).map(k => ELEMENT_LOW_GUIDE[k]).filter(Boolean).join(' ');
+// 특정 연도, 특정 절기(jieqiIndex: 0=소한..11=대설)의 절입 시각을 구한다.
+// 반환값은 epoch(실제 시각)이 정확한 Date 객체이며, KST 오프셋은
+// findSolarTermPeriod()에서 입력 생일 쪽을 UTC로 맞춰 비교하므로 여기서는
+// 별도의 타임존 보정을 하지 않는다(과거 버전은 여기서 +9시간을 잘못 더해
+// 결과 자체가 9시간 밀리는 이중 보정 버그가 있었다).
+function getJieqiDate(year, jieqiIndex) {
+  const targetDeg = JUL_NAMES[jieqiIndex].longitude;
+  const [m, d] = JUL_APPROX_MONTH_DAY[jieqiIndex];
+  const approxDate = new Date(Date.UTC(year, m - 1, d, 0, 0));
+  const approxJD = dateToJD(approxDate);
+  const exactJD = solveForLongitude(targetDeg, approxJD);
+  return jdToDate(exactJD);
+}
+
+// 특정 생일(로컬 KST 기준, year/month/day/hour/minute)이 속한 절기 인덱스와
+// 해당 절기가 시작된 날짜를 반환
+function findSolarTermPeriod(year, month, day, hour, minute) {
+  // 입력 생일을 UTC로 변환 (KST = UTC+9)
+  const birthUTC = new Date(Date.UTC(year, month - 1, day, hour - 9, minute));
+
+  // 인접한 3년치 절기 목록 생성 (전년 12월~다음해 1월까지 커버)
+  const candidates = [];
+  for (let y = year - 1; y <= year + 1; y++) {
+    for (let idx = 0; idx < 12; idx++) {
+      candidates.push({ y, idx, date: getJieqiDate(y, idx) });
+    }
   }
+  candidates.sort((a, b) => a.date - b.date);
 
-  function buildCombinedEverydayText(stats) {
-    const strongText = stats.dominant.slice(0, 2).map(k => ELEMENT_SHARED_STRONG[k]).filter(Boolean).join(' ');
-    const lowTargets = stats.missing.length ? stats.missing : stats.weak;
-    const lowText = lowTargets.slice(0, 2).map(k => ELEMENT_SHARED_GAP[k]).filter(Boolean).join(' ');
-    return `${strongText} ${lowText}`.trim();
+  // birthUTC 이전의 가장 최근 절기를 찾는다
+  let currentPeriod = null;
+  for (let i = 0; i < candidates.length; i++) {
+    if (candidates[i].date <= birthUTC) {
+      currentPeriod = candidates[i];
+    } else {
+      break;
+    }
   }
+  return currentPeriod; // { y, idx, date }
+}
 
-  const RELATION_DIRECTION_TEXT = {
-    aGeneratesB: ({ nameA, nameB, aDay, bDay }) => {
-      const scene = SANGSAENG_PAIR_SCENE[`${aDay}>${bDay}`];
-      return scene ? scene(nameA, nameB) : `${nameA}님이 먼저 힘을 보태고 ${nameB}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
-    },
-    bGeneratesA: ({ nameA, nameB, aDay, bDay }) => {
-      const scene = SANGSAENG_PAIR_SCENE[`${bDay}>${aDay}`];
-      return scene ? scene(nameB, nameA) : `${nameB}님이 먼저 힘을 보태고 ${nameA}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
-    },
-    aControlsB: ({ nameA, nameB, aDay, bDay }) => {
-      const scene = SANGGEUK_PAIR_SCENE[`${aDay}>${bDay}`];
-      return scene ? scene(nameA, nameB) : `${nameA}님이 기준을 먼저 정하고 ${nameB}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
-    },
-    bControlsA: ({ nameA, nameB, aDay, bDay }) => {
-      const scene = SANGGEUK_PAIR_SCENE[`${bDay}>${aDay}`];
-      return scene ? scene(nameB, nameA) : `${nameB}님이 기준을 먼저 정하고 ${nameA}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
-    },
-    same: ({ nameA, nameB, aDay }) =>
-      `두 사람은 ${aDay}(${OHAENG_HANJA[aDay]}) 성향을 함께 가지고 있어, 중요하게 여기는 점과 반응 속도가 비슷합니다. 설명하지 않아도 통하는 순간이 많지만 같은 문제에서 동시에 고집을 부릴 수도 있어요. “나도 같을 거야”라고 넘기지 말고, 원하는 결론과 속도를 따로 확인하는 것이 좋습니다.`,
-    neutral: ({ nameA, nameB }) =>
-      `${nameA}님과 ${nameB}님은 처음부터 누가 이끌고 누가 맞춰주는지가 정해지는 관계는 아닙니다. 같은 취미를 정기적으로 함께 하거나, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 하나씩 쌓을수록 신뢰와 친밀감이 커지는 조합입니다.`,
-  };
-
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+// ---------------------------------------------------------------
+// 연주(年柱) 계산: 입춘(idx=1)을 기준으로 연도가 바뀐다.
+// ---------------------------------------------------------------
+function getYearPillarInfo(year, month, day, hour, minute) {
+  const period = findSolarTermPeriod(year, month, day, hour, minute);
+  // 입춘 이전(즉 period.idx가 소한(0)이거나, 전년도 대설(11)인 경우)이면 연도가 아직 안 바뀐 것
+  let sajuYear = period.y;
+  if (period.idx === 0) {
+    // 소한 시기 = 아직 전년도 연주를 씀 (입춘 전이므로)
+    sajuYear = period.y - 1 < year ? period.y : period.y; // 소한은 해당 y의 1월이므로 실제 사주연도는 y-1
+    sajuYear = period.y - 1;
+  } else if (period.idx === 11) {
+    // 대설 시기(그 해 12월) = 아직 그 해 연주
+    sajuYear = period.y;
+  } else if (period.idx === 1) {
+    // 입춘 이후 = 해당 연도부터 새 연주
+    sajuYear = period.y;
+  } else {
+    sajuYear = period.idx === 0 ? period.y - 1 : period.y;
   }
+  // 위 로직 정리: 입춘(idx>=1) 이후면 period.y, 소한(idx=0)이면 period.y - 1
+  sajuYear = period.idx === 0 ? period.y - 1 : period.y;
 
-  function formatOhaengList(items) {
-    return items.map(k => `${k}(${OHAENG_HANJA[k]})`).join('·');
+  // 연간지 계산: 60갑자 순환. 기준점: 1984년 = 갑자년(년주 index 0)
+  const REF_YEAR = 1984;
+  let diff = (sajuYear - REF_YEAR) % 60;
+  if (diff < 0) diff += 60;
+  const cheonganIdx = diff % 10;
+  const jijiIdx = diff % 12;
+  return { cheonganIdx, jijiIdx, sajuYear };
+}
+
+// ---------------------------------------------------------------
+// 월주(月柱) 계산: 월지는 절기로 고정(인월=1월~축월=12월),
+// 월간은 연간에 따라 오호둔(五虎遁) 공식으로 결정.
+// ---------------------------------------------------------------
+// 절기 인덱스(0=소한...11=대설) -> 월지 인덱스 매핑
+// 입춘(1)=인월(지지idx 2), 경칩(2)=묘월(3), 청명(3)=진월(4), 입하(4)=사월(5),
+// 망종(5)=오월(6), 소서(6)=미월(7), 입추(7)=신월(8), 백로(8)=유월(9),
+// 한로(9)=술월(10), 입동(10)=해월(11), 대설(11)=자월(0), 소한(0)=축월(1)
+const JIEQI_TO_WOLJI = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0];
+
+// 오호둔(五虎遁): 연간(年干)에 따라 인월(寅月)의 월간이 결정되고, 이후 순서대로 진행
+// 갑/기년 -> 병인월부터, 을/경년 -> 무인월부터, 병/신년 -> 경인월부터,
+// 정/임년 -> 임인월부터, 무/계년 -> 갑인월부터
+const OHODUN_START = {
+  0: 2, 5: 2, // 갑, 기 -> 병(2)
+  1: 4, 6: 4, // 을, 경 -> 무(4)
+  2: 6, 7: 6, // 병, 신 -> 경(6)
+  3: 8, 8: 8, // 정, 임 -> 임(8)
+  4: 0, 9: 0, // 무, 계 -> 갑(0)
+};
+
+function getMonthPillarInfo(yearCheonganIdx, jieqiIdx) {
+  const wolJiIdx = JIEQI_TO_WOLJI[jieqiIdx]; // 월지(고정)
+  // 인월(지지idx=2)부터 시작하는 순서로 만들어 몇 번째인지 계산
+  // 지지 순서: 인(2) 묘(3) 진(4) 사(5) 오(6) 미(7) 신(8) 유(9) 술(10) 해(11) 자(0) 축(1)
+  const order = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1];
+  const stepFromIn = order.indexOf(wolJiIdx); // 인월로부터 몇 번째 달인지 (0-based)
+  const startCheongan = OHODUN_START[yearCheonganIdx];
+  const wolGanIdx = (startCheongan + stepFromIn) % 10;
+  return { cheonganIdx: wolGanIdx, jijiIdx: wolJiIdx };
+}
+
+// ---------------------------------------------------------------
+// 일주(日柱) 계산: 그레고리력 날짜를 율리우스적일수(JDN)로 바꾼 뒤 60 나머지로 계산.
+// 기준: 1900년 1월 31일 = 갑진일(甲辰日) (공인된 명리학 계산 기준점)
+// ---------------------------------------------------------------
+function toJulianDayNumber(year, month, day) {
+  // 표준 그레고리력 -> JDN 변환 공식
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+function getDayPillarInfo(year, month, day, hour) {
+  // 자시(23:00~00:59)에 태어난 경우, 다음날 일주로 계산하는 것이 명리학 관행(조자시/야자시 이슈는 단순화하여 23시 이후는 익일로 처리)
+  let calcYear = year, calcMonth = month, calcDay = day;
+  if (hour >= 23) {
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + 1);
+    calcYear = d.getFullYear();
+    calcMonth = d.getMonth() + 1;
+    calcDay = d.getDate();
   }
+  const jdn = toJulianDayNumber(calcYear, calcMonth, calcDay);
+  // 1899-12-22 = 갑자일(甲子日, 60갑자 index 0). 실제 만세력 예시(2012-02-04 을미일 등)로
+  // 역산 검증하여 확정한 기준점.
+  const refJdn = toJulianDayNumber(1899, 12, 22);
+  let diff = (jdn - refJdn) % 60;
+  if (diff < 0) diff += 60;
+  const cheonganIdx = diff % 10;
+  const jijiIdx = diff % 12;
+  return { cheonganIdx, jijiIdx };
+}
 
-  function getDayOhaeng(saju) {
-    return saju?.day?.ohaengCheongan || saju?.day?.ohaeng || null;
-  }
+// ---------------------------------------------------------------
+// 시주(時柱) 계산: 시지는 태어난 시각으로 고정, 시간은 일간에 따라
+// 오자둔(五子遁) 공식으로 결정.
+// ---------------------------------------------------------------
+function getSiJiIndex(hour, minute) {
+  // 한국 표준시(UTC+9, 동경 135도)는 실제 한반도 경도(동경 127.5도 부근)보다 30분 빠르다.
+  // 따라서 명리학에서 시지 경계를 판단할 때는 30분을 보정(-30분)하여 "진태양시에 가까운" 시각을 사용한다.
+  // 예: 유시(酉時)의 표준 경계는 17:00~19:00이지만, 보정 후에는 17:30~19:30이 된다.
+  // (이 -30분 보정 방향 자체는 다수 역술가들이 쓰는 방식이나, 아래 두 예외 기간은
+  //  반영하지 않은 근사치임을 알아둘 것 — 정밀 계산이 필요하면 별도 룩업 테이블 추가 필요)
+  //   1) 1954-03-21 ~ 1961-08-09: 한국이 동경 127도30분(UTC+8:30) 표준시를 실제로
+  //      사용한 기간 — 이 기간은 보정값 자체가 달라져야 함
+  //   2) 1948~1988년 사이 12차례 시행된 일광절약시간(서머타임) 기간 — 시계가 1시간
+  //      앞당겨져 있었으므로 추가 보정이 필요하나 여기서는 반영하지 않음
+  // 또한 자시(子時, 23:00~01:00) 경계 처리는 "23시 이후 익일로 계산"하는 정자시(正子時)
+  // 방식 하나만 채택했는데, 이는 역술가들 사이에서도 야자시(夜子時) 방식과 이견이 있는
+  // 지점이라 "유일한 정답"은 아님.
+  const t = (hour + minute / 60) - 0.5;
+  const tt = ((t % 24) + 24) % 24; // 음수 방지(0시 이전으로 넘어가는 경우 24시간 순환)
+  if (tt >= 23 || tt < 1) return 0; // 자
+  if (tt < 3) return 1; // 축
+  if (tt < 5) return 2; // 인
+  if (tt < 7) return 3; // 묘
+  if (tt < 9) return 4; // 진
+  if (tt < 11) return 5; // 사
+  if (tt < 13) return 6; // 오
+  if (tt < 15) return 7; // 미
+  if (tt < 17) return 8; // 신
+  if (tt < 19) return 9; // 유
+  if (tt < 21) return 10; // 술
+  return 11; // 해
+}
 
-  function getElementDirection(a, b) {
-    if (!a || !b) return 'neutral';
-    if (a === b) return 'same';
-    if (SANGSAENG_NEXT[a] === b) return 'aGeneratesB';
-    if (SANGSAENG_NEXT[b] === a) return 'bGeneratesA';
-    if (SANGGEUK_TARGET[a] === b) return 'aControlsB';
-    if (SANGGEUK_TARGET[b] === a) return 'bControlsA';
-    return 'neutral';
-  }
+// 오자둔(五子遁): 일간에 따라 자시(子時)의 시간이 결정
+// 갑/기일 -> 갑자시부터, 을/경일 -> 병자시부터, 병/신일 -> 무자시부터,
+// 정/임일 -> 경자시부터, 무/계일 -> 임자시부터
+const OJADUN_START = {
+  0: 0, 5: 0, // 갑,기 -> 갑(0)
+  1: 2, 6: 2, // 을,경 -> 병(2)
+  2: 4, 7: 4, // 병,신 -> 무(4)
+  3: 6, 8: 6, // 정,임 -> 경(6)
+  4: 8, 9: 8, // 무,계 -> 임(8)
+};
 
-  function analyzeOhaengCount(count) {
-    const safeCount = Object.fromEntries(OHAENG_ORDER.map(k => [k, Number(count?.[k] || 0)]));
-    const total = Object.values(safeCount).reduce((sum, value) => sum + value, 0) || 1;
-    const average = total / OHAENG_ORDER.length;
-    const sortedDesc = [...OHAENG_ORDER].sort((a, b) => safeCount[b] - safeCount[a]);
-    const sortedAsc = [...OHAENG_ORDER].sort((a, b) => safeCount[a] - safeCount[b]);
-    const max = safeCount[sortedDesc[0]];
-    const min = safeCount[sortedAsc[0]];
-    const dominant = sortedDesc.filter(k => safeCount[k] === max);
-    const weak = sortedAsc.filter(k => safeCount[k] === min);
-    const missing = OHAENG_ORDER.filter(k => safeCount[k] === 0);
-    const variance = OHAENG_ORDER.reduce((sum, k) => sum + Math.pow(safeCount[k] - average, 2), 0) / OHAENG_ORDER.length;
-    const dispersion = Math.sqrt(variance) / Math.max(average, 0.1);
-    const balanceScore = Math.max(0, Math.min(100, Math.round(100 - dispersion * 38 - missing.length * 5)));
-    const balanceLabel = balanceScore >= 82 ? '고르게 분포된 편' : balanceScore >= 67 ? '비교적 안정적인 편' : balanceScore >= 50 ? '특정 성향이 도드라지는 편' : '한 가지 성향이 매우 강한 편';
-    return { count: safeCount, total, average, dominant, weak, missing, max, min, balanceScore, balanceLabel };
-  }
+function getHourPillarInfo(dayCheonganIdx, hour, minute) {
+  const siJiIdx = getSiJiIndex(hour, minute);
+  const startCheongan = OJADUN_START[dayCheonganIdx];
+  const siGanIdx = (startCheongan + siJiIdx) % 10;
+  return { cheonganIdx: siGanIdx, jijiIdx: siJiIdx };
+}
 
-  function makePersonProfile(name, saju) {
-    const day = getDayOhaeng(saju);
-    const stats = analyzeOhaengCount(saju?.ohaengCount);
-    const dominant = stats.dominant[0] || day || '토';
-    const trait = OHAENG_RELATION_TRAITS[dominant];
-    const weakText = buildWeakEverydayText(stats);
+// ---------------------------------------------------------------
+// 전체 사주팔자 계산 메인 함수
+// ---------------------------------------------------------------
+function calculateSaju(year, month, day, hour, minute) {
+  const period = findSolarTermPeriod(year, month, day, hour, minute);
+  const yearPillar = getYearPillarInfo(year, month, day, hour, minute);
+  const monthPillar = getMonthPillarInfo(yearPillar.cheonganIdx, period.idx);
+  const dayPillar = getDayPillarInfo(year, month, day, hour);
+  const hourPillar = getHourPillarInfo(dayPillar.cheonganIdx, hour, minute);
+
+  function formatPillar(p) {
     return {
-      name,
-      day,
-      stats,
-      dominant,
-      trait,
-      summary: `${name}님은 사주에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향을 중심으로 보고, 실제 관계에서는 ${trait.core}입니다. 특히 ${trait.love}을 느낄 때 상대의 마음을 확실히 믿는 편이에요.`,
-      caution: `잘하는 점은 ${trait.strength}입니다. 다만 갈등이 생기면 ${trait.shadow}가 나타나기 쉬워요. ${weakText}`,
+      cheongan: CHEONGAN[p.cheonganIdx],
+      cheonganHanja: CHEONGAN_HANJA[p.cheonganIdx],
+      jiji: JIJI[p.jijiIdx],
+      jijiHanja: JIJI_HANJA[p.jijiIdx],
+      ohaengCheongan: CHEONGAN_OHAENG[p.cheonganIdx],
+      ohaengJiji: JIJI_OHAENG[p.jijiIdx],
+      cheonganIdx: p.cheonganIdx,
+      jijiIdx: p.jijiIdx,
     };
   }
 
-  function getJijiSignal(relInfo) {
-    if (!relInfo) return 0;
-    if (relInfo.tone === 'good') return 2;
-    if (relInfo.tone === 'clash') return -2;
-    if (relInfo.tone === 'friction') return -1;
-    return 0;
-  }
-
-  function buildJijiSynthesis(compat, nameA, nameB) {
-    const year = compat?.yearJijiRelation || { type: '평', tone: 'neutral' };
-    const day = compat?.dayJijiRelation || { type: '평', tone: 'neutral' };
-    const yearSignal = getJijiSignal(year);
-    const daySignal = getJijiSignal(day);
-
-    if (daySignal > 0 && yearSignal > 0) {
-      return `일지의 ${day.type}과 년지의 ${year.type}이 모두 긍정적으로 작용합니다. 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬운 조합이에요.`;
-    }
-    if (daySignal > 0 && yearSignal < 0) {
-      return `둘만 있을 때의 정서적 호흡은 일지 ${day.type}으로 좋은 편이지만, 년지 ${year.type}의 영향으로 가족관계·사회생활·생활 습관에서는 차이가 커질 수 있습니다. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
-    }
-    if (daySignal < 0 && yearSignal > 0) {
-      return `겉으로 보이는 생활 방향과 사회적 호흡은 년지 ${year.type}으로 잘 맞지만, 가까워질수록 일지 ${day.type}의 긴장이 드러날 수 있습니다. 바깥에서는 좋은 팀인데 사적인 감정 문제를 미루기 쉬운 조합이므로, 둘만의 대화 시간을 따로 확보하는 것이 좋아요.`;
-    }
-    if (daySignal < 0 && yearSignal < 0) {
-      return `일지 ${day.type}과 년지 ${year.type}이 모두 마찰 신호를 보여, 감정 표현과 생활 방식 양쪽에서 차이가 반복될 가능성이 있습니다. 끌림이 강하더라도 관계 규칙을 구체적으로 정하지 않으면 같은 갈등이 되풀이될 수 있어요.`;
-    }
-    if (day.type === '동일' || year.type === '동일') {
-      return `지지에 동일 관계가 있어 익숙함과 친밀감이 빠르게 생기기 쉽습니다. 다만 비슷한 약점과 생활 습관도 함께 증폭될 수 있어, 서로가 못하는 부분을 상대가 자동으로 채워줄 것이라 기대하지 않는 편이 좋아요.`;
-    }
-    return `${nameA}님과 ${nameB}님의 년지·일지 관계는 한쪽으로 강하게 기울기보다 무난한 편입니다. 연락을 얼마나 자주 할지, 돈과 주말 일정을 어떻게 나눌지, 어떤 취미를 함께 즐길지처럼 실제 생활에서 맞춰가는 방식이 관계 만족도를 더 크게 좌우해요.`;
-  }
-
-  function buildComplementInsight(profileA, profileB, compat) {
-    const aFillsB = compat?.complement?.aFillsB || [];
-    const bFillsA = compat?.complement?.bFillsA || [];
-    const sharedMissing = profileA.stats.missing.filter(k => profileB.stats.missing.includes(k));
-    const sharedDominant = profileA.stats.dominant.filter(k => profileB.stats.dominant.includes(k));
-    const lines = [];
-
-    if (aFillsB.length && bFillsA.length) {
-      lines.push('두 사람은 서로에게 도움이 되는 방식이 다릅니다. 한쪽만 계속 챙기는 관계라기보다, 상황에 따라 도움을 주고받기 쉬운 조합이에요.');
-      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
-      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
-    } else if (aFillsB.length) {
-      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
-      lines.push(`${profileA.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileB.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
-    } else if (bFillsA.length) {
-      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
-      lines.push(`${profileB.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileA.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
-    } else {
-      lines.push('두 사람은 잘하는 점과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 해결해주기를 기다리기보다 담당을 정하는 것이 좋아요.');
-    }
-
-    sharedDominant.slice(0, 2).forEach(k => {
-      if (ELEMENT_SHARED_STRONG[k]) lines.push(ELEMENT_SHARED_STRONG[k]);
-    });
-    sharedMissing.slice(0, 2).forEach(k => {
-      if (ELEMENT_SHARED_GAP[k]) lines.push(ELEMENT_SHARED_GAP[k]);
-    });
-    return lines;
-  }
-
-  function buildConflictScenario(profileA, profileB, direction, compat) {
-    const dayTone = compat?.dayJijiRelation?.tone;
-    const yearTone = compat?.yearJijiRelation?.tone;
-    const base = [];
-
-    if (direction === 'aControlsB' || direction === 'bControlsA') {
-      const controller = direction === 'aControlsB' ? profileA : profileB;
-      const receiver = direction === 'aControlsB' ? profileB : profileA;
-      base.push(`${controller.name}님이 해결책과 기준을 먼저 제시하고, ${receiver.name}님이 통제받는다고 느끼는 패턴을 조심해야 합니다.`);
-    } else if (direction === 'same') {
-      base.push('두 사람이 같은 논리와 감정으로 동시에 버티면서, 작은 문제가 자존심 대결로 길어지는 패턴을 조심해야 합니다.');
-    } else if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
-      const giver = direction === 'aGeneratesB' ? profileA : profileB;
-      const receiver = direction === 'aGeneratesB' ? profileB : profileA;
-      base.push(`${giver.name}님이 계속 이해하고 북돋우다가 지치고, ${receiver.name}님은 문제를 늦게 알아차리는 비대칭을 조심해야 합니다.`);
-    } else {
-      base.push('서로 나쁘게 생각하지 않지만 기대하는 방식이 달라, 설명 없이 기다리다가 서운함이 누적되는 패턴을 조심해야 합니다.');
-    }
-
-    if (dayTone === 'clash') base.push('특히 감정이 가까워질수록 즉각 반응하지 말고, 사실·감정·요청을 나누어 말하는 방식이 필요합니다.');
-    else if (dayTone === 'friction') base.push('큰 사건보다 잔소리, 말투, 연락 속도 같은 작은 마찰을 그날그날 정리하는 것이 효과적입니다.');
-
-    if (yearTone === 'clash' || yearTone === 'friction') base.push('가족, 돈, 시간 사용, 공개적인 관계 방식은 초기에 기준을 맞춰두는 것이 좋습니다.');
-    return base;
-  }
-
-  function buildRelationshipFlow(profileA, profileB, compat) {
-    const relation = compat?.relation;
-    const daySignal = getJijiSignal(compat?.dayJijiRelation);
-    const complementCount = (compat?.complement?.aFillsB?.length || 0) + (compat?.complement?.bFillsA?.length || 0);
-
-    if (relation === '상생' && daySignal > 0 && complementCount >= 2) {
-      return '초반의 호감뿐 아니라 시간이 지날수록 신뢰가 쌓이는 장기 안정형입니다. 한 사람은 계획을 세우고 다른 사람은 분위기를 풀어주는 식으로 역할이 자연스럽게 나뉘기 쉬워, 여행·저축·운동처럼 함께할 목표를 정하면 관계가 더 단단해집니다.';
-    }
-    if (relation === '상극' && daySignal < 0) {
-      return '끌림과 긴장이 동시에 큰 고자극형입니다. 관계가 빠르게 깊어질 수 있지만, 갈등 규칙이 없으면 좋을 때와 힘들 때의 진폭도 커집니다. 속도 조절과 경계 존중이 핵심입니다.';
-    }
-    if (relation === '동기' && complementCount === 0) {
-      return '친구처럼 빠르게 가까워지는 관계입니다. 말이 잘 통하고 같은 취미를 즐기기 쉽지만, 약속 잡기·돈 관리·사과하기처럼 둘 다 어려워하는 일은 함께 미룰 수 있어요. 이런 일은 번갈아 맡는 편이 좋습니다.';
-    }
-    if (daySignal > 0) {
-      return '겉보기보다 가까워질수록 편안함이 커지는 관계입니다. 큰 이벤트보다 일상적인 연락, 식사, 생활 리듬을 꾸준히 공유할 때 애정이 안정됩니다.';
-    }
-    if (daySignal < 0) {
-      return '초반의 매력과 별개로 가까워진 뒤 조정이 필요한 관계입니다. 서로를 바꾸려 하기보다 각자 절대 양보하기 어려운 기준과 조정 가능한 부분을 나눠야 합니다.';
-    }
-    return '처음부터 강하게 끌리기보다 함께 지내며 정이 쌓이는 관계입니다. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워집니다.';
-  }
-
-  function buildActionTips(profileA, profileB, direction, compat) {
-    const tips = [];
-    tips.push(`${profileA.name}님에게는 ${profileA.trait.repair}이 효과적입니다.`);
-    tips.push(`${profileB.name}님에게는 ${profileB.trait.repair}이 효과적입니다.`);
-
-    if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
-      tips.push('배려를 받은 사람이 “고마워”에서 끝내지 않고, 다음 행동으로 되돌려주는 순환을 만드는 것이 좋습니다.');
-    } else if (direction === 'aControlsB' || direction === 'bControlsA') {
-      tips.push('상대의 행동을 교정하려 하기 전에 “내가 필요한 것은 무엇인지”를 요청형 문장으로 말해주세요.');
-    } else if (direction === 'same') {
-      tips.push('의견이 같아 보여도 각자 원하는 결론과 속도가 같은지 한 번 더 확인해주세요.');
-    }
-
-    if (compat?.dayJijiRelation?.tone === 'clash') tips.push('격한 순간에는 최소 20~30분의 냉각 시간을 갖고, 다시 대화할 시각을 반드시 정하세요.');
-    if (compat?.yearJijiRelation?.tone === 'clash') tips.push('돈·가족·주말 일정·연락 공개 범위처럼 생활 문제는 감정이 좋을 때 미리 합의해두세요.');
-    return tips.slice(0, 5);
-  }
-
-  function ensureCompatDetailStyles() {
-    if (document.getElementById('compat-detail-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'compat-detail-styles';
-    style.textContent = `
-      .compat-detail-wrap{margin-top:20px;padding-top:18px;border-top:1px solid rgba(107,99,85,.16)}
-      .compat-detail-title{font-weight:800;font-size:17px;margin-bottom:12px;color:#4f493f}
-      .compat-summary-card{padding:14px 16px;margin:10px 0;border-radius:14px;background:rgba(163,128,63,.07);line-height:1.75}
-      .compat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
-      .compat-card{padding:14px;border:1px solid rgba(107,99,85,.14);border-radius:14px;background:rgba(255,255,255,.55);line-height:1.7}
-      .compat-card h4{margin:0 0 8px;font-size:14px;color:#6b5328}
-      .compat-card p{margin:6px 0}
-      .compat-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-      .compat-chip{display:inline-flex;padding:4px 9px;border-radius:999px;background:rgba(163,128,63,.10);font-size:12px}
-      .compat-list{margin:7px 0 0;padding-left:20px;line-height:1.75}
-      .compat-muted{font-size:12px;opacity:.72;margin-top:12px}
-      @media (max-width:680px){.compat-grid{grid-template-columns:1fr}}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function buildDetailedCompatHtml(sajuA, sajuB, compat, rawNameA, rawNameB) {
-    ensureCompatDetailStyles();
-    const nameA = escapeHtml(rawNameA);
-    const nameB = escapeHtml(rawNameB);
-    const profileA = makePersonProfile(nameA, sajuA);
-    const profileB = makePersonProfile(nameB, sajuB);
-    const direction = getElementDirection(profileA.day, profileB.day);
-    const directionText = RELATION_DIRECTION_TEXT[direction]({ nameA, nameB, aDay: profileA.day, bDay: profileB.day });
-    const complements = buildComplementInsight(profileA, profileB, compat);
-    const conflicts = buildConflictScenario(profileA, profileB, direction, compat);
-    const tips = buildActionTips(profileA, profileB, direction, compat);
-    const flow = buildRelationshipFlow(profileA, profileB, compat);
-    const combinedCount = Object.fromEntries(OHAENG_ORDER.map(k => [k, profileA.stats.count[k] + profileB.stats.count[k]]));
-    const combinedStats = analyzeOhaengCount(combinedCount);
-
-    const chipsA = [
-      `일간 ${profileA.day}(${OHAENG_HANJA[profileA.day]})`,
-      `강점 ${formatOhaengList(profileA.stats.dominant)}`,
-      profileA.stats.missing.length ? `적게 나타남 ${formatOhaengList(profileA.stats.missing)}` : `덜 두드러짐 ${formatOhaengList(profileA.stats.weak.slice(0, 1))}`,
-      `균형 ${profileA.stats.balanceScore}`,
-    ];
-    const chipsB = [
-      `일간 ${profileB.day}(${OHAENG_HANJA[profileB.day]})`,
-      `강점 ${formatOhaengList(profileB.stats.dominant)}`,
-      profileB.stats.missing.length ? `적게 나타남 ${formatOhaengList(profileB.stats.missing)}` : `덜 두드러짐 ${formatOhaengList(profileB.stats.weak.slice(0, 1))}`,
-      `균형 ${profileB.stats.balanceScore}`,
-    ];
-
-    return `
-      <section class="compat-detail-wrap">
-        <div class="compat-detail-title">두 사람의 사주를 함께 본 상세 궁합</div>
-        <div class="compat-summary-card"><b>관계의 핵심 흐름</b><br>${directionText}</div>
-
-        <div class="compat-grid">
-          <article class="compat-card">
-            <h4>${nameA}님의 관계 성향</h4>
-            <div class="compat-chip-row">${chipsA.map(x => `<span class="compat-chip">${x}</span>`).join('')}</div>
-            <p>${profileA.summary}</p>
-            <p>${profileA.caution}</p>
-          </article>
-          <article class="compat-card">
-            <h4>${nameB}님의 관계 성향</h4>
-            <div class="compat-chip-row">${chipsB.map(x => `<span class="compat-chip">${x}</span>`).join('')}</div>
-            <p>${profileB.summary}</p>
-            <p>${profileB.caution}</p>
-          </article>
-        </div>
-
-        <div class="compat-card">
-          <h4>가까워졌을 때 나타나는 궁합</h4>
-          <p>${buildJijiSynthesis(compat, nameA, nameB)}</p>
-          <p><b>관계의 진행 방식:</b> ${flow}</p>
-        </div>
-
-        <div class="compat-grid">
-          <article class="compat-card">
-            <h4>상대에게 실제로 도움이 되는 부분</h4>
-            <ul class="compat-list">${complements.map(x => `<li>${x}</li>`).join('')}</ul>
-          </article>
-          <article class="compat-card">
-            <h4>반복되기 쉬운 갈등</h4>
-            <ul class="compat-list">${conflicts.map(x => `<li>${x}</li>`).join('')}</ul>
-          </article>
-        </div>
-
-        <div class="compat-card">
-          <h4>두 사람이 함께 있을 때 두드러지는 모습</h4>
-          <p>${buildCombinedEverydayText(combinedStats)}</p>
-          <p>데이트나 공동 활동은 ${profileA.trait.activity}, 그리고 ${profileB.trait.activity}을 번갈아 선택하면 두 사람의 만족도를 고르게 맞추는 데 도움이 됩니다.</p>
-        </div>
-
-        <div class="compat-card">
-          <h4>관계를 오래 유지하는 실천법</h4>
-          <ol class="compat-list">${tips.map(x => `<li>${x}</li>`).join('')}</ol>
-        </div>
-        <div class="compat-muted">※ ‘균형’ 수치는 사주에 같은 성향이 얼마나 몰려 있는지 보여주는 참고값입니다. 점수가 높다고 무조건 좋은 관계라는 뜻은 아닙니다.</div>
-      </section>
-    `;
-  }
-
-  function buildApproxCompatHtml(entryA, entryB, rawNameA, rawNameB) {
-    ensureCompatDetailStyles();
-    const nameA = escapeHtml(rawNameA);
-    const nameB = escapeHtml(rawNameB);
-    const countA = entryA.exact ? entryA.exact.ohaengCount : buildApproxCount(entryA.approx);
-    const countB = entryB.exact ? entryB.exact.ohaengCount : buildApproxCount(entryB.approx);
-    const statsA = analyzeOhaengCount(countA);
-    const statsB = analyzeOhaengCount(countB);
-    const sharedStrong = statsA.dominant.filter(k => statsB.dominant.includes(k));
-    const aFillsB = statsA.dominant.filter(k => statsB.weak.includes(k) || statsB.missing.includes(k));
-    const bFillsA = statsB.dominant.filter(k => statsA.weak.includes(k) || statsA.missing.includes(k));
-    const observations = [];
-
-    if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB));
-    if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA));
-    if (sharedStrong.length) sharedStrong.slice(0, 2).forEach(k => observations.push(ELEMENT_SHARED_STRONG[k]));
-    if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않습니다. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용합니다.');
-
-    return `
-      <section class="compat-detail-wrap">
-        <div class="compat-detail-title">확인 가능한 오행으로 본 참고 궁합</div>
-        <div class="compat-summary-card">연도가 없는 사람의 일간과 년지·일지는 확정할 수 없지만, 월지와 입력된 시간에서 나타나는 오행 경향으로 두 사람의 분위기를 제한적으로 비교했습니다.</div>
-        <div class="compat-grid">
-          <article class="compat-card"><h4>${nameA}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}입니다.</p></article>
-          <article class="compat-card"><h4>${nameB}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}입니다.</p></article>
-        </div>
-        <div class="compat-card"><h4>두 사람 사이에서 예상되는 흐름</h4><ul class="compat-list">${observations.map(x => `<li>${x}</li>`).join('')}</ul></div>
-        <div class="compat-muted">※ 연도 미상 결과는 일부 기둥만 반영한 추정 해설입니다. 상생·상극, 부부궁, 띠 궁합은 연도를 확인한 뒤에만 정확하게 설명할 수 있습니다.</div>
-      </section>
-    `;
-  }
-
-  function relationExplainHtml(relationKey, nameA, nameB) {
-    const r = RELATION_EXPLAIN[relationKey];
-    if (!r) return '';
-    const li = arr => arr.map(x => `<li>${x}</li>`).join('');
-    const namesLabel = (nameA && nameB) ? `${escapeHtml(nameA)} · ${escapeHtml(nameB)}` : '';
-    return `
-      <div class="re-heading">${r.emoji} ${r.title}${namesLabel ? `<span class="re-names">${namesLabel}</span>` : ''}</div>
-      <div class="re-lover-friend">
-        <div class="re-block">
-          <div class="re-label">연인 ❤️</div>
-          <ul>${li(r.lover)}</ul>
-        </div>
-        <div class="re-block">
-          <div class="re-label">친구 🤝</div>
-          <ul>${li(r.friend)}</ul>
-        </div>
-      </div>
-      <div class="re-quote">"${r.quote}"</div>
-      ${r.caveat ? `<div class="re-block" style="margin-top:10px;">${r.caveat}</div>` : ''}
-      <div class="re-caveat">${RELATION_GENERAL_CAVEAT}</div>
-    `;
-  }
-
-  // 추천 색상 이름 -> 실제 표시용 hex (스와치 렌더링용)
-  const COLOR_NAME_HEX = {
-    '초록색': '#84ab78', '연두색': '#bcd89a', '청록색': '#7fbcb2',
-    '빨간색': '#d98a7c', '주황색': '#eab08a', '핑크색': '#f0b8c4',
-    '갈색': '#b08b6e', '황토색': '#cbab7a', '베이지': '#e6dac0',
-    '흰색': '#f5f4f0', '금색': '#dcc48f', '은색·그레이': '#c2c2bd',
-    '검은색': '#4a4a4a', '남색': '#7186a8', '짙은 파란색': '#82a0bd',
+  const result = {
+    year: formatPillar(yearPillar),
+    month: formatPillar(monthPillar),
+    day: formatPillar(dayPillar),
+    hour: formatPillar(hourPillar),
+    sajuYear: yearPillar.sajuYear,
   };
 
-  // ---------------------------------------------------------------
-  // 셀렉트박스 채우기
-  // ---------------------------------------------------------------
-  function fillSelect(id, start, end, pad, suffix) {
-    const el = document.getElementById(id);
-    const frag = document.createDocumentFragment();
-    for (let i = start; i <= end; i++) {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = (pad ? String(i).padStart(pad, '0') : i) + (suffix || '');
-      frag.appendChild(opt);
-    }
-    el.appendChild(frag);
+  // 오행 분포 카운트 (8글자 = 4개 천간 + 4개 지지)
+  const ohaengCount = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  [result.year, result.month, result.day, result.hour].forEach(p => {
+    ohaengCount[p.ohaengCheongan]++;
+    ohaengCount[p.ohaengJiji]++;
+  });
+  result.ohaengCount = ohaengCount;
+
+  // 일간(日干) = 본인을 상징하는 핵심 오행
+  result.ilgan = result.day.cheongan;
+  result.ilganOhaeng = result.day.ohaengCheongan;
+
+  return result;
+}
+
+// ===================================================================
+// 지지(地支) 관계 — 육합(六合)/삼합(三合)/충(沖)/형(刑)/해(害)
+// 명리학에서 두 사람의 궁합을 볼 때 일간(오행) 관계뿐 아니라
+// 년지(띠)와 일지(부부궁)의 지지 관계도 함께 본다.
+// ===================================================================
+
+// 육합(六合): 지지끼리 짝을 이뤄 화합하는 관계. 서로를 편안하게 해주는 궁합.
+// 자축합토, 인해합목, 묘술합화, 진유합금, 사신합수, 오미합화
+const YUKHAP_PAIRS = [
+  [0, 1],  // 자-축
+  [2, 11], // 인-해
+  [3, 10], // 묘-술
+  [4, 9],  // 진-유
+  [5, 8],  // 사-신
+  [6, 7],  // 오-미
+];
+
+// 삼합(三合): 세 지지가 모여 하나의 강한 오행 기운을 이루는 관계 중 두 지지만 겹쳐도
+// "반합(半合)"으로 통하는 좋은 궁합으로 본다. 여기서는 삼합 그룹 소속 여부로 판정.
+// 신자진(수국), 인오술(화국), 사유축(금국), 해묘미(목국)
+const SAMHAP_GROUPS = [
+  [8, 0, 4],  // 신-자-진 (水局)
+  [2, 6, 10], // 인-오-술 (火局)
+  [5, 9, 1],  // 사-유-축 (金局)
+  [11, 3, 7], // 해-묘-미 (木局)
+];
+
+// 충(沖): 정반대 방향의 지지끼리 강하게 부딪히는 관계. 서로 다른 기질이 정면충돌.
+// 자오충, 축미충, 인신충, 묘유충, 진술충, 사해충 (지지 순서상 6칸씩 차이)
+const CHUNG_PAIRS = [
+  [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11],
+];
+
+// 형(刑): 서로를 은근히 갉아먹거나 트집 잡기 쉬운 껄끄러운 관계.
+// 인사신(무은지형), 축술미(지세지형), 자묘(무례지형), 진오유해(자형 포함 간소화)
+const HYEONG_GROUPS = [
+  [2, 5, 8],  // 인-사-신
+  [1, 10, 7], // 축-술-미
+  [0, 3],     // 자-묘
+];
+const JAHYEONG = [4, 6, 9, 11]; // 진/오/유/해는 같은 지지끼리 만나면 자형(自刑)
+
+// 해(害): 육합을 방해하는 자리에서 생기는, 은근하고 사소하게 거슬리는 관계.
+// 자미해, 축오해, 인사해, 묘진해, 신해해, 유술해
+const HAE_PAIRS = [
+  [0, 7], [1, 6], [2, 5], [3, 4], [8, 11], [9, 10],
+];
+
+function hasPair(list, a, b) {
+  return list.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+}
+
+// 두 지지(jijiIdx 0~11) 사이의 관계를 판정.
+// 여러 관계가 동시에 성립할 수 있는 이론이지만, 여기서는 실사용성을 위해
+// "가장 특징적인 관계 하나"를 우선순위(합 > 충 > 형 > 해 > 없음)로 뽑는다.
+function getJijiRelation(idxA, idxB) {
+  if (idxA === idxB) {
+    return { type: '동일', label: '같은 지지', tone: 'neutral' };
   }
-
-  function initPersonInputs(prefix, defaultYear) {
-    fillSelect(prefix + '-year', 1940, new Date().getFullYear(), null, '년');
-    fillSelect(prefix + '-month', 1, 12, null, '월');
-    fillSelect(prefix + '-day', 1, 31, null, '일');
-    fillSelect(prefix + '-hour', 0, 23, 2, '시');
-    fillSelect(prefix + '-minute', 0, 59, 2, '분');
-    document.getElementById(prefix + '-year').value = defaultYear;
-    document.getElementById(prefix + '-month').value = 1;
-    document.getElementById(prefix + '-day').value = 1;
-    document.getElementById(prefix + '-hour').value = 12;
-    document.getElementById(prefix + '-minute').value = 0;
-
-    const unknownCb = document.getElementById(prefix + '-unknown');
-    unknownCb.addEventListener('change', () => {
-      const hourSel = document.getElementById(prefix + '-hour');
-      const minSel = document.getElementById(prefix + '-minute');
-      if (unknownCb.checked) {
-        hourSel.value = 12; minSel.value = 0;
-        hourSel.disabled = true; minSel.disabled = true;
-      } else {
-        hourSel.disabled = false; minSel.disabled = false;
-      }
-    });
-
-    // 연도 모름 체크박스: 연도 select를 숨기고 비활성화
-    const yearUnknownCb = document.getElementById(prefix + '-year-unknown');
-    const yearSel = document.getElementById(prefix + '-year');
-    yearUnknownCb.addEventListener('change', () => {
-      if (yearUnknownCb.checked) {
-        yearSel.disabled = true;
-        yearSel.style.opacity = '0.35';
-      } else {
-        yearSel.disabled = false;
-        yearSel.style.opacity = '1';
-      }
-    });
+  if (hasPair(YUKHAP_PAIRS, idxA, idxB)) {
+    return { type: '육합', label: '육합(六合) — 찰떡같이 화합', tone: 'good' };
   }
-
-  initPersonInputs('a', 1994);
-  initPersonInputs('b', 1995);
-
-  // ---------------------------------------------------------------
-  // 입력값 읽기 + 검증
-  // ---------------------------------------------------------------
-  function readPerson(prefix) {
-    const nameInput = document.getElementById(prefix + '-name').value.trim();
-    const defaultName = prefix === 'a' ? '첫 번째 사람' : '두 번째 사람';
-    const name = nameInput || defaultName;
-
-    const yearUnknown = document.getElementById(prefix + '-year-unknown').checked;
-    const month = parseInt(document.getElementById(prefix + '-month').value, 10);
-    const day = parseInt(document.getElementById(prefix + '-day').value, 10);
-    const hour = parseInt(document.getElementById(prefix + '-hour').value, 10);
-    const minute = parseInt(document.getElementById(prefix + '-minute').value, 10);
-    const hourUnknown = document.getElementById(prefix + '-unknown').checked;
-
-    if (yearUnknown) {
-      // 연도 없이도 실제 존재하는 월/일인지만 검증 (윤년 2/29는 통과시키되
-      // 계산 시 통계 샘플에서 자연스럽게 처리됨)
-      const leapCheckYear = 2024; // 2/29 검증용 임의 윤년
-      const d = new Date(leapCheckYear, month - 1, day);
-      if (d.getMonth() !== month - 1 || d.getDate() !== day) {
-        return { error: `존재하지 않는 날짜입니다 (${month}월 ${day}일)`, name };
-      }
-      return { yearUnknown: true, month, day, hour, minute, hourUnknown, name };
-    }
-
-    const year = parseInt(document.getElementById(prefix + '-year').value, 10);
-    const d = new Date(year, month - 1, day);
-    if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) {
-      return { error: `존재하지 않는 날짜입니다 (${year}년 ${month}월 ${day}일)`, name };
-    }
-    return { yearUnknown: false, year, month, day, hour, minute, hourUnknown, name };
+  const samhap = SAMHAP_GROUPS.find(g => g.includes(idxA) && g.includes(idxB));
+  if (samhap) {
+    return { type: '삼합', label: '삼합(三合) — 같은 방향을 보는 궁합', tone: 'good' };
   }
+  if (hasPair(CHUNG_PAIRS, idxA, idxB)) {
+    return { type: '충', label: '충(沖) — 정면으로 부딪히는 자리', tone: 'clash' };
+  }
+  const hyeong = HYEONG_GROUPS.find(g => g.includes(idxA) && g.includes(idxB));
+  if (hyeong) {
+    return { type: '형', label: '형(刑) — 은근히 신경전이 생기는 자리', tone: 'friction' };
+  }
+  if (hasPair(HAE_PAIRS, idxA, idxB)) {
+    return { type: '해', label: '해(害) — 사소하게 거슬리는 자리', tone: 'friction' };
+  }
+  return { type: '평', label: '특별한 상호작용 없이 무난한 자리', tone: 'neutral' };
+}
 
-  // ---------------------------------------------------------------
-  // 계산 실행
-  // ---------------------------------------------------------------
-  const calcBtn = document.getElementById('calcBtn');
-  const errorMsg = document.getElementById('errorMsg');
-  const loading = document.getElementById('loading');
-  const resultEl = document.getElementById('result');
+// 두 사람의 사주를 비교하여 궁합 관련 정보 산출
+function analyzeCompatibility(sajuA, sajuB) {
+  // 오행 상생 관계: 목생화, 화생토, 토생금, 금생수, 수생목
+  const SANGSAENG = { 목: '화', 화: '토', 토: '금', 금: '수', 수: '목' };
+  // 오행 상극 관계: 목극토, 토극수, 수극화, 화극금, 금극목
+  const SANGGEUK = { 목: '토', 토: '수', 수: '화', 화: '금', 금: '목' };
 
-  calcBtn.addEventListener('click', () => {
-    errorMsg.textContent = '';
-    const a = readPerson('a');
-    const b = readPerson('b');
-
-    if (a.error) { errorMsg.textContent = `${a.name}: ` + a.error; return; }
-    if (b.error) { errorMsg.textContent = `${b.name}: ` + b.error; return; }
-
-    calcBtn.disabled = true;
-    resultEl.style.display = 'none';
-    loading.style.display = 'block';
-
-    // 짧은 지연으로 계산 연출 (실제로는 즉시 계산되지만 체감 리듬을 위함)
-    setTimeout(() => {
-      try {
-        const entryA = a.yearUnknown
-          ? { approx: calculateSajuApprox(a.month, a.day, a.hourUnknown ? null : a.hour, a.minute) }
-          : { exact: calculateSaju(a.year, a.month, a.day, a.hour, a.minute) };
-        const entryB = b.yearUnknown
-          ? { approx: calculateSajuApprox(b.month, b.day, b.hourUnknown ? null : b.hour, b.minute) }
-          : { exact: calculateSaju(b.year, b.month, b.day, b.hour, b.minute) };
-
-        const bothExact = !a.yearUnknown && !b.yearUnknown;
-        const rec = bothExact
-          ? generateCoupleRecommendation(entryA.exact, entryB.exact)
-          : generateCoupleRecommendationApprox(entryA, entryB);
-
-        renderResult(entryA, entryB, rec, a, b);
-        loading.style.display = 'none';
-        resultEl.style.display = 'block';
-        resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (e) {
-        loading.style.display = 'none';
-        errorMsg.textContent = '계산 중 오류가 발생했습니다: ' + e.message;
-        console.error(e);
-      } finally {
-        calcBtn.disabled = false;
-      }
-    }, 500);
+  const totalCount = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  Object.keys(totalCount).forEach(k => {
+    totalCount[k] = sajuA.ohaengCount[k] + sajuB.ohaengCount[k];
   });
 
-  // ---------------------------------------------------------------
-  // 결과 렌더링 - 정확 모드 (연도 있음)
-  // ---------------------------------------------------------------
-  function renderPillarCardExact(prefix, saju, label) {
-    document.getElementById('pillarTitle' + prefix).textContent = label;
-    const charsEl = document.getElementById('pillarChars' + prefix);
-    charsEl.innerHTML = '';
-    const pillars = [
-      { p: saju.year, lbl: '연주' },
-      { p: saju.month, lbl: '월주' },
-      { p: saju.day, lbl: '일주' },
-      { p: saju.hour, lbl: '시주' },
-    ];
-    pillars.forEach(({ p, lbl }) => {
-      const cheonganDiv = document.createElement('div');
-      cheonganDiv.className = 'pillar-char o-' + p.ohaengCheongan;
-      cheonganDiv.innerHTML = `<span class="hanja">${p.cheonganHanja}</span><span class="lbl">${lbl}(간)</span>`;
-      charsEl.appendChild(cheonganDiv);
-    });
-    pillars.forEach(({ p, lbl }) => {
-      const jijiDiv = document.createElement('div');
-      jijiDiv.className = 'pillar-char o-' + p.ohaengJiji;
-      jijiDiv.innerHTML = `<span class="hanja">${p.jijiHanja}</span><span class="lbl">${lbl}(지)</span>`;
-      charsEl.appendChild(jijiDiv);
-    });
+  // 가장 부족한 오행 찾기 (커플 합산 기준)
+  let minOhaeng = '목', minVal = Infinity;
+  Object.entries(totalCount).forEach(([k, v]) => {
+    if (v < minVal) { minVal = v; minOhaeng = k; }
+  });
 
-    renderOhaengBar(prefix, saju.ohaengCount);
+  // 가장 넘치는 오행
+  let maxOhaeng = '목', maxVal = -Infinity;
+  Object.entries(totalCount).forEach(([k, v]) => {
+    if (v > maxVal) { maxVal = v; maxOhaeng = k; }
+  });
+
+  // 두 일간 사이의 관계(상생/상극/동일) 판정
+  const ilganA = sajuA.ilganOhaeng, ilganB = sajuB.ilganOhaeng;
+  let relation = '중립';
+  if (ilganA === ilganB) relation = '동기';
+  else if (SANGSAENG[ilganA] === ilganB || SANGSAENG[ilganB] === ilganA) relation = '상생';
+  else if (SANGGEUK[ilganA] === ilganB || SANGGEUK[ilganB] === ilganA) relation = '상극';
+
+  // 년지(年支) 관계 = 흔히 말하는 "띠 궁합"
+  const yearJijiRelation = getJijiRelation(sajuA.year.jijiIdx, sajuB.year.jijiIdx);
+
+  // 일지(日支) 관계 = 부부궁(配偶宮)끼리의 궁합. 명리학에서는 배우자 자리인
+  // 일지의 상성을 연애/결혼 궁합에서 특히 중요하게 본다.
+  const dayJijiRelation = getJijiRelation(sajuA.day.jijiIdx, sajuB.day.jijiIdx);
+
+  // 오행 상호보완도: 각자 부족한 오행을 상대가 채워주는지 확인.
+  // A에게 부족한(0~1개) 오행 중 B가 넉넉히(2개 이상) 가진 것이 있으면 "서로 채워주는 궁합".
+  const OHAENG_KEYS = ['목', '화', '토', '금', '수'];
+  const complement = { aFillsB: [], bFillsA: [] };
+  OHAENG_KEYS.forEach(k => {
+    if (sajuB.ohaengCount[k] <= 1 && sajuA.ohaengCount[k] >= 2) complement.aFillsB.push(k);
+    if (sajuA.ohaengCount[k] <= 1 && sajuB.ohaengCount[k] >= 2) complement.bFillsA.push(k);
+  });
+
+  return {
+    totalCount,
+    minOhaeng, // 커플에게 부족한 오행 -> 보완 추천의 핵심
+    maxOhaeng,
+    relation,
+    ilganA, ilganB,
+    yearJijiRelation,
+    dayJijiRelation,
+    complement,
+  };
+}
+
+// ===================================================================
+// 오행별 상징 매칭 데이터
+// 명리학의 오행-계절-방위-색-사물 배속(配屬) 이론을 기반으로,
+// 색상/꽃/장소는 그 상징을 현대적으로 확장 해석한 것입니다.
+// ===================================================================
+const OHAENG_INFO = {
+  목: {
+    season: '봄',
+    seasonDetail: '새싹이 움트는 이른 봄',
+    timeRange: '새벽 3시~7시',
+    timeDetail: '해가 뜨기 시작하는 인시·묘시',
+    colors: ['초록색', '연두색', '청록색'],
+    flowers: ['튤립', '개나리', '연둣빛 유칼립투스'],
+    places: ['숲길 산책로', '식물원', '대나무 숲', '차밭'],
+    keyword: '성장과 시작',
+    direction: '동쪽',
+  },
+  화: {
+    season: '여름',
+    seasonDetail: '태양이 가장 뜨거운 한여름',
+    timeRange: '오전 9시~오후 1시',
+    timeDetail: '해가 가장 높이 뜨는 사시·오시',
+    colors: ['빨간색', '주황색', '핑크색'],
+    flowers: ['장미', '해바라기', '작약'],
+    places: ['노을 지는 해변', '루프탑 바', '불꽃놀이 명소'],
+    keyword: '열정과 표현',
+    direction: '남쪽',
+  },
+  토: {
+    season: '환절기(늦여름·환절기)',
+    seasonDetail: '계절과 계절 사이, 환절기의 안정된 기운',
+    timeRange: '오후 1시~오후 5시 / 각 계절의 마지막 18일',
+    timeDetail: '미시·신시, 균형이 잡히는 시간대',
+    colors: ['갈색', '황토색', '베이지'],
+    flowers: ['해바라기(늦여름형)', '국화', '메리골드'],
+    places: ['도자기 공방', '한옥 마을', '흙길 정원', '온천'],
+    keyword: '안정과 신뢰',
+    direction: '중앙',
+  },
+  금: {
+    season: '가을',
+    seasonDetail: '결실을 맺는 청명한 가을',
+    timeRange: '오후 5시~오후 9시',
+    timeDetail: '해가 지는 신시·유시',
+    colors: ['흰색', '금색', '은색·그레이'],
+    flowers: ['백합', '은방울꽃', '흰 국화'],
+    places: ['미술관', '전망대', '고즈넉한 사찰', '금속공예 갤러리'],
+    keyword: '결실과 완성',
+    direction: '서쪽',
+  },
+  수: {
+    season: '겨울',
+    seasonDetail: '고요히 응축되는 깊은 겨울',
+    timeRange: '밤 9시~새벽 1시',
+    timeDetail: '해시·자시, 만물이 쉬는 밤',
+    colors: ['검은색', '남색', '짙은 파란색'],
+    flowers: ['수국', '동백꽃', '블루 델피늄'],
+    places: ['야경 명소', '호숫가', '스파·온수풀', '수족관'],
+    keyword: '휴식과 지혜',
+    direction: '북쪽',
+  },
+};
+
+// 오행 상생 관계: 부족한 오행을 "낳아주는" 관계의 오행을 함께 제안하기 위함
+const SANGSAENG_PARENT = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' }; // 무엇이 이 오행을 생하는가
+
+// 두 사람의 사주로부터 최종 데이트/궁합 추천 세트를 생성
+function generateCoupleRecommendation(sajuA, sajuB) {
+  const compat = analyzeCompatibility(sajuA, sajuB);
+  const primary = OHAENG_INFO[compat.minOhaeng]; // 커플에게 부족해서 보완이 필요한 오행
+  const supportOhaeng = SANGSAENG_PARENT[compat.minOhaeng];
+  const support = OHAENG_INFO[supportOhaeng];
+
+  return {
+    compat,
+    primaryOhaeng: compat.minOhaeng,
+    primary,
+    supportOhaeng,
+    support,
+  };
+}
+
+// ===================================================================
+// 연도 미상(未詳) 근사 계산
+// 사주팔자는 연주·월주·일주·시주 네 기둥 모두 '몇 년'인지에 뿌리를 두고
+// 있어서, 연도가 없으면 60갑자를 정확히 특정할 수 없습니다.
+// 다만 아래 두 가지는 연도 없이도 근사적으로 말할 수 있습니다.
+//   1) 월지(月支)는 절기(태양 황경)로 고정되므로, 월/일만 있으면
+//      "그 달의 오행 기운"은 거의 정확히 알 수 있습니다.
+//   2) 일주(日柱)는 그레고리력 절대 날짜에 좌우되므로 연도가 없으면
+//      확정할 수 없지만, 최근 N년 각각을 가정해 계산해보면 일간 오행이
+//      대략 어떤 분포로 나오는지(어느 오행이 나올 확률이 높은지)는
+//      통계적으로 보여줄 수 있습니다.
+// 이 함수는 "정확한 사주"가 아니라 "경향 추정치"임을 명확히 알리는
+// 용도로만 사용합니다.
+// ---------------------------------------------------------------
+
+// 월/일만으로 절기 구간(=월지)을 근사 판정 (연도는 현재 연도로 임시 고정해
+// 계산하되, 절기 날짜의 연도별 흔들림은 ±1일 이내이므로 월지 판정에는
+// 영향이 없음)
+function getMonthOhaengByDate(month, day) {
+  const refYear = new Date().getFullYear();
+  const period = findSolarTermPeriod(refYear, month, day, 12, 0);
+  const wolJiIdx = JIEQI_TO_WOLJI[period.idx];
+  const ohaeng = JIJI_OHAENG[wolJiIdx];
+  return {
+    jijiIdx: wolJiIdx,
+    jiji: JIJI[wolJiIdx],
+    jijiHanja: JIJI_HANJA[wolJiIdx],
+    ohaeng,
+    jieqiName: JUL_NAMES[period.idx].name,
+  };
+}
+
+// 최근 sampleYears년 각각을 가정했을 때 일간 오행이 어떻게 분포하는지 집계
+function getDayOhaengDistribution(month, day, hour, sampleYears) {
+  const n = sampleYears || 60;
+  const nowYear = new Date().getFullYear();
+  const dist = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  const cheonganDist = {};
+  CHEONGAN.forEach(c => cheonganDist[c] = 0);
+
+  for (let y = nowYear - n; y <= nowYear; y++) {
+    // 2/29 같은 날짜가 해당 연도에 없으면 건너뜀
+    const d = new Date(y, month - 1, day);
+    if (d.getMonth() !== month - 1) continue;
+    const dayPillar = getDayPillarInfo(y, month, day, hour != null ? hour : 12);
+    const ohaeng = CHEONGAN_OHAENG[dayPillar.cheonganIdx];
+    dist[ohaeng]++;
+    cheonganDist[CHEONGAN[dayPillar.cheonganIdx]]++;
   }
 
-  // ---------------------------------------------------------------
-  // 결과 렌더링 - 근사 모드 (연도 모름)
-  // ---------------------------------------------------------------
-  function renderPillarCardApprox(prefix, approx, label) {
-    document.getElementById('pillarTitle' + prefix).textContent = label;
-    const charsEl = document.getElementById('pillarChars' + prefix);
-    charsEl.innerHTML = '';
+  const total = Object.values(dist).reduce((s, v) => s + v, 0) || 1;
+  const percent = {};
+  Object.keys(dist).forEach(k => { percent[k] = Math.round((dist[k] / total) * 100); });
 
-    // 월지: 절기 기준으로 확정 가능
-    const monthDiv = document.createElement('div');
-    monthDiv.className = 'pillar-char o-' + approx.month.ohaeng;
-    monthDiv.innerHTML = `<span class="hanja">${approx.month.jijiHanja}</span><span class="lbl">월지(${approx.month.jieqiName})</span>`;
-    charsEl.appendChild(monthDiv);
+  // 가장 흔한 오행(들)
+  const maxCount = Math.max(...Object.values(dist));
+  const likely = Object.keys(dist).filter(k => dist[k] === maxCount);
 
-    // 일간: 확정 불가 -> 최빈 오행 + 확률 표기
-    const likely = approx.day.likelyOhaeng[0];
-    const dayDiv = document.createElement('div');
-    dayDiv.className = 'pillar-char o-' + likely;
-    dayDiv.innerHTML = `<span class="hanja" style="font-size:15px;">${likely}(추정)</span><span class="lbl">일간 · ${approx.day.percent[likely]}%</span>`;
-    charsEl.appendChild(dayDiv);
+  return { counts: dist, percent, total, likelyOhaeng: likely };
+}
 
-    // 시지: 시각이 있으면 확정 가능
-    if (approx.hour) {
-      const hourDiv = document.createElement('div');
-      hourDiv.className = 'pillar-char o-' + approx.hour.ohaeng;
-      hourDiv.innerHTML = `<span class="hanja">${approx.hour.jijiHanja}</span><span class="lbl">시지</span>`;
-      charsEl.appendChild(hourDiv);
-    }
+// 연도 없이(월/일/시만으로) 얻을 수 있는 근사 정보 묶음
+function calculateSajuApprox(month, day, hour, minute) {
+  const monthInfo = getMonthOhaengByDate(month, day);
+  const dayDist = getDayOhaengDistribution(month, day, hour != null ? hour : 12, 60);
 
-    // 오행 합산치(월지 1 + 일간 최빈치 1 + 시지 1)로 바 표시
-    const count = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
-    count[approx.month.ohaeng] += 1;
+  // 시지(時支)는 시각만으로 정확히 결정 가능 (오행도 함께)
+  let hourInfo = null;
+  if (hour != null) {
+    const siJiIdx = getSiJiIndex(hour, minute || 0);
+    hourInfo = {
+      jijiIdx: siJiIdx,
+      jiji: JIJI[siJiIdx],
+      jijiHanja: JIJI_HANJA[siJiIdx],
+      ohaeng: JIJI_OHAENG[siJiIdx],
+    };
+  }
+
+  return {
+    isApprox: true,
+    month: monthInfo,
+    day: dayDist,
+    hour: hourInfo,
+  };
+}
+
+// 근사 모드(연도 미상 포함) 커플용 오행 총합 및 추천 산출
+// entry: { exact: sajuResult } 또는 { approx: approxResult } 형태
+function buildOhaengCountFromEntry(entry) {
+  const count = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  if (entry.exact) {
+    Object.keys(count).forEach(k => count[k] = entry.exact.ohaengCount[k]);
+  } else if (entry.approx) {
+    // 근사 모드: 월지 오행(확정) 1개 + 시지 오행(확정, 있으면) 1개 +
+    // 일간 오행은 최빈값을 1개로 반영 (연도를 모르니 확정 4쌍 중 2쌍만 확정치)
+    count[entry.approx.month.ohaeng] += 1;
+    if (entry.approx.hour) count[entry.approx.hour.ohaeng] += 1;
+    const likely = entry.approx.day.likelyOhaeng[0];
     count[likely] += 1;
-    if (approx.hour) count[approx.hour.ohaeng] += 1;
-    renderOhaengBar(prefix, count);
   }
+  return count;
+}
 
-  function renderOhaengBar(prefix, ohaengCount) {
-    const barEl = document.getElementById('ohaengBar' + prefix);
-    barEl.innerHTML = '';
-    const total = Object.values(ohaengCount).reduce((s, v) => s + v, 0) || 1;
-    ['목', '화', '토', '금', '수'].forEach(k => {
-      const v = ohaengCount[k];
-      if (v === 0) return;
-      const seg = document.createElement('div');
-      seg.style.width = (v / total * 100) + '%';
-      seg.style.background = OHAENG_COLOR[k];
-      seg.title = `${k}: ${v}`;
-      barEl.appendChild(seg);
-    });
-  }
+function generateCoupleRecommendationApprox(entryA, entryB) {
+  const countA = buildOhaengCountFromEntry(entryA);
+  const countB = buildOhaengCountFromEntry(entryB);
+  const totalCount = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+  Object.keys(totalCount).forEach(k => totalCount[k] = countA[k] + countB[k]);
 
-  function renderWheel(countA, countB) {
-    const svg = document.getElementById('wheelSvg');
-    const cx = 200, cy = 200;
-    const order = ['목', '화', '토', '금', '수'];
-    const total = {};
-    order.forEach(k => total[k] = countA[k] + countB[k]);
-    const maxVal = Math.max(...Object.values(total), 1);
+  let minOhaeng = '목', minVal = Infinity;
+  Object.entries(totalCount).forEach(([k, v]) => {
+    if (v < minVal) { minVal = v; minOhaeng = k; }
+  });
 
-    let svgContent = '';
-    const gridColor = '#e4e1d8';
-    const labelColor = '#6b6355';
+  const SANGSAENG_PARENT_LOCAL = { 목: '수', 화: '목', 토: '화', 금: '토', 수: '금' };
+  const primary = OHAENG_INFO[minOhaeng];
+  const supportOhaeng = SANGSAENG_PARENT_LOCAL[minOhaeng];
+  const support = OHAENG_INFO[supportOhaeng];
 
-    // 배경 원(가이드라인)
-    [0.33, 0.66, 1].forEach(r => {
-      svgContent += `<circle cx="${cx}" cy="${cy}" r="${140 * r}" fill="none" stroke="${gridColor}" stroke-width="1"/>`;
-    });
+  return {
+    isApprox: true,
+    compat: { totalCount, minOhaeng },
+    primaryOhaeng: minOhaeng,
+    primary,
+    supportOhaeng,
+    support,
+  };
+}
 
-    // 오각형 축 + 라벨
-    const points = [];
-    order.forEach((k, i) => {
-      const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-      const val = total[k];
-      const r = 20 + (val / maxVal) * 120;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      points.push(`${x},${y}`);
-
-      const axisX = cx + 140 * Math.cos(angle);
-      const axisY = cy + 140 * Math.sin(angle);
-      svgContent += `<line x1="${cx}" y1="${cy}" x2="${axisX}" y2="${axisY}" stroke="${gridColor}" stroke-width="1"/>`;
-
-      const labelX = cx + 168 * Math.cos(angle);
-      const labelY = cy + 168 * Math.sin(angle);
-      svgContent += `<text x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="middle" font-family="Noto Serif KR, serif" font-size="20" fill="${OHAENG_COLOR[k]}" font-weight="700">${k}</text>`;
-      svgContent += `<text x="${labelX}" y="${labelY + 18}" text-anchor="middle" font-family="Noto Sans KR, sans-serif" font-size="11" fill="${labelColor}">${val}</text>`;
-    });
-
-    svgContent += `<polygon points="${points.join(' ')}" fill="rgba(163,128,63,0.14)" stroke="#a3803f" stroke-width="2"/>`;
-
-    order.forEach((k, i) => {
-      const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
-      const val = total[k];
-      const r = 20 + (val / maxVal) * 120;
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      svgContent += `<circle cx="${x}" cy="${y}" r="4.5" fill="${OHAENG_COLOR[k]}"/>`;
-    });
-
-    svg.innerHTML = svgContent;
-  }
-
-  function colorSwatchesHtml(colorNames) {
-    return colorNames.map(c => {
-      const hex = COLOR_NAME_HEX[c] || '#cccccc';
-      return `<span class="color-swatch"><span class="dot" style="background:${hex};"></span>${c}</span>`;
-    }).join('');
-  }
-
-  function renderResult(entryA, entryB, rec, inputA, inputB) {
-    const anyApprox = !!(entryA.approx || entryB.approx);
-
-    document.getElementById('pillarsDividerLabel').textContent = anyApprox ? '오행 경향 추정' : '사주팔자 명식';
-
-    const approxNoteEl = document.getElementById('approxNote');
-    if (anyApprox) {
-      approxNoteEl.style.display = 'block';
-      approxNoteEl.innerHTML =
-        '<b>연도 미상 안내.</b> 사주는 연·월·일·시 네 기둥 모두 태어난 해에 뿌리를 두기 때문에, ' +
-        '연도를 모르면 60갑자를 정확히 특정할 수 없어요. 아래 결과는 <b>월지는 절기로 확정</b>하고, ' +
-        '<b>일간은 최근 60년을 가정했을 때 가장 흔히 나오는 오행</b>을 보여주는 참고용 추정치입니다. ' +
-        '실제 사주와 다를 수 있어요.';
-    } else {
-      approxNoteEl.style.display = 'none';
-    }
-
-    const labelA = inputA.yearUnknown
-      ? `${inputA.name} · ${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')} (연도 미상)`
-      : `${inputA.name} · ${inputA.year}.${String(inputA.month).padStart(2,'0')}.${String(inputA.day).padStart(2,'0')}`;
-    const labelB = inputB.yearUnknown
-      ? `${inputB.name} · ${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')} (연도 미상)`
-      : `${inputB.name} · ${inputB.year}.${String(inputB.month).padStart(2,'0')}.${String(inputB.day).padStart(2,'0')}`;
-
-    if (entryA.approx) renderPillarCardApprox('A', entryA.approx, labelA);
-    else renderPillarCardExact('A', entryA.exact, labelA);
-
-    if (entryB.approx) renderPillarCardApprox('B', entryB.approx, labelB);
-    else renderPillarCardExact('B', entryB.exact, labelB);
-
-    // 휠 표시용 각자의 오행 합산치 (근사 모드는 확정 가능한 기둥만 반영)
-    const wheelCountA = entryA.exact ? entryA.exact.ohaengCount : buildApproxCount(entryA.approx);
-    const wheelCountB = entryB.exact ? entryB.exact.ohaengCount : buildApproxCount(entryB.approx);
-    renderWheel(wheelCountA, wheelCountB);
-
-    // 관계 배지 (근사 모드에서는 일간 비교가 불확실하므로 문구를 다르게)
-    const explainEl = document.getElementById('relationExplainBody');
-    const deepCompatEl = document.getElementById('deepCompat');
-    const nameA = inputA.name, nameB = inputB.name;
-    if (anyApprox) {
-      document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
-      explainEl.innerHTML =
-        '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계는 단정하지 않아요. 대신 현재 확인 가능한 오행 경향만으로 제한적인 참고 궁합을 제공합니다.</div>' +
-        buildApproxCompatHtml(entryA, entryB, nameA, nameB);
-      // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
-      deepCompatEl.style.display = 'none';
-    } else {
-      const relationLabels = {
-        상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
-        상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
-        동기: `${nameA}님과 ${nameB}님은 반응 방식이 비슷한 동기(同氣) 관계예요`,
-        중립: `${nameA}님과 ${nameB}님은 특별한 상호작용 없이 독립적인 관계예요`,
-      };
-      document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
-      explainEl.innerHTML =
-        relationExplainHtml(rec.compat.relation, nameA, nameB) +
-        buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB);
-
-      // 더 깊이 본 궁합: 년지(띠)/일지(부부궁) 관계 + 서로에게 도움이 되는 방식
-      renderDeepCompat(rec.compat, nameA, nameB);
-      deepCompatEl.style.display = 'block';
-    }
-
-    // 메인 추천
-    const p = rec.primary;
-    const hanjaMap = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
-    document.getElementById('recHanja').textContent = hanjaMap[rec.primaryOhaeng];
-    document.getElementById('recHanja').style.color = OHAENG_COLOR[rec.primaryOhaeng];
-    document.getElementById('recSeason').textContent = p.season;
-    document.getElementById('recKeyword').textContent = `${p.seasonDetail} · ${p.keyword}의 분위기`;
-
-    document.getElementById('recTime').textContent = p.timeRange;
-    document.getElementById('recTimeDetail').textContent = p.timeDetail;
-
-    document.getElementById('recColors').innerHTML = colorSwatchesHtml(p.colors);
-
-    const flowersEl = document.getElementById('recFlowers');
-    flowersEl.innerHTML = p.flowers.map(f => `<span class="tag">${f}</span>`).join('');
-
-    const placesEl = document.getElementById('recPlaces');
-    placesEl.innerHTML = p.places.map(pl => `<span class="tag">${pl}</span>`).join('');
-
-    // 글로우 컬러
-    document.getElementById('recHero').style.setProperty('--accent-glow', OHAENG_GLOW[rec.primaryOhaeng]);
-
-    // 추천 이유를 생활 언어로 설명
-    const s = rec.support;
-    const recommendationEffect = {
-      목: '새로운 장소를 찾고 함께 계획을 시작하는 분위기',
-      화: '애정 표현이 자연스럽고 활기찬 분위기',
-      토: '서두르지 않고 편안하게 머물 수 있는 분위기',
-      금: '복잡하지 않고 깔끔하게 정리된 분위기',
-      수: '조용히 이야기하고 충분히 쉬어갈 수 있는 분위기',
-    }[rec.primaryOhaeng];
-    let note =
-      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${recommendationEffect}</b>이 상대적으로 덜 드러나는 편이라, ` +
-      `${p.season}의 계절감과 ${p.colors[0]} 계열처럼 그 분위기를 쉽게 만들 수 있는 색상·장소를 추천했어요. ` +
-      `${s.season}(${s.timeRange})의 느낌을 함께 섞으면 데이트가 한쪽 취향으로만 치우치는 것을 줄일 수 있습니다. 색이나 계절이 관계를 바꾼다는 뜻은 아니며, 데이트 테마를 고르는 참고용이에요.`;
-    if (anyApprox) {
-      note += ' (연도 미상 추정치를 포함한 결과입니다.)';
-    }
-    document.getElementById('supportNote').innerHTML = note;
-  }
-
-  // 년지(띠)/일지(부부궁) 관계 뱃지와 서로에게 도움이 되는 방식를 렌더링
-  function renderDeepCompat(compat, nameA, nameB) {
-    const toneLabelMap = { good: '좋은 궁합', clash: '충돌 주의', friction: '마찰 주의', neutral: '무난' };
-
-    function fillItem(prefix, relInfo) {
-      const badgeEl = document.getElementById(prefix + 'Badge');
-      const descEl = document.getElementById(prefix + 'Desc');
-      if (!badgeEl || !descEl || !relInfo) return;
-      const tone = relInfo.tone || 'neutral';
-      const type = relInfo.type || '평';
-      badgeEl.innerHTML = `<span class="dc-tone-badge dc-tone-${tone}">${type} · ${toneLabelMap[tone] || toneLabelMap.neutral}</span>`;
-      descEl.textContent = JIJI_RELATION_DESC[type] || JIJI_RELATION_DESC.평;
-    }
-
-    fillItem('dcYear', compat.yearJijiRelation);
-    fillItem('dcDay', compat.dayJijiRelation);
-
-    // 두 사람이 실제로 어떤 방식으로 서로에게 도움이 되는지 설명
-    const { aFillsB = [], bFillsA = [] } = compat.complement || {};
-    const parts = [];
-    if (bFillsA.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameB), escapeHtml(nameA), bFillsA));
-    if (aFillsB.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameA), escapeHtml(nameB), aFillsB));
-
-    let complementHtml = '';
-    if (parts.length === 0) {
-      complementHtml = `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님은 잘하는 방식과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 처리해주기를 기다리지 말고 역할을 정하는 것이 좋아요.`;
-    } else {
-      complementHtml = parts.join(' ');
-    }
-    document.getElementById('dcComplement').innerHTML = complementHtml;
-  }
-
-  function buildApproxCount(approx) {
-    const count = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
-    count[approx.month.ohaeng] += 1;
-    count[approx.day.likelyOhaeng[0]] += 1;
-    if (approx.hour) count[approx.hour.ohaeng] += 1;
-    return count;
-  }
-})();
+window.SajuCore = {
+  CHEONGAN, JIJI, CHEONGAN_OHAENG, JIJI_OHAENG,
+  calculateSaju, analyzeCompatibility, OHAENG_INFO, generateCoupleRecommendation,
+  calculateSajuApprox, getMonthOhaengByDate, getDayOhaengDistribution,
+  generateCoupleRecommendationApprox,
+};
