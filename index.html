@@ -307,6 +307,29 @@
   button.primary:active { transform: translateY(0); }
   button.primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+  .save-image-row { text-align: center; margin: 28px 0 0; }
+  button.secondary {
+    background: #ffffff;
+    color: var(--accent-3);
+    border: 1px solid var(--line);
+    padding: 12px 30px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button.secondary svg { width: 15px; height: 15px; flex-shrink: 0; }
+  button.secondary:hover { border-color: var(--accent-2); box-shadow: 0 6px 18px rgba(28,29,33,0.06); transform: translateY(-1px); }
+  button.secondary:active { transform: translateY(0); }
+  button.secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .save-image-note { margin-top: 10px; font-size: 12px; color: var(--ink-faint); }
+
   .error-msg {
     text-align: center;
     color: var(--hwa);
@@ -825,6 +848,14 @@
       <div class="support-note" id="supportNote"></div>
     </div>
 
+    <div class="save-image-row">
+      <button class="secondary" id="saveImageBtn" type="button">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        결과 이미지로 저장
+      </button>
+      <div class="save-image-note">추천 궁합 기운 요약까지만 이미지로 저장돼요</div>
+    </div>
+
   </div>
 </div>
 
@@ -833,6 +864,7 @@
   <div style="margin-top:6px;">절기 계산은 천문 근사식을 사용하여, 절입 시각 당일 출생인 경우 ±1시간 오차가 있을 수 있습니다.</div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="saju-core-browser.js"></script>
 <script src="app.js"></script>
 </body>
