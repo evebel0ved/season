@@ -411,7 +411,7 @@
     color: #666a73;
     border: 1px solid var(--line);
     padding: 16px 44px;
-    font-size: 15.5px;
+    font-size: 13.5px;
     font-weight: 600;
     letter-spacing: 0.03em;
     border-radius: 999px;
@@ -592,11 +592,11 @@
   /* 사진이 첨부된 경우: 아래 상세 카드와 같은 좌우 기준선 안에서 사진 + 텍스트 배치 */
   .rec-hero-top.has-photo {
     display: grid;
-    grid-template-columns: 184px minmax(0, 1fr);
+    grid-template-columns: 232px minmax(0, 1fr);
     align-items: center;
     width: 100%;
     text-align: left;
-    gap: 40px;
+    gap: 68px;
   }
   .rec-hero-top.has-photo .rec-photo-wrap {
     width: 100%;
@@ -611,12 +611,13 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-left: 8px;
     padding-right: 4px;
   }
   @media (max-width: 560px) {
     .rec-hero-top.has-photo {
-      grid-template-columns: 150px minmax(0, 1fr);
-      gap: 24px;
+      grid-template-columns: 232px minmax(0, 1fr);
+      gap: 68px;
     }
   }
 
@@ -629,16 +630,16 @@
   }
   .rec-photo-frame {
     position: relative;
-    width: 176px;
-    height: 176px;
-    border-radius: 28px;
+    width: 220px;
+    height: 220px;
+    border-radius: 32px;
     padding: 5px;
     background: var(--photo-ring-color, var(--su-dim));
   }
   .rec-photo-frame .rec-photo-inner {
     width: 100%;
     height: 100%;
-    border-radius: 23px;
+    border-radius: 27px;
     overflow: hidden;
     background: var(--bg-panel-raised);
     display: flex;
@@ -696,19 +697,19 @@
 
   /* ---------- Relation explanation (full-width third row) ---------- */
   .relation-explain {
-    /* Flower · 꽃 카드와 동일한 회색 배경 계열의 은은한 그라데이션 */
-    background: var(--flower-grad);
+    /* Flower · 꽃 카드의 실제 배경색과 완전히 동일하게 사용 */
+    background: var(--bg-panel-raised);
     border: 1px solid var(--line);
   }
   .relation-explain:hover { transform: none; box-shadow: none; }
 
   .relation-explain-body {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--ink-dim);
-    line-height: 1.75;
+    line-height: 1.7;
   }
   .relation-explain-body .re-heading {
-    font-size: 15.5px;
+    font-size: 13.5px;
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 16px;
@@ -718,7 +719,7 @@
   }
   .relation-explain-body .re-names {
     margin-left: auto;
-    font-size: 12px;
+    font-size: 10.5px;
     font-weight: 500;
     color: var(--ink-faint);
     letter-spacing: 0.01em;
@@ -729,9 +730,19 @@
     gap: 24px;
   }
   @media (max-width: 560px) { .relation-explain-body .re-lover-friend { grid-template-columns: 1fr; gap: 14px; } }
+  .relation-explain-body .re-lover-friend.re-single-mode {
+    grid-template-columns: 1fr !important;
+    width: 100%;
+  }
+  .relation-explain-body .re-single-mode .re-block { width: 100%; }
+  .relation-explain-body .re-single-mode .re-label {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
   .relation-explain-body .re-block { margin-bottom: 0; }
   .relation-explain-body .re-label {
-    font-size: 11.5px;
+    font-size: 10.5px;
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--ink-faint);
@@ -756,9 +767,9 @@
     margin-top: 14px;
     padding-top: 12px;
     border-top: 1px dashed var(--line);
-    font-size: 12px;
+    font-size: 10.5px;
     color: var(--ink-faint);
-    line-height: 1.7;
+    line-height: 1.65;
   }
 
   /* ---------- Deeper compatibility (year/day branch relations) ---------- */
@@ -834,13 +845,21 @@
 
   .relation-badge {
     display: inline-block;
-    font-size: 11px;
-    padding: 4px 12px;
+    width: fit-content;
+    max-width: 100%;
+    align-self: flex-start;
+    white-space: normal;
+    font-size: 10px;
+    line-height: 1.45;
+    padding: 4px 10px;
     border-radius: 20px;
     background: var(--bg-panel-raised);
     border: 1px solid var(--line);
     color: var(--accent-3);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+  }
+  .rec-hero-top:not(.has-photo) .relation-badge {
+    align-self: center;
   }
 
   footer {
@@ -880,11 +899,11 @@
   }
   #result.result-desktop-layout .rec-hero-top.has-photo {
     display: grid !important;
-    grid-template-columns: 184px minmax(0, 1fr) !important;
+    grid-template-columns: 232px minmax(0, 1fr) !important;
     align-items: center !important;
     width: 100% !important;
     text-align: left !important;
-    gap: 40px !important;
+    gap: 68px !important;
   }
   #result.result-desktop-layout .rec-hero-top.has-photo .rec-photo-wrap {
     margin: 0 !important;
@@ -901,9 +920,52 @@
   #result.result-desktop-layout .compat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+  #result.result-desktop-layout .relation-explain-body .re-lover-friend.re-single-mode {
+    grid-template-columns: 1fr !important;
+  }
   #result.result-desktop-layout .flower-detail-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
+
+
+  /* 모바일·태블릿 결과와 저장 이미지는 같은 1200px 기준 레이아웃을 사용합니다.
+     화면에서는 전체가 축소되며, 내부 글자와 간격도 한 단계 더 작게 정리됩니다. */
+  .result-mobile-layout .divider { margin: 44px 0 30px; }
+  .result-mobile-layout .divider span { font-size: 11px; }
+  .result-mobile-layout .pillar-card { padding: 18px 20px; border-radius: 14px; }
+  .result-mobile-layout .pillar-card h3 { font-size: 14px; margin-bottom: 11px; }
+  .result-mobile-layout .pillar-char { padding: 8px 3px; }
+  .result-mobile-layout .pillar-char .hanja { font-size: 17px; }
+  .result-mobile-layout .pillar-char .lbl { font-size: 8.5px; }
+  .result-mobile-layout .wheel-section { margin: 44px 0; }
+  .result-mobile-layout .wheel-title { font-size: 17px; }
+  .result-mobile-layout .wheel-desc { font-size: 11.5px; margin-bottom: 24px; }
+  .result-mobile-layout #wheelSvg { max-width: 360px; }
+  .result-mobile-layout .rec-hero,
+  .result-mobile-layout.rec-hero { padding: 42px; }
+  .result-mobile-layout .rec-kicker { font-size: 10.5px; margin-bottom: 8px; }
+  .result-mobile-layout .rec-hanja { font-size: 48px; }
+  .result-mobile-layout .rec-season { font-size: 19px; }
+  .result-mobile-layout .rec-keyword { font-size: 11.5px; margin-bottom: 24px; }
+  .result-mobile-layout .rec-details { gap: 16px; margin-top: 28px; }
+  .result-mobile-layout .rec-detail-card { padding: 17px; }
+  .result-mobile-layout .rec-detail-card .dk { font-size: 10px; margin-bottom: 8px; }
+  .result-mobile-layout .rec-detail-card .dv { font-size: 13px; }
+  .result-mobile-layout .rec-detail-card .dv-sub { font-size: 11px; }
+  .result-mobile-layout .tag { font-size: 10.5px; padding: 3px 8px; }
+  .result-mobile-layout .relation-badge { font-size: 9px; padding: 3px 8px; }
+  .result-mobile-layout .relation-explain-body { font-size: 10.8px; }
+  .result-mobile-layout .relation-explain-body .re-heading { font-size: 12.5px; margin-bottom: 12px; }
+  .result-mobile-layout .relation-explain-body .re-names { font-size: 9.5px; }
+  .result-mobile-layout .relation-explain-body .re-label { font-size: 9.5px; }
+  .result-mobile-layout .relation-explain-body .re-quote { font-size: 10.5px; margin-top: 12px; padding: 8px 11px; }
+  .result-mobile-layout .relation-explain-body .re-caveat { font-size: 9.5px; }
+  .result-mobile-layout .deep-compat { padding: 22px; }
+  .result-mobile-layout .dc-title { font-size: 15px; }
+  .result-mobile-layout .dc-label,
+  .result-mobile-layout .dc-item .dc-desc,
+  .result-mobile-layout .dc-complement,
+  .result-mobile-layout .support-note { font-size: 11px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
