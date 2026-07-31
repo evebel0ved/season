@@ -47,7 +47,7 @@
   // 지지(地支) 관계 유형별 부가 설명 — getJijiRelation()의 결과(type)에 매칭
   const JIJI_RELATION_DESC = {
     육합: '두 지지가 짝을 이뤄 화합하는 자리예요. 함께 있으면 자연스럽게 안정감이 들고, 큰 노력 없이도 손발이 잘 맞는 궁합으로 봐요.',
-    삼합: '같은 기운의 흐름에 속한 지지끼리 만난 자리예요. 지향하는 방향이 비슷해서, 함께 뭔가를 도모하거나 목표를 세울 때 특히 잘 맞아요.',
+    삼합: '관심사나 목표 방향이 비슷한 지지끼리 만난 자리예요. 여행 계획, 공부, 운동처럼 함께 목표를 정하고 움직일 때 특히 손발이 잘 맞아요.',
     충: '정반대 자리에서 마주보는 지지끼리 만난, 명리학에서 가장 강하게 부딪히는 관계예요. 서로 기질이나 방식이 뚜렷하게 달라 자주 의견 차이가 생길 수 있지만, 그만큼 강하게 끌리는 경우도 많아요.',
     형: '겉으로는 무난해 보여도 은근히 신경전이나 잔소리가 쌓이기 쉬운 자리예요. 대화로 오해를 자주 풀어주는 게 좋아요.',
     해: '크게 부딪히진 않지만 사소한 데서 자꾸 어긋나는 느낌을 줄 수 있는 자리예요. 서로의 속도나 방식 차이를 이해해주면 무난해져요.',
@@ -105,19 +105,92 @@
     },
   };
 
+  // 오행 이름을 실제 관계 행동으로 풀어쓴 문장
+  const ELEMENT_LOW_GUIDE = {
+    목: '새로운 데이트를 정하거나 둘의 다음 계획을 세울 때 서로 눈치만 보며 시작이 늦어질 수 있어요. 여행 날짜, 이번 달에 해볼 일처럼 첫 행동을 미리 정해두면 편합니다.',
+    화: '좋아하는 마음이 있어도 말이나 표정으로 잘 드러나지 않아 관계가 심심하게 느껴질 수 있어요. “보고 싶었어”, “오늘 좋았어”처럼 짧은 표현을 자주 해주는 게 도움이 됩니다.',
+    토: '약속, 돈, 일정, 집안일처럼 반복해서 챙겨야 하는 일을 서로 미루기 쉬워요. 누가 무엇을 언제까지 할지 정해두면 사소한 다툼을 줄일 수 있습니다.',
+    금: '싫은 점이나 지켜야 할 선을 분명하게 말하지 못해 문제가 오래 끌 수 있어요. 연락 빈도, 돈 쓰는 방식, 친구 관계처럼 민감한 기준은 미리 말로 맞춰두는 편이 좋습니다.',
+    수: '감정이 올라왔을 때 잠깐 멈추거나 상대 이야기를 끝까지 듣는 여유가 부족할 수 있어요. 바로 결론 내리기보다 20분 정도 쉬고 다시 이야기할 시간을 정해두는 방식이 잘 맞습니다.',
+  };
+
+  const ELEMENT_HELP_TEXT = {
+    목: (supporter, receiver) => `${supporter}님은 ${receiver}님이 앞으로 무엇을 해야 할지 막막해할 때, 새로운 선택지를 꺼내고 첫 단계를 정하는 데 도움을 주는 편입니다.`,
+    화: (supporter, receiver) => `${supporter}님은 ${receiver}님이 기분이 가라앉거나 표현을 망설일 때, 먼저 말을 걸고 분위기를 풀어주는 역할을 하기 쉽습니다.`,
+    토: (supporter, receiver) => `${supporter}님은 ${receiver}님이 일정·약속·생활 문제로 흔들릴 때, 해야 할 일을 차근차근 정리하고 꾸준히 챙겨주는 편입니다.`,
+    금: (supporter, receiver) => `${supporter}님은 ${receiver}님이 결정을 미루거나 기준을 잡지 못할 때, 선택지를 정리하고 분명한 결론을 내리도록 돕는 편입니다.`,
+    수: (supporter, receiver) => `${supporter}님은 ${receiver}님이 감정이 복잡할 때, 서둘러 답을 요구하기보다 이야기를 들어주고 마음을 정리할 시간을 주는 편입니다.`,
+  };
+
+  const ELEMENT_SHARED_STRONG = {
+    목: '둘 다 새로운 장소나 활동을 찾는 데 적극적이라 데이트가 단조롭지 않은 편입니다. 다만 계획이 자주 바뀌거나 시작만 하고 마무리가 늦어질 수 있어요.',
+    화: '둘 다 반응과 애정 표현이 빠르기 때문에 즐거울 때는 분위기가 금방 달아오릅니다. 반대로 서운할 때도 말이 빨라져 싸움이 커지기 쉬워요.',
+    토: '둘 다 약속과 익숙한 생활을 중요하게 여겨 안정적인 관계를 만들기 쉽습니다. 다만 한 번 정한 방식에서 물러서지 않아 고집 대결이 생길 수 있어요.',
+    금: '둘 다 약속, 예의, 관계의 기준을 중요하게 여겨 서로 믿을 만한 사람이라고 느끼기 쉽습니다. 다만 상대의 부족한 점을 빠르게 지적하는 분위기가 될 수 있어요.',
+    수: '둘 다 조용히 생각하고 깊게 대화하는 시간을 편하게 느낍니다. 다만 속마음을 먼저 꺼내지 않아 서로 괜찮은 줄 알고 지나칠 수 있어요.',
+  };
+
+  const ELEMENT_SHARED_GAP = {
+    목: '둘 다 새로운 계획을 먼저 꺼내는 데 약할 수 있으니, 한 달에 한 번은 번갈아 데이트 장소나 여행 계획을 정하는 방식이 좋습니다.',
+    화: '둘 다 애정 표현을 기다리는 편이 될 수 있으니, 고맙거나 보고 싶을 때는 상대가 알아주길 기다리지 말고 바로 말해주세요.',
+    토: '돈, 일정, 집안일처럼 꾸준히 관리해야 하는 부분이 흐트러질 수 있으니 공동 캘린더나 역할표를 사용하는 편이 좋습니다.',
+    금: '연락 기준이나 서로 지켜야 할 선이 애매해질 수 있으니, 불편한 일이 생기기 전에 구체적인 기준을 말로 정해주세요.',
+    수: '싸운 뒤 감정을 가라앉히고 천천히 대화하는 과정이 부족할 수 있으니, 잠시 쉬었다가 다시 이야기할 시간을 약속하는 것이 좋습니다.',
+  };
+
+  const SANGSAENG_PAIR_SCENE = {
+    '목>화': (a, b) => `${a}님이 새로운 데이트나 계획을 꺼내면 ${b}님이 반응과 추진력을 더하는 조합입니다. 아이디어만 있던 일을 실제 약속으로 옮길 때 손발이 잘 맞을 수 있어요.`,
+    '화>토': (a, b) => `${a}님이 따뜻한 말과 애정 표현으로 관계의 분위기를 만들면 ${b}님이 그것을 꾸준한 연락과 약속으로 이어가는 조합입니다. 즐거움이 일상의 안정감으로 연결되기 쉬워요.`,
+    '토>금': (a, b) => `${a}님이 차분하게 상황을 정리하고 기다려주면 ${b}님이 기준을 세우고 결정을 내리는 조합입니다. 돈, 일정, 장기 계획처럼 현실적인 문제를 함께 처리할 때 장점이 잘 드러납니다.`,
+    '금>수': (a, b) => `${a}님이 복잡한 문제의 핵심을 정리해주면 ${b}님이 감정과 상황을 살펴 더 부드러운 방법을 찾는 조합입니다. 한 사람은 결론을 잡고 다른 사람은 분위기를 조율하는 식으로 역할이 나뉘기 쉬워요.`,
+    '수>목': (a, b) => `${a}님이 충분히 들어주고 생각할 여유를 만들어주면 ${b}님이 자신감을 얻어 새로운 시도를 시작하는 조합입니다. ${b}님은 ${a}님 곁에서 막막했던 생각을 실제 계획으로 바꾸기 쉬워요.`,
+  };
+
+  const SANGGEUK_PAIR_SCENE = {
+    '목>토': (a, b) => `${a}님은 변화를 빨리 시작하려 하고 ${b}님은 익숙한 방식과 안정성을 지키려는 편이라, ${a}님은 답답함을 느끼고 ${b}님은 재촉받는다고 느낄 수 있습니다. 여행·이사·돈처럼 큰 결정은 바로 결론 내기보다 검토 기간을 함께 정하는 것이 좋아요.`,
+    '토>수': (a, b) => `${a}님은 관계를 분명하고 안정적으로 만들고 싶어 하지만 ${b}님은 상황에 따라 움직일 여유가 필요합니다. ${a}님이 답을 재촉하면 ${b}님이 말을 줄일 수 있으니, 언제까지 생각한 뒤 답할지 시간을 정해주는 방식이 잘 맞습니다.`,
+    '수>화': (a, b) => `${a}님은 먼저 상황을 지켜보고 생각하려 하고 ${b}님은 바로 표현하고 반응하려는 편입니다. ${b}님은 무시당한다고 느끼고 ${a}님은 감정에 압도될 수 있으니, 잠시 쉬되 다시 대화할 시각을 확실히 약속해주세요.`,
+    '화>금': (a, b) => `${a}님은 순간의 감정과 즐거움을 중요하게 여기고 ${b}님은 약속과 기준을 정확히 지키려는 편입니다. ${a}님은 지적받는다고 느끼고 ${b}님은 말이 자주 바뀐다고 느낄 수 있으니, 즉흥적인 선택이 가능한 범위를 미리 정해두면 좋습니다.`,
+    '금>목': (a, b) => `${a}님은 문제를 정확히 짚고 고치려 하지만 ${b}님은 자유롭게 시도하며 배우는 편입니다. ${a}님의 조언이 잦아지면 ${b}님은 통제받는다고 느낄 수 있으니, 지적보다 “나는 이렇게 해줬으면 좋겠어”라는 요청으로 말하는 것이 좋습니다.`,
+  };
+
+  function buildElementHelpSentences(supporter, receiver, elements) {
+    return elements.slice(0, 2).map(k => (ELEMENT_HELP_TEXT[k] ? ELEMENT_HELP_TEXT[k](supporter, receiver) : '')).filter(Boolean);
+  }
+
+  function buildWeakEverydayText(stats) {
+    const targets = stats.missing.length ? stats.missing : stats.weak.slice(0, 2);
+    return targets.slice(0, 2).map(k => ELEMENT_LOW_GUIDE[k]).filter(Boolean).join(' ');
+  }
+
+  function buildCombinedEverydayText(stats) {
+    const strongText = stats.dominant.slice(0, 2).map(k => ELEMENT_SHARED_STRONG[k]).filter(Boolean).join(' ');
+    const lowTargets = stats.missing.length ? stats.missing : stats.weak;
+    const lowText = lowTargets.slice(0, 2).map(k => ELEMENT_SHARED_GAP[k]).filter(Boolean).join(' ');
+    return `${strongText} ${lowText}`.trim();
+  }
+
   const RELATION_DIRECTION_TEXT = {
-    aGeneratesB: ({ nameA, nameB, aDay, bDay }) =>
-      `${nameA}님의 ${aDay}(${OHAENG_HANJA[aDay]}) 기운이 ${nameB}님의 ${bDay}(${OHAENG_HANJA[bDay]}) 기운을 생하는 흐름입니다. ${nameA}님이 먼저 분위기를 만들거나 힘을 보태고, ${nameB}님이 그것을 받아 자신감과 실행력으로 확장하는 장면이 자주 나타날 수 있어요. 다만 한쪽의 배려가 당연해지면 ${nameA}님이 지치기 쉬우므로, ${nameB}님도 감사와 보답을 구체적으로 표현하는 것이 중요합니다.`,
-    bGeneratesA: ({ nameA, nameB, aDay, bDay }) =>
-      `${nameB}님의 ${bDay}(${OHAENG_HANJA[bDay]}) 기운이 ${nameA}님의 ${aDay}(${OHAENG_HANJA[aDay]}) 기운을 생하는 흐름입니다. ${nameB}님이 관계의 기반이나 정서적 연료를 제공하고, ${nameA}님이 그것을 받아 관계를 앞으로 끌고 가는 모습이 자연스러워요. 다만 ${nameB}님만 계속 맞춰주는 구조가 되지 않도록, ${nameA}님이 상대의 수고를 알아차리고 되돌려주는 균형이 필요합니다.`,
-    aControlsB: ({ nameA, nameB, aDay, bDay }) =>
-      `${nameA}님의 ${aDay}(${OHAENG_HANJA[aDay]}) 기운이 ${nameB}님의 ${bDay}(${OHAENG_HANJA[bDay]}) 기운을 제어하는 구조입니다. ${nameA}님은 관계의 기준이나 속도를 정하려 하고, ${nameB}님은 간섭이나 평가를 받는 느낌을 받을 수 있어요. 반대로 역할을 명확히 나누면 ${nameA}님의 결단력과 ${nameB}님의 대응력이 좋은 성과를 만들 수 있습니다.`,
-    bControlsA: ({ nameA, nameB, aDay, bDay }) =>
-      `${nameB}님의 ${bDay}(${OHAENG_HANJA[bDay]}) 기운이 ${nameA}님의 ${aDay}(${OHAENG_HANJA[aDay]}) 기운을 제어하는 구조입니다. ${nameB}님이 원칙이나 방향을 제시할수록 ${nameA}님은 답답함 또는 긴장감을 느낄 수 있어요. 하지만 서로 동의한 영역에서는 ${nameB}님의 판단력과 ${nameA}님의 실행력이 관계를 단단하게 만드는 장점으로 바뀝니다.`,
+    aGeneratesB: ({ nameA, nameB, aDay, bDay }) => {
+      const scene = SANGSAENG_PAIR_SCENE[`${aDay}>${bDay}`];
+      return scene ? scene(nameA, nameB) : `${nameA}님이 먼저 힘을 보태고 ${nameB}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
+    },
+    bGeneratesA: ({ nameA, nameB, aDay, bDay }) => {
+      const scene = SANGSAENG_PAIR_SCENE[`${bDay}>${aDay}`];
+      return scene ? scene(nameB, nameA) : `${nameB}님이 먼저 힘을 보태고 ${nameA}님이 그 도움을 받아 움직이기 쉬운 관계입니다.`;
+    },
+    aControlsB: ({ nameA, nameB, aDay, bDay }) => {
+      const scene = SANGGEUK_PAIR_SCENE[`${aDay}>${bDay}`];
+      return scene ? scene(nameA, nameB) : `${nameA}님이 기준을 먼저 정하고 ${nameB}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
+    },
+    bControlsA: ({ nameA, nameB, aDay, bDay }) => {
+      const scene = SANGGEUK_PAIR_SCENE[`${bDay}>${aDay}`];
+      return scene ? scene(nameB, nameA) : `${nameB}님이 기준을 먼저 정하고 ${nameA}님이 맞춰야 하는 상황이 반복될 수 있습니다. 역할과 결정 범위를 미리 나누는 것이 좋아요.`;
+    },
     same: ({ nameA, nameB, aDay }) =>
-      `두 사람의 일간이 모두 ${aDay}(${OHAENG_HANJA[aDay]})라서 반응 방식과 중요하게 여기는 가치가 닮았습니다. 설명하지 않아도 통하는 순간이 많지만, 같은 지점에서 동시에 예민해지거나 양보하지 않는 패턴도 반복될 수 있어요. 상대가 나와 같을 것이라고 단정하지 않고 차이를 확인하는 대화가 필요합니다.`,
-    neutral: ({ nameA, nameB, aDay, bDay }) =>
-      `${nameA}님의 ${aDay}(${OHAENG_HANJA[aDay]})와 ${nameB}님의 ${bDay}(${OHAENG_HANJA[bDay]})는 직접 생하거나 제어하는 관계가 아니어서, 처음부터 역할이 정해지기보다 경험을 쌓으며 관계 방식이 만들어지는 조합입니다. 강한 운명적 끌림보다는 신뢰와 공통 관심사가 궁합의 질을 크게 좌우해요.`,
+      `두 사람은 ${aDay}(${OHAENG_HANJA[aDay]}) 성향을 함께 가지고 있어, 중요하게 여기는 점과 반응 속도가 비슷합니다. 설명하지 않아도 통하는 순간이 많지만 같은 문제에서 동시에 고집을 부릴 수도 있어요. “나도 같을 거야”라고 넘기지 말고, 원하는 결론과 속도를 따로 확인하는 것이 좋습니다.`,
+    neutral: ({ nameA, nameB }) =>
+      `${nameA}님과 ${nameB}님은 처음부터 누가 이끌고 누가 맞춰주는지가 정해지는 관계는 아닙니다. 같은 취미를 정기적으로 함께 하거나, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 하나씩 쌓을수록 신뢰와 친밀감이 커지는 조합입니다.`,
   };
 
   function escapeHtml(value) {
@@ -161,7 +234,7 @@
     const variance = OHAENG_ORDER.reduce((sum, k) => sum + Math.pow(safeCount[k] - average, 2), 0) / OHAENG_ORDER.length;
     const dispersion = Math.sqrt(variance) / Math.max(average, 0.1);
     const balanceScore = Math.max(0, Math.min(100, Math.round(100 - dispersion * 38 - missing.length * 5)));
-    const balanceLabel = balanceScore >= 82 ? '고르게 분포된 편' : balanceScore >= 67 ? '비교적 안정적인 편' : balanceScore >= 50 ? '특정 기운이 도드라지는 편' : '한쪽 기운으로 쏠림이 큰 편';
+    const balanceLabel = balanceScore >= 82 ? '고르게 분포된 편' : balanceScore >= 67 ? '비교적 안정적인 편' : balanceScore >= 50 ? '특정 성향이 도드라지는 편' : '한 가지 성향이 매우 강한 편';
     return { count: safeCount, total, average, dominant, weak, missing, max, min, balanceScore, balanceLabel };
   }
 
@@ -170,17 +243,15 @@
     const stats = analyzeOhaengCount(saju?.ohaengCount);
     const dominant = stats.dominant[0] || day || '토';
     const trait = OHAENG_RELATION_TRAITS[dominant];
-    const weakText = stats.missing.length
-      ? `${formatOhaengList(stats.missing)} 기운이 비어 있어, 그 기운이 상징하는 방식은 의식적으로 보완할 필요가 있습니다.`
-      : `${formatOhaengList(stats.weak.slice(0, 2))} 기운이 상대적으로 약해, 피곤하거나 예민할 때 해당 방식의 대응이 늦어질 수 있습니다.`;
+    const weakText = buildWeakEverydayText(stats);
     return {
       name,
       day,
       stats,
       dominant,
       trait,
-      summary: `${name}님은 일간 ${day ? `${day}(${OHAENG_HANJA[day]})` : '미상'}을 중심으로, 전체 분포에서는 ${formatOhaengList(stats.dominant)} 기운이 가장 강합니다. 관계에서는 ${trait.core}이며, 특히 ${trait.love}이 있어야 애정을 안정적으로 느끼는 편으로 해석할 수 있어요.`,
-      caution: `장점은 ${trait.strength}이고, 갈등 시에는 ${trait.shadow}가 나타나기 쉽습니다. ${weakText}`,
+      summary: `${name}님은 사주에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향을 중심으로 보고, 실제 관계에서는 ${trait.core}입니다. 특히 ${trait.love}을 느낄 때 상대의 마음을 확실히 믿는 편이에요.`,
+      caution: `잘하는 점은 ${trait.strength}입니다. 다만 갈등이 생기면 ${trait.shadow}가 나타나기 쉬워요. ${weakText}`,
     };
   }
 
@@ -213,7 +284,7 @@
     if (day.type === '동일' || year.type === '동일') {
       return `지지에 동일 관계가 있어 익숙함과 친밀감이 빠르게 생기기 쉽습니다. 다만 비슷한 약점과 생활 습관도 함께 증폭될 수 있어, 서로가 못하는 부분을 상대가 자동으로 채워줄 것이라 기대하지 않는 편이 좋아요.`;
     }
-    return `${nameA}님과 ${nameB}님의 년지·일지 관계는 한쪽으로 강하게 기울기보다 무난한 편입니다. 따라서 실제 궁합은 공통 목표, 대화 습관, 서로의 부족한 오행을 얼마나 보완하는지가 더 크게 작용해요.`;
+    return `${nameA}님과 ${nameB}님의 년지·일지 관계는 한쪽으로 강하게 기울기보다 무난한 편입니다. 연락을 얼마나 자주 할지, 돈과 주말 일정을 어떻게 나눌지, 어떤 취미를 함께 즐길지처럼 실제 생활에서 맞춰가는 방식이 관계 만족도를 더 크게 좌우해요.`;
   }
 
   function buildComplementInsight(profileA, profileB, compat) {
@@ -224,21 +295,25 @@
     const lines = [];
 
     if (aFillsB.length && bFillsA.length) {
-      lines.push(`서로 다른 강점을 주고받는 쌍방 보완형입니다. ${profileA.name}님은 ${formatOhaengList(aFillsB)} 기운으로 ${profileB.name}님을 보완하고, ${profileB.name}님은 ${formatOhaengList(bFillsA)} 기운으로 ${profileA.name}님을 보완합니다.`);
+      lines.push('두 사람은 서로에게 도움이 되는 방식이 다릅니다. 한쪽만 계속 챙기는 관계라기보다, 상황에 따라 도움을 주고받기 쉬운 조합이에요.');
+      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
+      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
     } else if (aFillsB.length) {
-      lines.push(`${profileA.name}님이 가진 ${formatOhaengList(aFillsB)} 기운이 ${profileB.name}님의 부족한 부분을 채우는 단방향 보완이 두드러집니다. 도움을 주는 역할이 한쪽에 고정되지 않도록 정서적·실질적 보답을 나누는 것이 중요해요.`);
+      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
+      lines.push(`${profileA.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileB.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
     } else if (bFillsA.length) {
-      lines.push(`${profileB.name}님이 가진 ${formatOhaengList(bFillsA)} 기운이 ${profileA.name}님의 부족한 부분을 채우는 단방향 보완이 두드러집니다. 받는 쪽도 상대가 필요로 하는 방식으로 기여해야 관계가 오래갑니다.`);
+      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
+      lines.push(`${profileB.name}님이 먼저 챙기는 상황이 반복될 수 있으니, ${profileA.name}님도 상대가 힘들어할 때 연락을 먼저 하거나 약속을 대신 준비하는 식으로 행동으로 되돌려주는 것이 중요합니다.`);
     } else {
-      lines.push('두 사람은 서로의 빈 기운을 직접 채우기보다 비슷한 장단점을 공유하는 동질형에 가깝습니다. 편안함은 크지만, 둘 다 약한 영역에서는 외부 도움이나 의식적인 역할 분담이 필요해요.');
+      lines.push('두 사람은 잘하는 점과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 해결해주기를 기다리기보다 담당을 정하는 것이 좋아요.');
     }
 
-    if (sharedDominant.length) {
-      lines.push(`두 사람 모두 ${formatOhaengList(sharedDominant)} 기운이 강해 이 장점은 크게 증폭됩니다. 반면 같은 방식으로 밀어붙이거나 같은 순간에 예민해질 가능성도 함께 커집니다.`);
-    }
-    if (sharedMissing.length) {
-      lines.push(`공통으로 부족한 ${formatOhaengList(sharedMissing)} 기운은 관계의 사각지대가 될 수 있습니다. 두 사람 중 누군가 자연스럽게 해결해주기를 기다리기보다 해당 역할을 일정·규칙·약속으로 보완하는 편이 안전해요.`);
-    }
+    sharedDominant.slice(0, 2).forEach(k => {
+      if (ELEMENT_SHARED_STRONG[k]) lines.push(ELEMENT_SHARED_STRONG[k]);
+    });
+    sharedMissing.slice(0, 2).forEach(k => {
+      if (ELEMENT_SHARED_GAP[k]) lines.push(ELEMENT_SHARED_GAP[k]);
+    });
     return lines;
   }
 
@@ -274,13 +349,13 @@
     const complementCount = (compat?.complement?.aFillsB?.length || 0) + (compat?.complement?.bFillsA?.length || 0);
 
     if (relation === '상생' && daySignal > 0 && complementCount >= 2) {
-      return '초반의 호감뿐 아니라 시간이 지날수록 신뢰가 쌓이는 장기 안정형입니다. 서로의 부족한 부분이 실제 생활에서 보완되기 쉬워, 함께 목표를 세울수록 관계가 단단해집니다.';
+      return '초반의 호감뿐 아니라 시간이 지날수록 신뢰가 쌓이는 장기 안정형입니다. 한 사람은 계획을 세우고 다른 사람은 분위기를 풀어주는 식으로 역할이 자연스럽게 나뉘기 쉬워, 여행·저축·운동처럼 함께할 목표를 정하면 관계가 더 단단해집니다.';
     }
     if (relation === '상극' && daySignal < 0) {
       return '끌림과 긴장이 동시에 큰 고자극형입니다. 관계가 빠르게 깊어질 수 있지만, 갈등 규칙이 없으면 좋을 때와 힘들 때의 진폭도 커집니다. 속도 조절과 경계 존중이 핵심입니다.';
     }
     if (relation === '동기' && complementCount === 0) {
-      return '친구처럼 빠르게 가까워지는 동질형입니다. 공감과 재미는 크지만 두 사람이 동시에 현실적인 문제를 미루거나 같은 약점을 반복할 수 있어, 역할을 의도적으로 다르게 나누는 편이 좋습니다.';
+      return '친구처럼 빠르게 가까워지는 관계입니다. 말이 잘 통하고 같은 취미를 즐기기 쉽지만, 약속 잡기·돈 관리·사과하기처럼 둘 다 어려워하는 일은 함께 미룰 수 있어요. 이런 일은 번갈아 맡는 편이 좋습니다.';
     }
     if (daySignal > 0) {
       return '겉보기보다 가까워질수록 편안함이 커지는 관계입니다. 큰 이벤트보다 일상적인 연락, 식사, 생활 리듬을 꾸준히 공유할 때 애정이 안정됩니다.';
@@ -288,7 +363,7 @@
     if (daySignal < 0) {
       return '초반의 매력과 별개로 가까워진 뒤 조정이 필요한 관계입니다. 서로를 바꾸려 하기보다 각자 절대 양보하기 어려운 기준과 조정 가능한 부분을 나눠야 합니다.';
     }
-    return '특정한 힘에 끌려가기보다 두 사람이 어떻게 관계를 운영하느냐에 따라 질이 달라지는 성장형입니다. 공통 취미와 반복되는 좋은 경험이 궁합을 실제로 강화합니다.';
+    return '처음부터 강하게 끌리기보다 함께 지내며 정이 쌓이는 관계입니다. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워집니다.';
   }
 
   function buildActionTips(profileA, profileB, direction, compat) {
@@ -348,13 +423,13 @@
     const chipsA = [
       `일간 ${profileA.day}(${OHAENG_HANJA[profileA.day]})`,
       `강점 ${formatOhaengList(profileA.stats.dominant)}`,
-      profileA.stats.missing.length ? `결핍 ${formatOhaengList(profileA.stats.missing)}` : `약세 ${formatOhaengList(profileA.stats.weak.slice(0, 1))}`,
+      profileA.stats.missing.length ? `적게 나타남 ${formatOhaengList(profileA.stats.missing)}` : `덜 두드러짐 ${formatOhaengList(profileA.stats.weak.slice(0, 1))}`,
       `균형 ${profileA.stats.balanceScore}`,
     ];
     const chipsB = [
       `일간 ${profileB.day}(${OHAENG_HANJA[profileB.day]})`,
       `강점 ${formatOhaengList(profileB.stats.dominant)}`,
-      profileB.stats.missing.length ? `결핍 ${formatOhaengList(profileB.stats.missing)}` : `약세 ${formatOhaengList(profileB.stats.weak.slice(0, 1))}`,
+      profileB.stats.missing.length ? `적게 나타남 ${formatOhaengList(profileB.stats.missing)}` : `덜 두드러짐 ${formatOhaengList(profileB.stats.weak.slice(0, 1))}`,
       `균형 ${profileB.stats.balanceScore}`,
     ];
 
@@ -386,7 +461,7 @@
 
         <div class="compat-grid">
           <article class="compat-card">
-            <h4>서로 채워주는 부분</h4>
+            <h4>상대에게 실제로 도움이 되는 부분</h4>
             <ul class="compat-list">${complements.map(x => `<li>${x}</li>`).join('')}</ul>
           </article>
           <article class="compat-card">
@@ -396,8 +471,8 @@
         </div>
 
         <div class="compat-card">
-          <h4>두 사람이 함께 있을 때의 오행 분위기</h4>
-          <p>합산하면 ${formatOhaengList(combinedStats.dominant)} 기운이 가장 강하고, ${combinedStats.missing.length ? formatOhaengList(combinedStats.missing) + ' 기운이 비어 있습니다' : formatOhaengList(combinedStats.weak) + ' 기운이 가장 약합니다'}. 전체 분포는 <b>${combinedStats.balanceLabel}</b>으로 나타납니다.</p>
+          <h4>두 사람이 함께 있을 때 두드러지는 모습</h4>
+          <p>${buildCombinedEverydayText(combinedStats)}</p>
           <p>데이트나 공동 활동은 ${profileA.trait.activity}, 그리고 ${profileB.trait.activity}을 번갈아 선택하면 두 사람의 만족도를 고르게 맞추는 데 도움이 됩니다.</p>
         </div>
 
@@ -405,7 +480,7 @@
           <h4>관계를 오래 유지하는 실천법</h4>
           <ol class="compat-list">${tips.map(x => `<li>${x}</li>`).join('')}</ol>
         </div>
-        <div class="compat-muted">※ ‘균형’ 수치는 각 사주의 오행 8글자 분포가 한쪽에 얼마나 몰렸는지 보여주는 내부 지표이며, 관계의 좋고 나쁨을 단정하는 점수가 아닙니다.</div>
+        <div class="compat-muted">※ ‘균형’ 수치는 사주에 같은 성향이 얼마나 몰려 있는지 보여주는 참고값입니다. 점수가 높다고 무조건 좋은 관계라는 뜻은 아닙니다.</div>
       </section>
     `;
   }
@@ -423,18 +498,18 @@
     const bFillsA = statsB.dominant.filter(k => statsA.weak.includes(k) || statsA.missing.includes(k));
     const observations = [];
 
-    if (aFillsB.length) observations.push(`${nameA}님의 강한 ${formatOhaengList(aFillsB)} 기운이 ${nameB}님의 약한 영역을 보완할 가능성이 있습니다.`);
-    if (bFillsA.length) observations.push(`${nameB}님의 강한 ${formatOhaengList(bFillsA)} 기운이 ${nameA}님의 약한 영역을 보완할 가능성이 있습니다.`);
-    if (sharedStrong.length) observations.push(`두 사람 모두 ${formatOhaengList(sharedStrong)} 기운이 강하게 추정되어, 비슷한 장점과 반응 방식이 함께 커질 수 있습니다.`);
-    if (!observations.length) observations.push('현재 확인 가능한 기운만으로는 뚜렷한 상호보완 또는 충돌 방향이 나타나지 않습니다. 실제 관계 습관이 더 중요한 조합으로 봐주세요.');
+    if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB));
+    if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA));
+    if (sharedStrong.length) sharedStrong.slice(0, 2).forEach(k => observations.push(ELEMENT_SHARED_STRONG[k]));
+    if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않습니다. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용합니다.');
 
     return `
       <section class="compat-detail-wrap">
         <div class="compat-detail-title">확인 가능한 오행으로 본 참고 궁합</div>
         <div class="compat-summary-card">연도가 없는 사람의 일간과 년지·일지는 확정할 수 없지만, 월지와 입력된 시간에서 나타나는 오행 경향으로 두 사람의 분위기를 제한적으로 비교했습니다.</div>
         <div class="compat-grid">
-          <article class="compat-card"><h4>${nameA}님</h4><p>강하게 나타나는 기운은 ${formatOhaengList(statsA.dominant)}, 약하게 나타나는 기운은 ${formatOhaengList(statsA.weak)}입니다.</p></article>
-          <article class="compat-card"><h4>${nameB}님</h4><p>강하게 나타나는 기운은 ${formatOhaengList(statsB.dominant)}, 약하게 나타나는 기운은 ${formatOhaengList(statsB.weak)}입니다.</p></article>
+          <article class="compat-card"><h4>${nameA}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}입니다.</p></article>
+          <article class="compat-card"><h4>${nameB}님</h4><p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}입니다.</p></article>
         </div>
         <div class="compat-card"><h4>두 사람 사이에서 예상되는 흐름</h4><ul class="compat-list">${observations.map(x => `<li>${x}</li>`).join('')}</ul></div>
         <div class="compat-muted">※ 연도 미상 결과는 일부 기둥만 반영한 추정 해설입니다. 상생·상극, 부부궁, 띠 궁합은 연도를 확인한 뒤에만 정확하게 설명할 수 있습니다.</div>
@@ -802,7 +877,7 @@
       const relationLabels = {
         상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
         상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
-        동기: `${nameA}님과 ${nameB}님은 같은 기운을 공유하는 동기(同氣) 관계예요`,
+        동기: `${nameA}님과 ${nameB}님은 반응 방식이 비슷한 동기(同氣) 관계예요`,
         중립: `${nameA}님과 ${nameB}님은 특별한 상호작용 없이 독립적인 관계예요`,
       };
       document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
@@ -810,7 +885,7 @@
         relationExplainHtml(rec.compat.relation, nameA, nameB) +
         buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB);
 
-      // 더 깊이 본 궁합: 년지(띠)/일지(부부궁) 관계 + 오행 상호보완도
+      // 더 깊이 본 궁합: 년지(띠)/일지(부부궁) 관계 + 서로에게 도움이 되는 방식
       renderDeepCompat(rec.compat, nameA, nameB);
       deepCompatEl.style.display = 'block';
     }
@@ -821,7 +896,7 @@
     document.getElementById('recHanja').textContent = hanjaMap[rec.primaryOhaeng];
     document.getElementById('recHanja').style.color = OHAENG_COLOR[rec.primaryOhaeng];
     document.getElementById('recSeason').textContent = p.season;
-    document.getElementById('recKeyword').textContent = `${p.seasonDetail} · ${p.keyword}의 기운`;
+    document.getElementById('recKeyword').textContent = `${p.seasonDetail} · ${p.keyword}의 분위기`;
 
     document.getElementById('recTime').textContent = p.timeRange;
     document.getElementById('recTimeDetail').textContent = p.timeDetail;
@@ -837,19 +912,26 @@
     // 글로우 컬러
     document.getElementById('recHero').style.setProperty('--accent-glow', OHAENG_GLOW[rec.primaryOhaeng]);
 
-    // 보완 설명
+    // 추천 이유를 생활 언어로 설명
     const s = rec.support;
+    const recommendationEffect = {
+      목: '새로운 장소를 찾고 함께 계획을 시작하는 분위기',
+      화: '애정 표현이 자연스럽고 활기찬 분위기',
+      토: '서두르지 않고 편안하게 머물 수 있는 분위기',
+      금: '복잡하지 않고 깔끔하게 정리된 분위기',
+      수: '조용히 이야기하고 충분히 쉬어갈 수 있는 분위기',
+    }[rec.primaryOhaeng];
     let note =
-      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 사주 기운 중 <b>${rec.primaryOhaeng}(${hanjaMap[rec.primaryOhaeng]}) 기운이 가장 적어</b> 이를 보완할 상징들을 우선 추천했습니다. ` +
-      `오행 상생 이론에 따르면 <b>${rec.supportOhaeng}(${hanjaMap[rec.supportOhaeng]})의 기운이 ${rec.primaryOhaeng}을 낳아 북돋우므로</b>, ` +
-      `${s.season}(${s.timeRange})의 분위기나 ${s.colors[0]} 계열을 함께 곁들이는 것도 좋은 조합이에요.`;
+      `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님의 결과에서는 <b>${recommendationEffect}</b>이 상대적으로 덜 드러나는 편이라, ` +
+      `${p.season}의 계절감과 ${p.colors[0]} 계열처럼 그 분위기를 쉽게 만들 수 있는 색상·장소를 추천했어요. ` +
+      `${s.season}(${s.timeRange})의 느낌을 함께 섞으면 데이트가 한쪽 취향으로만 치우치는 것을 줄일 수 있습니다. 색이나 계절이 관계를 바꾼다는 뜻은 아니며, 데이트 테마를 고르는 참고용이에요.`;
     if (anyApprox) {
       note += ' (연도 미상 추정치를 포함한 결과입니다.)';
     }
     document.getElementById('supportNote').innerHTML = note;
   }
 
-  // 년지(띠)/일지(부부궁) 관계 뱃지와 오행 상호보완도를 렌더링
+  // 년지(띠)/일지(부부궁) 관계 뱃지와 서로에게 도움이 되는 방식를 렌더링
   function renderDeepCompat(compat, nameA, nameB) {
     const toneLabelMap = { good: '좋은 궁합', clash: '충돌 주의', friction: '마찰 주의', neutral: '무난' };
 
@@ -866,21 +948,17 @@
     fillItem('dcYear', compat.yearJijiRelation);
     fillItem('dcDay', compat.dayJijiRelation);
 
-    // 오행 상호보완도 설명
-    const hanjaMap = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
-    const { aFillsB, bFillsA } = compat.complement;
+    // 두 사람이 실제로 어떤 방식으로 서로에게 도움이 되는지 설명
+    const { aFillsB = [], bFillsA = [] } = compat.complement || {};
+    const parts = [];
+    if (bFillsA.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameB), escapeHtml(nameA), bFillsA));
+    if (aFillsB.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameA), escapeHtml(nameB), aFillsB));
+
     let complementHtml = '';
-    if (aFillsB.length === 0 && bFillsA.length === 0) {
-      complementHtml = `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님은 서로 오행 분포가 비슷해서, 어느 한쪽이 특별히 다른 쪽의 부족한 기운을 채워주는 조합은 아니에요. 대신 함께 있을 때 같은 기운이 강해지는 편이에요.`;
+    if (parts.length === 0) {
+      complementHtml = `${escapeHtml(nameA)}님과 ${escapeHtml(nameB)}님은 잘하는 방식과 어려워하는 부분이 비슷한 편입니다. 서로 편하게 느끼기는 쉽지만, 둘 다 미루는 문제는 상대가 알아서 처리해주기를 기다리지 말고 역할을 정하는 것이 좋아요.`;
     } else {
-      const parts = [];
-      if (bFillsA.length > 0) {
-        parts.push(`<b>${escapeHtml(nameB)}님이 넉넉히 가진 ${bFillsA.map(k => `${k}(${hanjaMap[k]})`).join(', ')} 기운</b>이 ${escapeHtml(nameA)}님에게 부족한 부분을 채워줘요`);
-      }
-      if (aFillsB.length > 0) {
-        parts.push(`<b>${escapeHtml(nameA)}님이 넉넉히 가진 ${aFillsB.map(k => `${k}(${hanjaMap[k]})`).join(', ')} 기운</b>이 ${escapeHtml(nameB)}님에게 부족한 부분을 채워줘요`);
-      }
-      complementHtml = parts.join('. 반대로 ') + '. 서로 부족한 기운을 채워주는, 균형이 잘 맞는 조합이에요.';
+      complementHtml = parts.join(' ');
     }
     document.getElementById('dcComplement').innerHTML = complementHtml;
   }
