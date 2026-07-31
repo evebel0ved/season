@@ -12,47 +12,7 @@
 
   let relationshipMode = 'lover';
   let lastRenderPayload = null;
-  let couplePhoto = null;
 
-  // ---------------------------------------------------------------
-  // 사진 첨부 (생년월일 입력 단계) — 두 사람이 함께 나온 사진 1장을 첨부하면
-  // 원형 미리보기 및 결과 화면에 반영됩니다.
-  // ---------------------------------------------------------------
-  function setupCouplePhotoUpload() {
-    const fileInput = document.getElementById('couple-photo');
-    const chooseBtn = document.getElementById('couple-photo-btn');
-    const removeBtn = document.getElementById('couple-photo-remove');
-    const preview = document.getElementById('couple-photo-preview');
-    if (!fileInput || !chooseBtn || !preview) return;
-
-    chooseBtn.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files && fileInput.files[0];
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
-        fileInput.value = '';
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        couplePhoto = reader.result;
-        preview.innerHTML = `<img src="${reader.result}" alt="">`;
-        if (removeBtn) removeBtn.style.display = 'inline-flex';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    if (removeBtn) {
-      removeBtn.addEventListener('click', () => {
-        couplePhoto = null;
-        fileInput.value = '';
-        preview.innerHTML = '<span>+</span>';
-        removeBtn.style.display = 'none';
-      });
-    }
-  }
-  setupCouplePhotoUpload();
 
   function hasFinalConsonant(value) {
     const text = String(value || '').trim();
@@ -811,7 +771,6 @@
     const minute = parseInt(document.getElementById(prefix + '-minute').value, 10);
     const hourUnknown = document.getElementById(prefix + '-unknown').checked;
 
-    const photo = couplePhoto || null;
 
     if (yearUnknown) {
       // 연도 없이도 실제 존재하는 월/일인지만 검증 (윤년 2/29는 통과시키되
@@ -821,7 +780,7 @@
       if (d.getMonth() !== month - 1 || d.getDate() !== day) {
         return { error: `존재하지 않는 날짜예요 (${month}월 ${day}일)`, name };
       }
-      return { yearUnknown: true, month, day, hour, minute, hourUnknown, name, photo };
+      return { yearUnknown: true, month, day, hour, minute, hourUnknown, name };
     }
 
     const year = parseInt(document.getElementById(prefix + '-year').value, 10);
@@ -829,7 +788,7 @@
     if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) {
       return { error: `존재하지 않는 날짜예요 (${year}년 ${month}월 ${day}일)`, name };
     }
-    return { yearUnknown: false, year, month, day, hour, minute, hourUnknown, name, photo };
+    return { yearUnknown: false, year, month, day, hour, minute, hourUnknown, name };
   }
 
   // ---------------------------------------------------------------
@@ -927,48 +886,25 @@
   const loading = document.getElementById('loading');
   const resultEl = document.getElementById('result');
 
-  // 데스크톱은 기존 992px 결과를 유지하고, 모바일·태블릿은 1200px 기준의
-  // 더 촘촘한 동일 레이아웃을 화면 폭에 맞춰 축소합니다. 저장 이미지도 같은 기준을 사용합니다.
-  const RESULT_DESKTOP_WIDTH = 992;
-  const RESULT_MOBILE_WIDTH = 1200;
+  // 모바일은 실제 화면 너비로 표시해 가독성을 유지합니다.
+  // 저장 이미지는 아래 저장 함수에서 항상 PC 기준 992px로 별도 렌더링합니다.
+  const RESULT_CAPTURE_WIDTH = 992;
   let resultScaleFrame = 0;
 
   function usesMobileResultLayout() {
     return isMobileOrTabletDevice() || (window.innerWidth || 0) <= 900;
   }
 
-  function getCurrentResultLayoutWidth() {
-    return usesMobileResultLayout() ? RESULT_MOBILE_WIDTH : RESULT_DESKTOP_WIDTH;
-  }
-
   function updateResultDesktopScale() {
     if (!resultEl) return;
-    const parent = resultEl.parentElement;
-    const parentStyle = parent ? getComputedStyle(parent) : null;
-    const horizontalPadding = parentStyle
-      ? (parseFloat(parentStyle.paddingLeft) || 0) + (parseFloat(parentStyle.paddingRight) || 0)
-      : 0;
-    const parentInnerWidth = parent
-      ? parent.clientWidth - horizontalPadding
-      : (window.innerWidth || RESULT_DESKTOP_WIDTH);
-    const availableWidth = Math.max(240, Math.floor(parentInnerWidth));
     const mobileLayout = usesMobileResultLayout();
-    const layoutWidth = mobileLayout ? RESULT_MOBILE_WIDTH : RESULT_DESKTOP_WIDTH;
-    const scale = Math.min(1, availableWidth / layoutWidth);
-    const needsScale = scale < 0.999;
-
-    resultEl.dataset.resultLayoutWidth = String(layoutWidth);
+    resultEl.dataset.resultLayoutWidth = String(RESULT_CAPTURE_WIDTH);
     resultEl.classList.toggle('result-mobile-layout', mobileLayout);
-    resultEl.classList.toggle('result-desktop-layout', needsScale);
-    if (needsScale) {
-      resultEl.style.width = `${layoutWidth}px`;
-      resultEl.style.maxWidth = 'none';
-      resultEl.style.zoom = String(scale);
-    } else {
-      resultEl.style.width = '';
-      resultEl.style.maxWidth = '';
-      resultEl.style.zoom = '';
-    }
+    resultEl.classList.remove('result-desktop-layout');
+    resultEl.style.width = '';
+    resultEl.style.maxWidth = '';
+    resultEl.style.zoom = '';
+    resultEl.style.transform = '';
   }
 
   function scheduleResultScaleUpdate() {
@@ -1611,17 +1547,8 @@
     document.getElementById('recSeason').textContent = p.season;
     document.getElementById('recKeyword').textContent = `${p.seasonDetail} · ${p.keyword}의 분위기`;
 
-    // 커플 사진 둥근 정사각형 프레임 — 계절(오행)에 맞는 연한 단일 색상 테두리
-    const photoWrap = document.getElementById('recPhotoWrap');
-    const photoInner = document.getElementById('recPhotoInner');
-    const ringColorDim = { 목: '#dbe8d3', 화: '#f6e1dc', 토: '#ede4d1', 금: '#edeae1', 수: '#dde8f1' }[rec.primaryOhaeng];
-    document.getElementById('recHero').style.setProperty('--photo-ring-color', ringColorDim);
-
-    const hasPhoto = !!(inputA.photo || inputB.photo);
-    photoInner.innerHTML = hasPhoto ? `<img src="${inputA.photo || inputB.photo}" alt="${escapeHtml(nameA)} · ${escapeHtml(nameB)}">` : '';
-    photoWrap.style.display = hasPhoto ? 'flex' : 'none';
     const heroTopEl = document.getElementById('recHeroTop');
-    if (heroTopEl) heroTopEl.classList.toggle('has-photo', hasPhoto);
+    if (heroTopEl) heroTopEl.classList.remove('has-photo');
 
     document.getElementById('recTime').textContent = p.timeRange;
     document.getElementById('recTimeDetail').textContent = p.timeDetail;
@@ -1803,21 +1730,6 @@
       }
 
       /* 실제 기기 화면 폭과 무관하게 저장 이미지는 PC 레이아웃으로 고정 */
-      .capture-sandbox .capture-clean .rec-hero-top.has-photo {
-        display: grid !important;
-        grid-template-columns: 232px minmax(0, 1fr) !important;
-        align-items: center !important;
-        width: 100% !important;
-        text-align: left !important;
-        gap: 68px !important;
-      }
-      .capture-sandbox .capture-clean .rec-hero-top.has-photo .rec-photo-wrap {
-        margin: 0 !important;
-        flex-shrink: 0 !important;
-      }
-      .capture-sandbox .capture-clean .rec-hero-top.has-photo .rec-hero-text {
-        text-align: left !important;
-      }
       .capture-sandbox .capture-clean .rec-details,
       .capture-sandbox .capture-clean .relation-explain-body .re-lover-friend,
       .capture-sandbox .capture-clean .dc-grid,
@@ -1826,6 +1738,10 @@
       }
       .capture-sandbox .capture-clean .relation-explain-body .re-lover-friend.re-single-mode {
         grid-template-columns: 1fr !important;
+      }
+      .capture-sandbox .capture-clean .relation-explain-body .re-single-mode .re-label {
+        width: fit-content !important;
+        text-align: left !important;
       }
       .capture-sandbox .capture-clean .flower-detail-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1944,10 +1860,9 @@
     const clone = recHero.cloneNode(true);
     clone.removeAttribute('id');
     clone.classList.add('capture-clean');
-    const mobileResultLayout = resultEl?.classList.contains('result-mobile-layout') || usesMobileResultLayout();
-    if (mobileResultLayout) clone.classList.add('result-mobile-layout');
+    clone.classList.remove('result-mobile-layout', 'result-desktop-layout');
     clone.style.setProperty('--capture-accent-glow', accentGlow);
-    clone.style.setProperty('--capture-width', `${Number(resultEl?.dataset.resultLayoutWidth) || getCurrentResultLayoutWidth()}px`);
+    clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
     clone.style.setProperty('--accent-glow', accentGlow);
     clone.style.borderRadius = '24px';
     clone.style.overflow = 'hidden';
@@ -1964,8 +1879,8 @@
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
 
-    /* 현재 화면과 동일한 기준 폭으로 저장: 모바일·태블릿 1200px, 데스크톱 992px */
-    const captureWidth = Number(resultEl?.dataset.resultLayoutWidth) || getCurrentResultLayoutWidth();
+    /* 모든 기기에서 PC 저장본과 동일한 992px 기준으로 저장합니다. scale 2이므로 결과 폭은 1984px입니다. */
+    const captureWidth = RESULT_CAPTURE_WIDTH;
     sandbox.style.width = `${captureWidth}px`;
     clone.style.width = `${captureWidth}px`;
     sandbox.appendChild(clone);
@@ -1984,7 +1899,7 @@
         imageTimeout: 15000,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: 1200,
+        windowWidth: RESULT_CAPTURE_WIDTH,
         onclone: clonedDocument => {
           const captured = clonedDocument.querySelector('.capture-clean');
           if (!captured) return;
