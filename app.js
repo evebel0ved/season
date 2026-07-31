@@ -1528,8 +1528,22 @@
       // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
       deepCompatEl.style.display = 'none';
     } else {
-      document.getElementById('relationBadge').textContent =
-        RELATION_SUMMARY_TEXT[rec.compat.relation] || '🍃 부담 없이 편안한 사이예요';
+      // 상단 결과 배지는 기존 이름 포함 문장으로 표시하고,
+      // Relation 카드 안의 제목만 짧은 이모지 요약 문구를 사용합니다.
+      const loverRelationLabels = {
+        상생: `${nameA}님과 ${nameB}님은 서로를 북돋는 상생(相生) 관계예요`,
+        상극: `${nameA}님과 ${nameB}님은 팽팽하게 부딪히는 상극(相剋) 관계예요`,
+        동기: `${nameA}님과 ${nameB}님은 반응 방식이 비슷한 동기(同氣) 관계예요`,
+        중립: `${nameA}님과 ${nameB}님은 천천히 가까워지는 중립 관계예요`,
+      };
+      const friendRelationLabels = {
+        상생: `${nameA}님과 ${nameB}님은 서로 힘이 되어주는 친구 관계예요`,
+        상극: `${nameA}님과 ${nameB}님은 친해도 자주 티격태격할 수 있는 친구 관계예요`,
+        동기: `${nameA}님과 ${nameB}님은 관심사와 반응이 비슷한 친구 관계예요`,
+        중립: `${nameA}님과 ${nameB}님은 부담 없이 오래 보기 좋은 친구 관계예요`,
+      };
+      const relationLabels = isLover ? loverRelationLabels : friendRelationLabels;
+      document.getElementById('relationBadge').textContent = relationLabels[rec.compat.relation];
       explainEl.innerHTML =
         relationExplainHtml(rec.compat.relation, nameA, nameB, relationshipMode) +
         (isLover ? buildDetailedCompatHtml(entryA.exact, entryB.exact, rec.compat, nameA, nameB) : '');
