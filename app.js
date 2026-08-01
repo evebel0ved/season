@@ -1619,8 +1619,8 @@
 
       const labelX = cx + 168 * Math.cos(angle);
       const labelY = cy + 168 * Math.sin(angle);
-      svgContent += `<text x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="middle" font-family="Noto Serif KR, serif" font-size="20" fill="${OHAENG_COLOR[k]}" font-weight="700">${k}</text>`;
-      svgContent += `<text x="${labelX}" y="${labelY + 18}" text-anchor="middle" font-family="Noto Sans KR, sans-serif" font-size="11" fill="${labelColor}">${val}</text>`;
+      svgContent += `<text class="wheel-element-label" x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="middle" font-family="Noto Serif KR, serif" font-size="20" fill="${OHAENG_COLOR[k]}" font-weight="700">${k}</text>`;
+      svgContent += `<text class="wheel-count" x="${labelX}" y="${labelY + 18}" text-anchor="middle" font-family="Noto Sans KR, sans-serif" font-size="11" fill="${labelColor}">${val}</text>`;
     });
 
     svgContent += `<polygon points="${points.join(' ')}" fill="rgba(148,151,163,0.14)" stroke="#8a8d99" stroke-width="2"/>`;
@@ -2924,9 +2924,19 @@
       .capture-sandbox .capture-full {
         font-size: 10.5px !important;
         line-height: 1.65 !important;
+        -webkit-text-size-adjust: none !important;
+        text-size-adjust: none !important;
+      }
+      .capture-sandbox .capture-clean *,
+      .capture-sandbox .capture-full * {
+        -webkit-text-size-adjust: none !important;
+        text-size-adjust: none !important;
       }
       .capture-sandbox .capture-clean .rec-detail-card .dv,
       .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-clean .rec-keyword,
+      .capture-sandbox .capture-clean .tag,
+      .capture-sandbox .capture-clean .color-swatch,
       .capture-sandbox .capture-clean .relation-explain-body,
       .capture-sandbox .capture-clean .compat-detail-wrap .compat-card p,
       .capture-sandbox .capture-clean .compat-detail-wrap .compat-list,
@@ -2935,12 +2945,22 @@
       .capture-sandbox .capture-clean .support-note,
       .capture-sandbox .capture-clean .rec-date-list,
       .capture-sandbox .capture-clean .rec-touch-summary,
+      .capture-sandbox .capture-clean .rec-touch-level-value,
       .capture-sandbox .capture-clean .rec-touch-list,
       .capture-sandbox .capture-clean .rec-touch-why,
       .capture-sandbox .capture-clean .rec-touch-caution,
       .capture-sandbox .capture-clean .flower-detail-row,
+      .capture-sandbox .capture-full .approx-note,
+      .capture-sandbox .capture-full .pillar-char .lbl,
+      .capture-sandbox .capture-full .pillar-char .hangul,
+      .capture-sandbox .capture-full .pillar-meta,
+      .capture-sandbox .capture-full .wheel-desc,
+      .capture-sandbox .capture-full .wheel-count,
       .capture-sandbox .capture-full .rec-detail-card .dv,
       .capture-sandbox .capture-full .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-full .rec-keyword,
+      .capture-sandbox .capture-full .tag,
+      .capture-sandbox .capture-full .color-swatch,
       .capture-sandbox .capture-full .relation-explain-body,
       .capture-sandbox .capture-full .compat-detail-wrap .compat-card p,
       .capture-sandbox .capture-full .compat-detail-wrap .compat-list,
@@ -2949,6 +2969,7 @@
       .capture-sandbox .capture-full .support-note,
       .capture-sandbox .capture-full .rec-date-list,
       .capture-sandbox .capture-full .rec-touch-summary,
+      .capture-sandbox .capture-full .rec-touch-level-value,
       .capture-sandbox .capture-full .rec-touch-list,
       .capture-sandbox .capture-full .rec-touch-why,
       .capture-sandbox .capture-full .rec-touch-caution,
@@ -2958,33 +2979,48 @@
       }
 
       .capture-sandbox .capture-clean .rec-detail-card .dk,
-      .capture-sandbox .capture-clean .rec-detail-card .dv,
-      .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
-      .capture-sandbox .capture-clean .tag,
-      .capture-sandbox .capture-clean .color-swatch,
+      .capture-sandbox .capture-clean .relation-explain-body .re-heading,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-card h4,
+      .capture-sandbox .capture-clean .compat-detail-title,
+      .capture-sandbox .capture-clean .dc-title,
+      .capture-sandbox .capture-clean .rec-extra-title,
+      .capture-sandbox .capture-clean .flower-detail-title,
+      .capture-sandbox .capture-clean .flower-detail-name,
+      .capture-sandbox .capture-full .divider span,
+      .capture-sandbox .capture-full .pillar-card h3,
+      .capture-sandbox .capture-full .wheel-title,
       .capture-sandbox .capture-full .rec-detail-card .dk,
-      .capture-sandbox .capture-full .rec-detail-card .dv,
-      .capture-sandbox .capture-full .rec-detail-card .dv-sub,
-      .capture-sandbox .capture-full .tag,
-      .capture-sandbox .capture-full .color-swatch {
-        font-size: 10.5px !important;
-        line-height: 1.65 !important;
+      .capture-sandbox .capture-full .relation-explain-body .re-heading,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-card h4,
+      .capture-sandbox .capture-full .compat-detail-title,
+      .capture-sandbox .capture-full .dc-title,
+      .capture-sandbox .capture-full .rec-extra-title,
+      .capture-sandbox .capture-full .flower-detail-title,
+      .capture-sandbox .capture-full .flower-detail-name {
+        font-size: 11.5px !important;
+        line-height: 1.5 !important;
       }
 
-      .capture-sandbox .capture-clean .rec-details *,
-      .capture-sandbox .capture-clean .relation-explain-body *,
-      .capture-sandbox .capture-clean .deep-compat *,
-      .capture-sandbox .capture-clean .support-note *,
-      .capture-sandbox .capture-clean .rec-couple-extra-grid *,
-      .capture-sandbox .capture-clean .flower-detail-section *,
-      .capture-sandbox .capture-full .rec-details *,
-      .capture-sandbox .capture-full .relation-explain-body *,
-      .capture-sandbox .capture-full .deep-compat *,
-      .capture-sandbox .capture-full .support-note *,
-      .capture-sandbox .capture-full .rec-couple-extra-grid *,
-      .capture-sandbox .capture-full .flower-detail-section * {
-        font-size: 10.5px !important;
-        line-height: 1.65 !important;
+      .capture-sandbox .capture-clean .relation-explain-body .re-names,
+      .capture-sandbox .capture-clean .relation-explain-body .re-label,
+      .capture-sandbox .capture-clean .rec-kicker,
+      .capture-sandbox .capture-clean .relation-badge,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-chip,
+      .capture-sandbox .capture-clean .dc-label,
+      .capture-sandbox .capture-clean .dc-tone-badge,
+      .capture-sandbox .capture-clean .rec-touch-level-label,
+      .capture-sandbox .capture-clean .flower-detail-row b,
+      .capture-sandbox .capture-full .relation-explain-body .re-names,
+      .capture-sandbox .capture-full .relation-explain-body .re-label,
+      .capture-sandbox .capture-full .rec-kicker,
+      .capture-sandbox .capture-full .relation-badge,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-chip,
+      .capture-sandbox .capture-full .dc-label,
+      .capture-sandbox .capture-full .dc-tone-badge,
+      .capture-sandbox .capture-full .rec-touch-level-label,
+      .capture-sandbox .capture-full .flower-detail-row b {
+        font-size: 9.5px !important;
+        line-height: 1.45 !important;
       }
 
       /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
@@ -3052,38 +3088,85 @@
   const CAPTURE_BODY_LINE_HEIGHT = '1.65';
   const CAPTURE_LABEL_FONT_SIZE = '11.5px';
   const CAPTURE_LABEL_LINE_HEIGHT = '1.5';
+  const CAPTURE_META_FONT_SIZE = '9.5px';
+  const CAPTURE_META_LINE_HEIGHT = '1.45';
 
-  function normalizeCaptureTypography(root) {
+  function applyCaptureFont(elements, fontSize, lineHeight) {
+    elements.forEach(element => {
+      element.style.setProperty('font-size', fontSize, 'important');
+      element.style.setProperty('line-height', lineHeight, 'important');
+    });
+  }
+
+  function normalizeCaptureTypography(root, lockClonedDocument = false) {
     if (!root) return;
 
-    // 카드 소제목(Time · 시간대 같은 라벨)은 본문보다 한 단계 작은 통일 크기를 사용합니다.
-    const labelSelectors = [
-      '.rec-detail-card .dk', '.relation-explain-body .re-heading',
-      '.compat-detail-wrap .compat-card h4', '.rec-extra-title', '.flower-detail-name',
-    ];
-    root.querySelectorAll(labelSelectors.join(',')).forEach(element => {
-      element.style.setProperty('font-size', CAPTURE_LABEL_FONT_SIZE, 'important');
-      element.style.setProperty('line-height', CAPTURE_LABEL_LINE_HEIGHT, 'important');
+    // iOS Safari의 텍스트 자동 확대가 블록별로 다르게 적용되지 않도록 캡처 트리 전체를 잠급니다.
+    const typographyRoots = [root, ...root.querySelectorAll('*')];
+    typographyRoots.forEach(element => {
+      element.style.setProperty('-webkit-text-size-adjust', 'none', 'important');
+      element.style.setProperty('text-size-adjust', 'none', 'important');
     });
+    if (lockClonedDocument) {
+      [root.ownerDocument?.documentElement, root.ownerDocument?.body]
+        .filter(Boolean)
+        .forEach(element => {
+          element.style.setProperty('-webkit-text-size-adjust', 'none', 'important');
+          element.style.setProperty('text-size-adjust', 'none', 'important');
+        });
+    }
 
-    // 본문/값 영역은 "추천 시간대"(#recTime, #recTimeDetail)를 포함해 어떤 카드든
-    // 데스크톱 기본 CSS(.dv 15px 등)로 되돌아가지 않도록 id까지 명시적으로 잡습니다.
+    // 추천 장소 태그와 같은 10.5px을 추천 시간대 및 모든 설명 본문에 적용합니다.
+    // 전체 저장에서는 명식의 보조 문구와 오행 분포 설명/수치도 같은 기준으로 맞춥니다.
     const bodySelectors = [
       '.rec-detail-card .dv', '.rec-detail-card .dv-sub',
       '#recTime', '#recTimeDetail',
+      '.rec-keyword',
       '.tag', '.color-swatch', '.swatch',
-      '.relation-explain-body', '.relation-explain-body *',
-      '.compat-detail-wrap *:not(h4)',
-      '.deep-compat *', '.support-note *',
-      '.rec-couple-extra-grid *', '.flower-detail-section *:not(.flower-detail-name)',
+      '.relation-explain-body', '.relation-explain-body .re-block',
+      '.relation-explain-body .re-quote', '.relation-explain-body .re-caveat',
+      '.compat-summary-card', '.compat-detail-wrap .compat-card p',
+      '.compat-detail-wrap .compat-list', '.compat-detail-wrap .compat-muted',
+      '.dc-item .dc-desc', '.dc-complement', '.support-note',
       '.rec-date-list', '.rec-date-list *',
       '.rec-touch-list', '.rec-touch-list *',
-      '.rec-touch-summary', '.rec-touch-why', '.rec-touch-caution',
+      '.rec-touch-summary', '.rec-touch-level-value', '.rec-touch-why', '.rec-touch-caution',
+      '.flower-detail-row',
+      '.approx-note', '.approx-note *',
+      '.pillar-char .lbl', '.pillar-char .hangul', '.pillar-meta', '.pillar-meta *',
+      '.wheel-desc', '.wheel-count',
     ];
-    root.querySelectorAll(bodySelectors.join(',')).forEach(element => {
-      element.style.setProperty('font-size', CAPTURE_BODY_FONT_SIZE, 'important');
-      element.style.setProperty('line-height', CAPTURE_BODY_LINE_HEIGHT, 'important');
-    });
+    applyCaptureFont(
+      Array.from(root.querySelectorAll(bodySelectors.join(','))),
+      CAPTURE_BODY_FONT_SIZE,
+      CAPTURE_BODY_LINE_HEIGHT,
+    );
+
+    // 제목과 카드 라벨은 본문과 구분하되 모든 섹션에서 한 가지 크기만 사용합니다.
+    const labelSelectors = [
+      '.divider span', '.pillar-card h3', '.wheel-title',
+      '.rec-detail-card .dk', '.relation-explain-body .re-heading',
+      '.compat-detail-title', '.compat-detail-wrap .compat-card h4', '.dc-title',
+      '.rec-extra-title', '.flower-detail-title', '.flower-detail-name',
+    ];
+    applyCaptureFont(
+      Array.from(root.querySelectorAll(labelSelectors.join(','))),
+      CAPTURE_LABEL_FONT_SIZE,
+      CAPTURE_LABEL_LINE_HEIGHT,
+    );
+
+    const metaSelectors = [
+      '.relation-explain-body .re-names', '.relation-explain-body .re-label',
+      '.rec-kicker', '.relation-badge',
+      '.compat-detail-wrap .compat-chip', '.dc-label', '.dc-tone-badge',
+      '.rec-touch-level-label',
+      '.flower-detail-row b',
+    ];
+    applyCaptureFont(
+      Array.from(root.querySelectorAll(metaSelectors.join(','))),
+      CAPTURE_META_FONT_SIZE,
+      CAPTURE_META_LINE_HEIGHT,
+    );
   }
 
 
@@ -3212,7 +3295,7 @@
           /* html2canvas가 문서를 새로 구성하는 과정에서 인라인 스타일이
              씻겨나갈 수 있으므로 캡처 직전 한 번 더 강제 적용합니다.
              (특히 #recTime 등 id 기반 데스크톱 CSS로 되돌아가는 것을 방지) */
-          normalizeCaptureTypography(captured);
+          normalizeCaptureTypography(captured, true);
 
           /* 가상 요소 없이도 화면과 같은 계절색과 둥근 테두리가 저장되도록 고정 */
           captured.style.setProperty('width', `${captureWidth}px`, 'important');
@@ -3290,7 +3373,7 @@
 
           /* html2canvas가 문서를 새로 구성하는 과정에서 인라인 스타일이
              씻겨나갈 수 있으므로 캡처 직전 한 번 더 강제 적용합니다. */
-          normalizeCaptureTypography(captured);
+          normalizeCaptureTypography(captured, true);
 
           captured.style.display = 'block';
           captured.style.setProperty('width', `${RESULT_CAPTURE_WIDTH}px`, 'important');
