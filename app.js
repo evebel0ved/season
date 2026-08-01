@@ -2957,6 +2957,22 @@
         line-height: 1.65 !important;
       }
 
+      .capture-sandbox .capture-clean .rec-details *,
+      .capture-sandbox .capture-clean .relation-explain-body *,
+      .capture-sandbox .capture-clean .deep-compat *,
+      .capture-sandbox .capture-clean .support-note *,
+      .capture-sandbox .capture-clean .rec-couple-extra-grid *,
+      .capture-sandbox .capture-clean .flower-detail-section *,
+      .capture-sandbox .capture-full .rec-details *,
+      .capture-sandbox .capture-full .relation-explain-body *,
+      .capture-sandbox .capture-full .deep-compat *,
+      .capture-sandbox .capture-full .support-note *,
+      .capture-sandbox .capture-full .rec-couple-extra-grid *,
+      .capture-sandbox .capture-full .flower-detail-section * {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+
       /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
       .capture-sandbox .capture-clean::before,
       .capture-sandbox .capture-clean::after {
@@ -3105,6 +3121,7 @@
     // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
     // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
     clone.querySelectorAll('.compat-detail-wrap').forEach(el => el.remove());
+    clone.querySelectorAll('.re-caveat').forEach(el => el.remove());
 
     // "관계궁합" 카드 이후에 이어지는 심층 설명(년지/일지 궁합), 서포트 노트,
     // 데이트 아이디어, 꽃말 상세 설명은 이미지에서 제외
