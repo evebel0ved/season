@@ -1,9 +1,10 @@
 (function () {
-  // 월지·일지 개인화 배리에이션 확장본
+  // 월지·일지 개인화 + 생년 미상 가능성 추가 분석 확장본
   // - 오행별 다중 후보군에 월지·일지의 지지 기질을 추가 반영
   // - 월지: 대외적 생활 리듬·관계 운영 방식, 일지: 가까운 관계의 반응·애정 방식으로 구분
   // - 두 사람의 월지 관계와 일지 관계를 별도로 계산해 성격·갈등·데이트·추천 결과에 반영
   // - 이름은 선택 시드에서 제외하고 같은 사주·궁합 입력에는 같은 결과를 유지
+  // - 생년 미상은 최근 60개 연도 후보를 내부 비교해 힘이 되는 순간·갈등·관계 시나리오를 가능성형으로 출력
   const { calculateSaju, calculateSajuApprox, generateCoupleRecommendation,
           generateCoupleRecommendationApprox, OHAENG_INFO } = window.SajuCore;
 
@@ -644,7 +645,464 @@
     `;
   }
 
-  function buildApproxCompatHtml(entryA, entryB, rawNameA, rawNameB) {
+
+  // -----------------------------------------------------------------
+  // 생년 미상 가능성 기반 추가 분석
+  // 별도 입력을 받지 않고 최근 60개 출생연도를 동일한 비중으로 가정해
+  // 가능한 일간·일지 관계와 상호 보완 흐름을 집계합니다.
+  // 이 수치는 실제 출생연도의 확률이 아니라, 가정한 후보군 안에서
+  // 각 관계 유형이 나타난 비중을 뜻합니다.
+  // -----------------------------------------------------------------
+  const APPROX_RELATION_SUPPORT_BANK = {
+    상생: [
+      '가능한 일간 조합 가운데 상생 흐름에서는 한 사람이 시작한 일을 다른 사람이 자연스럽게 이어주며 서로의 부담을 덜어주는 모습이 나타날 수 있어요.',
+      '한쪽이 지치거나 망설일 때 다른 쪽이 감정적 응원이나 실제 행동으로 힘을 보태는 관계가 될 가능성이 있어요.',
+      '서로 다른 장점이 연결되면 혼자서는 미뤘을 일도 함께 계획하고 실행하기 쉬운 흐름이 보여요.',
+      '배려가 한 방향으로만 흐르기보다 상황에 따라 챙기는 역할이 바뀌는 관계로 이어질 수 있어요.',
+    ],
+    상극: [
+      '가능한 일간 조합 가운데 상극 흐름에서는 서로 다른 관점이 상대가 놓친 문제를 발견하게 해주는 힘으로 작용할 수 있어요.',
+      '방식은 다르더라도 한 사람은 추진력을, 다른 사람은 점검과 균형을 맡아 중요한 결정을 더 입체적으로 볼 가능성이 있어요.',
+      '처음에는 차이로 느껴지는 성향이 위기 상황에서는 서로의 약점을 보완하는 역할로 바뀔 수 있어요.',
+      '상대의 반응이 낯설기 때문에 오히려 자신의 습관을 돌아보고 관계 방식을 넓히는 계기가 생길 수 있어요.',
+    ],
+    동기: [
+      '가능한 일간 조합 가운데 동기 흐름에서는 설명을 길게 하지 않아도 상대의 기분과 반응을 빠르게 알아차릴 수 있어요.',
+      '취향과 행동 속도가 비슷해 지친 날에는 함께 쉬고 즐거운 날에는 바로 움직이는 자연스러운 호흡이 나타날 수 있어요.',
+      '비슷한 고민을 겪을 때 판단보다 공감을 먼저 건네며 정서적인 편이 되어줄 가능성이 있어요.',
+      '서로 좋아하는 방식이 닮아 작은 장난이나 일상적인 연락만으로도 친밀감을 회복하기 쉬운 흐름이 보여요.',
+    ],
+    중립: [
+      '가능한 일간 조합 가운데 중립 흐름에서는 강하게 이끌기보다 필요한 순간에 곁을 지키며 안정감을 주는 관계가 될 수 있어요.',
+      '큰 도움 한 번보다 일정한 연락과 작은 약속을 반복하면서 서로에게 믿을 만한 사람이 될 가능성이 있어요.',
+      '각자의 생활을 크게 흔들지 않으면서도 실질적으로 필요한 부분을 차분히 나누는 관계로 이어질 수 있어요.',
+      '처음부터 역할이 정해지지 않아 상황에 따라 계획하는 사람과 받아주는 사람이 자연스럽게 바뀔 수 있어요.',
+    ],
+  };
+
+  const APPROX_RELATION_CONFLICT_BANK = {
+    상생: [
+      '상생 흐름이 나타나는 조합에서도 한 사람이 계속 계획·연락·배려를 맡으면 도움을 주는 쪽에 피로가 쌓일 수 있어요.',
+      '자연스럽게 챙겨주는 관계일수록 받은 사람이 고마움을 실제 행동으로 돌려주지 않으면 역할이 고정될 가능성이 있어요.',
+      '서로 잘 맞는다는 느낌 때문에 불편한 점을 늦게 말하면 작은 서운함이 한꺼번에 드러날 수 있어요.',
+      '한쪽의 도움을 다른 쪽이 당연하게 받아들이는 순간 관계의 균형이 흔들릴 수 있어요.',
+    ],
+    상극: [
+      '상극 흐름이 나타나는 조합에서는 한 사람의 조언이 다른 사람에게 통제나 평가로 느껴져 자존심 싸움으로 번질 수 있어요.',
+      '결정 속도와 감정 표현 방식이 다르면 같은 상황을 한쪽은 회피로, 다른 쪽은 압박으로 받아들일 가능성이 있어요.',
+      '서로를 바꾸려는 대화가 반복되면 문제의 내용보다 말투와 태도에 대한 서운함이 커질 수 있어요.',
+      '끌림이 강한 만큼 감정이 올라온 순간에는 작은 차이도 관계 전체의 문제처럼 확대될 수 있어요.',
+    ],
+    동기: [
+      '동기 흐름이 나타나는 조합에서는 둘 다 어려워하는 약속 잡기·사과하기·돈 관리 같은 일을 함께 미룰 수 있어요.',
+      '서로 비슷하다는 생각 때문에 원하는 것이 같을 거라고 넘기면 세부적인 기대 차이가 뒤늦게 드러날 가능성이 있어요.',
+      '같은 순간에 고집을 부리거나 침묵하면 누가 먼저 화해할지를 기다리는 시간이 길어질 수 있어요.',
+      '친구 같은 편안함에 기대면 연인다운 표현이 줄어 상대가 관계의 확신을 잃을 수 있어요.',
+    ],
+    중립: [
+      '중립 흐름이 나타나는 조합에서는 큰 싸움은 적어도 누가 먼저 연락하고 약속을 정할지 기다리며 관계가 정체될 수 있어요.',
+      '서로 부담을 주지 않으려다 필요한 요구까지 말하지 않아 거리감이 서서히 커질 가능성이 있어요.',
+      '편안함이 익숙함으로 굳으면 관계를 위한 노력과 애정 표현이 줄었다고 느낄 수 있어요.',
+      '문제를 심각하게 여기지 않고 넘기다 같은 불편이 반복될 수 있어요.',
+    ],
+  };
+
+  const APPROX_RELATION_ROMANTIC_BANK = {
+    상생: [
+      '한 사람이 먼저 마음이나 계획을 꺼내면 다른 사람이 자연스럽게 반응해주는 연애가 될 가능성이 있어요.',
+      '거창한 이벤트보다 필요한 순간에 먼저 움직여주는 행동에서 사랑을 확인하는 커플로 이어질 수 있어요.',
+      '서로의 목표를 응원하고 실제 도움으로 연결할 때 연인다운 신뢰가 깊어질 가능성이 커요.',
+    ],
+    상극: [
+      '서로에게 없는 매력이 강하게 보여 설렘과 긴장감이 함께 살아 있는 연애가 될 가능성이 있어요.',
+      '데이트할 때는 활기가 넘치지만 의견이 다를 때도 감정이 크게 움직여 화해 방식이 중요한 커플이 될 수 있어요.',
+      '다른 성향을 고치기보다 역할로 나눌 때 강한 끌림과 현실적인 팀워크가 함께 살아날 수 있어요.',
+    ],
+    동기: [
+      '친구 같은 편안함과 연인다운 장난스러움이 함께 있는 커플이 될 가능성이 있어요.',
+      '같은 이야기에 웃고 별일 없는 날에도 메시지나 밈을 나누며 친밀감을 쌓는 연애로 이어질 수 있어요.',
+      '취향과 반응 속도가 비슷해 짧게 만나도 금방 둘만의 분위기로 돌아오는 관계가 될 수 있어요.',
+    ],
+    중립: [
+      '처음부터 불꽃처럼 달아오르기보다 일상을 공유하면서 천천히 정이 깊어지는 연애가 될 가능성이 있어요.',
+      '각자의 생활을 존중하고 약속한 순간에 성실하게 반응하는 것이 큰 애정 표현이 되는 커플로 이어질 수 있어요.',
+      '화려한 이벤트보다 자주 밥을 먹고 편안하게 쉬는 시간이 관계를 깊게 만들 가능성이 있어요.',
+    ],
+  };
+
+  const APPROX_RELATION_TIP_BANK = {
+    상생: [
+      '도움을 받은 사람이 다음 약속이나 연락을 먼저 준비해 배려가 한 방향으로 굳지 않게 해보세요.',
+      '서로 잘 맞는다고 느껴도 힘든 역할이 한 사람에게 반복되는지 가끔 확인하는 편이 좋아요.',
+      '고마움을 말로만 끝내지 말고 상대가 부담스러워하던 일 하나를 실제 행동으로 돌려주세요.',
+    ],
+    상극: [
+      '상대 행동을 고치려 하기 전에 “내가 필요한 것은 무엇인지”를 요청형 문장으로 말해주세요.',
+      '감정이 올라온 순간에는 결론을 내리지 말고 다시 이야기할 시각을 정한 뒤 잠시 쉬는 편이 좋아요.',
+      '서로 절대 양보할 수 없는 기준과 조정 가능한 부분을 분리해서 이야기해보세요.',
+    ],
+    동기: [
+      '마음이 같을 것이라고 추측하지 말고 원하는 연락 방식과 결론을 각각 확인해주세요.',
+      '둘 다 미루기 쉬운 일은 담당을 번갈아 정해 관계의 빈틈을 함께 관리해보세요.',
+      '친구 같은 편안함 속에서도 고마움과 애정은 말로 분명히 표현해주세요.',
+    ],
+    중립: [
+      '누가 먼저 움직일지 기다리지 않도록 약속이나 연락의 시작을 번갈아 맡아보세요.',
+      '관계가 편안할수록 정기적으로 새로운 경험을 하나씩 넣어 친밀감의 흐름을 살려주세요.',
+      '괜찮다고 넘긴 불편이 없는지 가끔 좋았던 점과 아쉬웠던 점을 하나씩 나눠보세요.',
+    ],
+  };
+
+  const APPROX_DAY_RELATION_SCENE_BANK = {
+    육합: [
+      '가능한 일지 조합에서 육합이 나타나는 경우에는 둘만 있을 때 경계가 비교적 빨리 풀리고 속마음을 편하게 나눌 수 있어요.',
+      '육합 흐름에서는 피곤한 날에도 함께 식사하거나 쉬는 것만으로 친밀감을 회복하기 쉬운 모습이 나타날 수 있어요.',
+      '가까운 관계에서 자연스럽게 안심되는 조합이 일부 포함되어 있어, 말보다 곁을 지켜주는 행동이 크게 느껴질 수 있어요.',
+    ],
+    삼합: [
+      '가능한 일지 조합에서 삼합이 나타나는 경우에는 함께 움직일 목표가 있을 때 감정과 행동의 호흡이 좋아질 수 있어요.',
+      '여행·운동·공부처럼 같은 방향을 보고 움직이는 상황에서 연인다운 팀워크가 살아날 가능성이 있어요.',
+      '가만히 마주 앉아 있기보다 공동 경험을 만들 때 친밀감이 빠르게 깊어지는 조합이 일부 보여요.',
+    ],
+    충: [
+      '가능한 일지 조합에서 충이 나타나는 경우에는 가까워질수록 감정 속도와 확인 방식의 차이가 선명해질 수 있어요.',
+      '좋아하는 마음과 별개로 한 사람은 바로 말하고 다른 사람은 거리를 두려는 장면이 생길 가능성이 있어요.',
+      '갈등 순간의 긴장이 큰 조합도 포함되어 있어, 냉각 시간과 재대화 약속이 특히 중요할 수 있어요.',
+    ],
+    형: [
+      '가능한 일지 조합에서 형이 나타나는 경우에는 큰 사건보다 반복되는 말투와 잔소리에서 피로가 쌓일 수 있어요.',
+      '겉으로는 무난해 보여도 가까운 사이에서 평가받거나 간섭받는 느낌이 생길 가능성이 있어요.',
+      '사소한 행동을 고치려는 대화가 반복될 수 있어 한 번에 한 가지 문제만 다루는 편이 좋아요.',
+    ],
+    해: [
+      '가능한 일지 조합에서 해가 나타나는 경우에는 배려한 행동이 상대의 기대와 어긋나 사소한 오해가 반복될 수 있어요.',
+      '큰 충돌은 없어도 답장 시점이나 말의 뉘앙스를 다르게 받아들이는 조합이 일부 포함되어 있어요.',
+      '의도와 감정을 짧게 확인하는 습관이 있으면 작은 엇갈림이 오래 남는 것을 줄일 수 있어요.',
+    ],
+    동일: [
+      '가능한 일지 조합에서 동일 관계가 나타나는 경우에는 친밀감이 빠르지만 같은 약점도 함께 드러날 수 있어요.',
+      '애정 표현의 취향은 비슷해도 둘 다 같은 순간에 침묵하거나 고집을 부릴 가능성이 있어요.',
+      '상대 마음을 이미 안다고 생각하기보다 원하는 것을 한 번 더 확인하는 편이 좋아요.',
+    ],
+    평: [
+      '가능한 일지 조합 중 특별한 합·충이 없는 경우에는 실제 연락 습관과 대화 방식이 관계 만족도를 더 크게 좌우해요.',
+      '강한 운명적 호흡보다 함께 만든 경험과 반복되는 약속을 통해 정이 깊어지는 조합이 많이 포함되어 있어요.',
+      '서로의 성향을 미리 단정하기보다 실제 생활에서 맞춰가는 힘이 중요한 흐름이에요.',
+    ],
+  };
+
+  function normalizeProbabilityMap(map) {
+    const entries = Object.entries(map || {});
+    const total = entries.reduce((sum, [, value]) => sum + Number(value || 0), 0) || 1;
+    return Object.fromEntries(entries.map(([key, value]) => [key, Number(value || 0) / total]));
+  }
+
+  function probabilityPercent(value) {
+    return Math.max(0, Math.min(100, Math.round(Number(value || 0) * 100)));
+  }
+
+  function sortedProbabilityEntries(map) {
+    return Object.entries(map || {}).sort((a, b) => b[1] - a[1]);
+  }
+
+  function directionToRelation(direction) {
+    if (direction === 'same') return '동기';
+    if (direction === 'aGeneratesB' || direction === 'bGeneratesA') return '상생';
+    if (direction === 'aControlsB' || direction === 'bControlsA') return '상극';
+    return '중립';
+  }
+
+  function buildPossibleSajuCandidates(entry, input) {
+    if (entry?.exact) {
+      const saju = entry.exact;
+      const stats = analyzeOhaengCount(saju?.ohaengCount);
+      return [{
+        year: input?.year,
+        saju,
+        stats,
+        dayElement: getDayOhaeng(saju),
+        dayJiji: getPillarJiji(saju, 'day'),
+        dominant: stats.dominant[0] || getDayOhaeng(saju) || '토',
+      }];
+    }
+
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 59;
+    const candidates = [];
+    const month = Number(input?.month);
+    const day = Number(input?.day);
+    const hour = input?.hourUnknown ? 12 : Number(input?.hour ?? 12);
+    const minute = Number(input?.minute ?? 0);
+
+    for (let year = minYear; year <= currentYear; year += 1) {
+      const date = new Date(year, month - 1, day);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) continue;
+      try {
+        const saju = calculateSaju(year, month, day, hour, minute);
+        const stats = analyzeOhaengCount(saju?.ohaengCount);
+        candidates.push({
+          year,
+          saju,
+          stats,
+          dayElement: getDayOhaeng(saju),
+          dayJiji: getPillarJiji(saju, 'day'),
+          dominant: stats.dominant[0] || getDayOhaeng(saju) || '토',
+        });
+      } catch (error) {
+        // 일부 연도 계산이 불가능하더라도 나머지 후보로 계속 집계합니다.
+      }
+    }
+
+    if (candidates.length) return candidates;
+
+    // 계산 코어가 후보 연도를 처리하지 못할 때 기존 근사값으로 최소 후보를 만듭니다.
+    const likely = entry?.approx?.day?.likelyOhaeng || [];
+    const percent = entry?.approx?.day?.percent || {};
+    const fallback = likely.map((element, index) => ({
+      year: null,
+      saju: null,
+      stats: analyzeOhaengCount(buildApproxCount(entry.approx)),
+      dayElement: element,
+      dayJiji: null,
+      dominant: element,
+      fallbackWeight: Math.max(1, Number.parseFloat(percent?.[element]) || (likely.length - index)),
+    }));
+    return fallback.length ? fallback : [{
+      year: null,
+      saju: null,
+      stats: analyzeOhaengCount(buildApproxCount(entry.approx)),
+      dayElement: analyzeOhaengCount(buildApproxCount(entry.approx)).dominant[0] || '토',
+      dayJiji: null,
+      dominant: analyzeOhaengCount(buildApproxCount(entry.approx)).dominant[0] || '토',
+      fallbackWeight: 1,
+    }];
+  }
+
+  function candidateWeight(candidate) {
+    return Math.max(0.0001, Number(candidate?.fallbackWeight || 1));
+  }
+
+  function buildUnknownYearPossibilityModel(entryA, entryB, inputA, inputB) {
+    const candidatesA = buildPossibleSajuCandidates(entryA, inputA);
+    const candidatesB = buildPossibleSajuCandidates(entryB, inputB);
+    const relationCounts = { 상생: 0, 상극: 0, 동기: 0, 중립: 0 };
+    const directionCounts = { aGeneratesB: 0, bGeneratesA: 0, aControlsB: 0, bControlsA: 0, same: 0, neutral: 0 };
+    const dayRelationCounts = { 육합: 0, 삼합: 0, 충: 0, 형: 0, 해: 0, 동일: 0, 평: 0 };
+    const dominantPairCounts = {};
+    const combinedDominantCounts = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+    let totalWeight = 0;
+    let aFillsBWeight = 0;
+    let bFillsAWeight = 0;
+    let mutualFillWeight = 0;
+    let sharedStrongWeight = 0;
+    let sharedGapWeight = 0;
+
+    for (const a of candidatesA) {
+      for (const b of candidatesB) {
+        const weight = candidateWeight(a) * candidateWeight(b);
+        totalWeight += weight;
+        const direction = getElementDirection(a.dayElement, b.dayElement);
+        const relation = directionToRelation(direction);
+        relationCounts[relation] += weight;
+        directionCounts[direction] += weight;
+
+        const dayRelation = a.dayJiji && b.dayJiji ? getLocalJijiRelation(a.dayJiji, b.dayJiji) : { type: '평', tone: 'neutral' };
+        dayRelationCounts[dayRelation.type in dayRelationCounts ? dayRelation.type : '평'] += weight;
+
+        const aTargets = [...(b.stats?.missing || []), ...(b.stats?.weak || [])];
+        const bTargets = [...(a.stats?.missing || []), ...(a.stats?.weak || [])];
+        const aFills = (a.stats?.dominant || []).some(k => aTargets.includes(k));
+        const bFills = (b.stats?.dominant || []).some(k => bTargets.includes(k));
+        if (aFills) aFillsBWeight += weight;
+        if (bFills) bFillsAWeight += weight;
+        if (aFills && bFills) mutualFillWeight += weight;
+        if ((a.stats?.dominant || []).some(k => (b.stats?.dominant || []).includes(k))) sharedStrongWeight += weight;
+        if ((a.stats?.missing || []).some(k => (b.stats?.missing || []).includes(k))) sharedGapWeight += weight;
+
+        const pair = [a.dominant, b.dominant]
+          .sort((x, y) => OHAENG_ORDER.indexOf(x) - OHAENG_ORDER.indexOf(y))
+          .join('+');
+        dominantPairCounts[pair] = (dominantPairCounts[pair] || 0) + weight;
+
+        if (a.saju && b.saju) {
+          const combinedCount = Object.fromEntries(OHAENG_ORDER.map(k => [k, Number(a.saju?.ohaengCount?.[k] || 0) + Number(b.saju?.ohaengCount?.[k] || 0)]));
+          const combinedDominant = analyzeOhaengCount(combinedCount).dominant[0];
+          if (combinedDominant) combinedDominantCounts[combinedDominant] += weight;
+        } else {
+          combinedDominantCounts[a.dominant] += weight / 2;
+          combinedDominantCounts[b.dominant] += weight / 2;
+        }
+      }
+    }
+
+    const safeTotal = totalWeight || 1;
+    const monthA = getEntryMonthJiji(entryA);
+    const monthB = getEntryMonthJiji(entryB);
+    return {
+      candidatesA: candidatesA.length,
+      candidatesB: candidatesB.length,
+      pairCount: candidatesA.length * candidatesB.length,
+      relation: normalizeProbabilityMap(relationCounts),
+      direction: normalizeProbabilityMap(directionCounts),
+      dayRelation: normalizeProbabilityMap(dayRelationCounts),
+      dominantPair: normalizeProbabilityMap(dominantPairCounts),
+      combinedDominant: normalizeProbabilityMap(combinedDominantCounts),
+      aFillsB: aFillsBWeight / safeTotal,
+      bFillsA: bFillsAWeight / safeTotal,
+      mutualFill: mutualFillWeight / safeTotal,
+      sharedStrong: sharedStrongWeight / safeTotal,
+      sharedGap: sharedGapWeight / safeTotal,
+      monthRelation: getLocalJijiRelation(monthA, monthB),
+      monthA,
+      monthB,
+    };
+  }
+
+  function makePossibilityChip(label, probability) {
+    return `<span class="compat-chip">${escapeHtml(label)} ${probabilityPercent(probability)}%</span>`;
+  }
+
+  function buildPossibilityChips(model) {
+    const relationChips = sortedProbabilityEntries(model.relation)
+      .slice(0, 4)
+      .map(([key, value]) => makePossibilityChip(key, value));
+    const dayChips = sortedProbabilityEntries(model.dayRelation)
+      .filter(([, value]) => probabilityPercent(value) > 0)
+      .slice(0, 3)
+      .map(([key, value]) => makePossibilityChip(`일지 ${key}`, value));
+    return [...relationChips, ...dayChips].join('');
+  }
+
+  function possibilityPrefix(probability) {
+    const percent = probabilityPercent(probability);
+    if (percent >= 45) return '후보 조합에서 비교적 자주 나타나는 흐름으로,';
+    if (percent >= 30) return '후보 조합에서 눈에 띄는 가능성으로,';
+    return '가능한 관계 시나리오 중 하나로,';
+  }
+
+  function buildApproxSupportLines(model, statsA, statsB, nameA, nameB, seed) {
+    const lines = [];
+    const topRelations = sortedProbabilityEntries(model.relation).slice(0, 2);
+    topRelations.forEach(([relation, probability], index) => {
+      const text = pickVariation(APPROX_RELATION_SUPPORT_BANK[relation], seed, `approx-support:${relation}:${index}`);
+      if (text) lines.push(`${possibilityPrefix(probability)} ${text}`);
+    });
+
+    const topDirection = sortedProbabilityEntries(model.direction)[0];
+    if (topDirection && topDirection[1] >= 0.24) {
+      const [direction, probability] = topDirection;
+      if (direction === 'aGeneratesB') lines.push(`${probabilityPercent(probability)}%의 후보 조합에서는 ${nameA}님이 먼저 아이디어나 정서적 힘을 보태고 ${nameB}님이 이를 행동으로 이어가는 방향이 나타나요.`);
+      if (direction === 'bGeneratesA') lines.push(`${probabilityPercent(probability)}%의 후보 조합에서는 ${nameB}님이 먼저 아이디어나 정서적 힘을 보태고 ${nameA}님이 이를 행동으로 이어가는 방향이 나타나요.`);
+    }
+
+    if (model.mutualFill >= 0.22) {
+      lines.push(`후보 조합의 약 ${probabilityPercent(model.mutualFill)}%에서는 두 사람이 서로의 약한 오행을 번갈아 보완하는 흐름이 나타나, 한 사람만 계속 챙기기보다 상황에 따라 역할이 바뀔 가능성이 있어요.`);
+    } else {
+      if (model.aFillsB >= 0.28) lines.push(`${nameA}님의 기운이 ${nameB}님의 부족한 부분을 보완하는 조합이 약 ${probabilityPercent(model.aFillsB)}%로 나타나, ${nameB}님이 막막할 때 ${nameA}님이 방향이나 안정감을 제공할 가능성이 있어요.`);
+      if (model.bFillsA >= 0.28) lines.push(`${nameB}님의 기운이 ${nameA}님의 부족한 부분을 보완하는 조합이 약 ${probabilityPercent(model.bFillsA)}%로 나타나, ${nameA}님이 지칠 때 ${nameB}님이 다른 관점이나 정서적 여유를 줄 가능성이 있어요.`);
+    }
+
+    const monthType = model.monthRelation?.type || '평';
+    const monthTone = model.monthRelation?.tone || 'neutral';
+    if (monthTone === 'good') {
+      lines.push(getJijiRelationDescription(model.monthRelation, seed, 'month'));
+    } else if (monthType === '평') {
+      lines.push('월지 관계가 한쪽으로 강하게 기울지 않아, 실제로 누가 약속을 준비하고 생활 리듬을 조율하는지에 따라 서로에게 주는 도움이 달라질 수 있어요.');
+    }
+
+    if (model.sharedStrong >= 0.28) {
+      const common = statsA.dominant.find(k => statsB.dominant.includes(k));
+      if (common) lines.push(pickVariation(OHAENG_VARIATION_BANK[common]?.sharedStrong, seed, `approx-support-shared:${common}`) || ELEMENT_SHARED_STRONG[common]);
+    }
+    return uniqueText(lines).slice(0, 4);
+  }
+
+  function buildApproxConflictLines(model, statsA, statsB, seed) {
+    const lines = [];
+    const topRelations = sortedProbabilityEntries(model.relation).slice(0, 2);
+    topRelations.forEach(([relation, probability], index) => {
+      const text = pickVariation(APPROX_RELATION_CONFLICT_BANK[relation], seed, `approx-conflict:${relation}:${index}`);
+      if (text) lines.push(`${possibilityPrefix(probability)} ${text}`);
+    });
+
+    const frictionProbability = (model.dayRelation.충 || 0) + (model.dayRelation.형 || 0) + (model.dayRelation.해 || 0);
+    if (frictionProbability >= 0.18) {
+      const frictionType = sortedProbabilityEntries({ 충: model.dayRelation.충, 형: model.dayRelation.형, 해: model.dayRelation.해 })[0][0];
+      const scene = pickVariation(APPROX_DAY_RELATION_SCENE_BANK[frictionType], seed, `approx-day-friction:${frictionType}`);
+      if (scene) lines.push(`일지 마찰 흐름이 합산 약 ${probabilityPercent(frictionProbability)}%로 나타나요. ${scene}`);
+    }
+
+    const monthTone = model.monthRelation?.tone || 'neutral';
+    if (monthTone === 'clash' || monthTone === 'friction') {
+      lines.push(getJijiRelationDescription(model.monthRelation, seed, 'month'));
+    }
+
+    const topPair = sortedProbabilityEntries(model.dominantPair)[0];
+    if (topPair) {
+      const [pair, probability] = topPair;
+      const pairText = pickVariation(PAIR_CONFLICT_VARIATIONS[pair] || [ELEMENT_PAIR_CONFLICT[pair]], seed, `approx-pair-conflict:${pair}`);
+      if (pairText) lines.push(`강한 오행 조합에서는 ${pair} 흐름이 약 ${probabilityPercent(probability)}%로 가장 많이 나타나요. ${pairText}`);
+    }
+
+    if (model.sharedGap >= 0.22) {
+      const sharedMissing = statsA.missing.find(k => statsB.missing.includes(k));
+      if (sharedMissing) lines.push(pickVariation(OHAENG_VARIATION_BANK[sharedMissing]?.sharedGap, seed, `approx-shared-gap:${sharedMissing}`) || ELEMENT_SHARED_GAP[sharedMissing]);
+    }
+    return uniqueText(lines).slice(0, 4);
+  }
+
+  function buildApproxRomanticScenarios(model, seed) {
+    const scenes = [];
+    const topRelations = sortedProbabilityEntries(model.relation).slice(0, 2);
+    topRelations.forEach(([relation, probability], index) => {
+      const scene = pickVariation(APPROX_RELATION_ROMANTIC_BANK[relation], seed, `approx-romantic:${relation}:${index}`);
+      if (scene) scenes.push(`<b>${relation} 가능성 ${probabilityPercent(probability)}%</b><br>${scene}`);
+    });
+
+    const topDay = sortedProbabilityEntries(model.dayRelation)[0];
+    if (topDay) {
+      const [type, probability] = topDay;
+      const scene = pickVariation(APPROX_DAY_RELATION_SCENE_BANK[type], seed, `approx-romantic-day:${type}`);
+      if (scene) scenes.push(`<b>가까운 관계의 ${type} 흐름 ${probabilityPercent(probability)}%</b><br>${scene}`);
+    }
+
+    const topElement = sortedProbabilityEntries(model.combinedDominant)[0];
+    if (topElement) {
+      const [element, probability] = topElement;
+      const scene = pickVariation(OHAENG_VARIATION_BANK[element]?.romantic, seed, `approx-romantic-element:${element}`);
+      if (scene) scenes.push(`<b>${element} 기운이 두드러지는 조합 ${probabilityPercent(probability)}%</b><br>${scene}`);
+    }
+    return uniqueText(scenes).slice(0, 3);
+  }
+
+  function buildApproxActionTips(model, statsA, statsB, seed) {
+    const tips = [];
+    const topRelations = sortedProbabilityEntries(model.relation).slice(0, 2);
+    topRelations.forEach(([relation], index) => {
+      const tip = pickVariation(APPROX_RELATION_TIP_BANK[relation], seed, `approx-tip:${relation}:${index}`);
+      if (tip) tips.push(tip);
+    });
+
+    const monthActions = (JIJI_RELATION_VARIATIONS[model.monthRelation?.type] || JIJI_RELATION_VARIATIONS.평)?.action || [];
+    const monthTip = pickVariation(monthActions, seed, 'approx-tip-month');
+    if (monthTip) tips.push(monthTip);
+
+    const weakTargets = uniqueText([...(statsA.missing.length ? statsA.missing : statsA.weak), ...(statsB.missing.length ? statsB.missing : statsB.weak)]);
+    const weakElement = pickVariation(weakTargets, seed, 'approx-tip-weak-element');
+    if (weakElement) {
+      const pool = OHAENG_VARIATION_BANK[weakElement]?.sharedGap || OHAENG_VARIATION_BANK[weakElement]?.weak || [];
+      const weakTip = pickVariation(pool, seed, `approx-tip-weak:${weakElement}`);
+      if (weakTip) tips.push(weakTip);
+    }
+
+    const frictionProbability = (model.dayRelation.충 || 0) + (model.dayRelation.형 || 0) + (model.dayRelation.해 || 0);
+    if (frictionProbability >= 0.2) tips.push('일지 관계가 여러 갈래로 나뉘므로, 싸운 직후의 반응을 성격으로 단정하지 말고 각자 필요한 냉각 시간과 다시 이야기할 시각을 미리 정해두세요.');
+    else tips.push('실제 일지 관계가 어느 흐름이든 적용할 수 있도록, 중요한 감정은 추측보다 짧은 확인 질문으로 맞춰보세요.');
+
+    return uniqueText(tips).slice(0, 5);
+  }
+
+  function buildApproxCompatHtml(entryA, entryB, rawNameA, rawNameB, inputA, inputB) {
     ensureCompatDetailStyles();
     const nameA = escapeHtml(rawNameA);
     const nameB = escapeHtml(rawNameB);
@@ -652,35 +1110,78 @@
     const countB = entryB.exact ? entryB.exact.ohaengCount : buildApproxCount(entryB.approx);
     const statsA = analyzeOhaengCount(countA);
     const statsB = analyzeOhaengCount(countB);
-    const sharedStrong = statsA.dominant.filter(k => statsB.dominant.includes(k));
-    const aFillsB = statsA.dominant.filter(k => statsB.weak.includes(k) || statsB.missing.includes(k));
-    const bFillsA = statsB.dominant.filter(k => statsA.weak.includes(k) || statsA.missing.includes(k));
     const monthA = getEntryMonthJiji(entryA);
     const monthB = getEntryMonthJiji(entryB);
     const monthBankA = getJijiPersonalBank(monthA);
     const monthBankB = getJijiPersonalBank(monthB);
-    const monthRelation = getLocalJijiRelation(monthA, monthB);
-    const observations = [];
-
-    const approxSeed = `${getCountSignature(countA)}|${getCountSignature(countB)}|${monthA || '?'}|${monthB || '?'}|approx`;
-    if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB, `${approxSeed}|a`));
-    if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA, `${approxSeed}|b`));
-    if (sharedStrong.length) sharedStrong.slice(0, 2).forEach((k, index) => observations.push(pickVariation(OHAENG_VARIATION_BANK[k]?.sharedStrong, approxSeed, `approx:shared:${k}:${index}`) || ELEMENT_SHARED_STRONG[k]));
-    if (monthA && monthB) observations.push(getJijiRelationDescription(monthRelation, approxSeed, 'month'));
-    if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않아요. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용해요.');
+    const approxSeed = `${getCountSignature(countA)}|${getCountSignature(countB)}|${monthA || '?'}|${monthB || '?'}|${inputA?.month || '?'}-${inputA?.day || '?'}|${inputB?.month || '?'}-${inputB?.day || '?'}|possibility`;
+    const model = buildUnknownYearPossibilityModel(entryA, entryB, inputA, inputB);
 
     const traitA = pickVariation(monthBankA?.month, approxSeed, 'approx:month-a');
     const traitB = pickVariation(monthBankB?.month, approxSeed, 'approx:month-b');
+    const supports = buildApproxSupportLines(model, statsA, statsB, nameA, nameB, approxSeed);
+    const conflicts = buildApproxConflictLines(model, statsA, statsB, approxSeed);
+    const romanticScenes = buildApproxRomanticScenarios(model, approxSeed);
+    const tips = buildApproxActionTips(model, statsA, statsB, approxSeed);
+    const relationTop = sortedProbabilityEntries(model.relation)[0] || ['중립', 0];
+    const dayTop = sortedProbabilityEntries(model.dayRelation)[0] || ['평', 0];
+    const candidateDescription = model.pairCount > 1
+      ? `가능한 출생연도 조합 ${model.pairCount.toLocaleString()}가지를 비교했어요.`
+      : '한 사람의 확정 사주와 다른 사람의 가능한 출생연도 후보를 비교했어요.';
+
     return `
       <section class="compat-detail-wrap">
-        <div class="compat-detail-title">지금 확인할 수 있는 정보로 두 사람을 살펴봤어요</div>
-        <div class="compat-summary-card">연도가 없는 사람은 일간과 일지를 정확히 정하기 어려워요. 대신 확인 가능한 월지의 생활 리듬과 오행 경향을 함께 반영했어요.</div>
-        <div class="compat-grid">
-          <article class="compat-card"><h4>${nameA}님</h4><div class="compat-chip-row">${monthA ? `<span class="compat-chip">월지 ${formatJiji(monthA)}</span>` : ''}</div><p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}이에요.</p>${traitA ? `<p>월지에서는 ${traitA}이에요.</p>` : ''}</article>
-          <article class="compat-card"><h4>${nameB}님</h4><div class="compat-chip-row">${monthB ? `<span class="compat-chip">월지 ${formatJiji(monthB)}</span>` : ''}</div><p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}이에요.</p>${traitB ? `<p>월지에서는 ${traitB}이에요.</p>` : ''}</article>
+        <div class="compat-detail-title">생년 미상 가능성 기반 추가 분석</div>
+        <div class="compat-summary-card">
+          <b>확정할 수 없는 부분을 비워두지 않고 여러 가능성으로 살펴봤어요.</b><br>
+          ${candidateDescription} 가장 많이 나타난 일간 관계는 <b>${relationTop[0]} ${probabilityPercent(relationTop[1])}%</b>, 가까운 관계의 일지 흐름은 <b>${dayTop[0]} ${probabilityPercent(dayTop[1])}%</b>예요.
+          이 비율은 실제 출생연도의 확률이 아니라, 최근 60개 연도를 동일하게 가정한 후보군 안에서 나타난 비중이에요.
+          <div class="compat-chip-row" style="margin-top:10px;">${buildPossibilityChips(model)}</div>
         </div>
-        <div class="compat-card"><h4>두 사람 사이에는 이런 흐름이 보여요</h4><ul class="compat-list">${observations.map(x => `<li>${x}</li>`).join('')}</ul></div>
-        <div class="compat-muted">※ 연도 미상 결과는 확인 가능한 월지와 일부 오행 정보만 반영한 참고 내용이에요. 상생·상극과 일지 부부궁은 연도를 확인한 뒤에만 설명할 수 있어요.</div>
+
+        <div class="compat-grid">
+          <article class="compat-card">
+            <h4>${nameA}님의 확인 가능한 관계 성향</h4>
+            <div class="compat-chip-row">${monthA ? `<span class="compat-chip">월지 ${formatJiji(monthA)}</span>` : ''}<span class="compat-chip">강한 경향 ${formatOhaengList(statsA.dominant)}</span></div>
+            <p>두드러지는 성향은 ${formatOhaengList(statsA.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsA.weak)}이에요.</p>
+            ${traitA ? `<p>월지에서는 ${traitA}이에요.</p>` : ''}
+          </article>
+          <article class="compat-card">
+            <h4>${nameB}님의 확인 가능한 관계 성향</h4>
+            <div class="compat-chip-row">${monthB ? `<span class="compat-chip">월지 ${formatJiji(monthB)}</span>` : ''}<span class="compat-chip">강한 경향 ${formatOhaengList(statsB.dominant)}</span></div>
+            <p>두드러지는 성향은 ${formatOhaengList(statsB.dominant)}, 상대적으로 덜 드러나는 성향은 ${formatOhaengList(statsB.weak)}이에요.</p>
+            ${traitB ? `<p>월지에서는 ${traitB}이에요.</p>` : ''}
+          </article>
+        </div>
+
+        <div class="compat-card">
+          <h4>월지로 확인되는 생활 궁합</h4>
+          <div class="compat-chip-row"><span class="compat-chip">월지 ${model.monthRelation?.type || '평'}</span></div>
+          <p>${getJijiRelationDescription(model.monthRelation, approxSeed, 'month')}</p>
+        </div>
+
+        <div class="compat-grid">
+          <article class="compat-card">
+            <h4>서로에게 힘이 되어줄 가능성이 큰 순간</h4>
+            <ul class="compat-list">${supports.map(x => `<li>${x}</li>`).join('')}</ul>
+          </article>
+          <article class="compat-card">
+            <h4>이럴 때 갈등이 생길 가능성이 있어요</h4>
+            <ul class="compat-list">${conflicts.map(x => `<li>${x}</li>`).join('')}</ul>
+          </article>
+        </div>
+
+        <div class="compat-card compat-stack-card compat-highlight-card">
+          <h4>가까워지면 나타날 수 있는 관계 시나리오</h4>
+          ${romanticScenes.map(scene => `<p>${scene}</p>`).join('')}
+        </div>
+
+        <div class="compat-card compat-stack-card compat-highlight-card">
+          <h4>가능성이 달라도 공통으로 도움이 되는 방법</h4>
+          <ol class="compat-list">${tips.map(x => `<li>${x}</li>`).join('')}</ol>
+        </div>
+
+        <div class="compat-muted">※ 생년 미상 분석은 입력된 월·일·시간에 최근 60개 출생연도를 대입한 가능성 비교예요. 실제 일간·일지·상생·상극을 확정하는 결과가 아니며, 비율이 높다고 반드시 그 관계에 해당한다는 뜻은 아니에요.</div>
       </section>
     `;
   }
@@ -2228,8 +2729,8 @@
     if (anyApprox) {
       document.getElementById('relationBadge').textContent = '연도 미상으로 일간 간 관계는 추정이 어려워요';
       explainEl.innerHTML =
-        '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간을 특정할 수 없어, 상생·상극·동기 같은 관계는 단정하지 않아요. 대신 현재 확인 가능한 오행 경향만으로 제한적인 참고 궁합을 보여드려요.</div>' +
-        (isLover ? buildApproxCompatHtml(entryA, entryB, nameA, nameB) : '');
+        '<div class="re-caveat" style="margin-top:0; border-top:none; padding-top:0;">태어난 연도를 몰라 일간과 일지를 하나로 확정하지는 않아요. 대신 가능한 최근 60개 출생연도를 비교해 상생·상극·동기와 일지 관계가 나타나는 비중을 계산하고, 그 가능성에 기반한 추가 분석을 보여드려요.</div>' +
+        (isLover ? buildApproxCompatHtml(entryA, entryB, nameA, nameB, inputA, inputB) : '');
       // 년지/일지 궁합도 연도를 모르면 확정 불가하므로 숨김
       deepCompatEl.style.display = 'none';
     } else {
@@ -2450,6 +2951,72 @@
         padding-bottom: 24px !important;
         background: #ffffff !important;
         overflow: visible !important;
+      }
+
+      /* 저장본은 화면의 기기별 미디어쿼리 대신 가장 작은 본문 크기로 통일 */
+      .capture-sandbox .capture-clean,
+      .capture-sandbox .capture-full {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+      .capture-sandbox .capture-clean .rec-detail-card .dv,
+      .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-clean .relation-explain-body,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-card p,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-list,
+      .capture-sandbox .capture-clean .dc-item .dc-desc,
+      .capture-sandbox .capture-clean .dc-complement,
+      .capture-sandbox .capture-clean .support-note,
+      .capture-sandbox .capture-clean .rec-date-list,
+      .capture-sandbox .capture-clean .rec-touch-summary,
+      .capture-sandbox .capture-clean .rec-touch-list,
+      .capture-sandbox .capture-clean .rec-touch-why,
+      .capture-sandbox .capture-clean .rec-touch-caution,
+      .capture-sandbox .capture-clean .flower-detail-row,
+      .capture-sandbox .capture-full .rec-detail-card .dv,
+      .capture-sandbox .capture-full .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-full .relation-explain-body,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-card p,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-list,
+      .capture-sandbox .capture-full .dc-item .dc-desc,
+      .capture-sandbox .capture-full .dc-complement,
+      .capture-sandbox .capture-full .support-note,
+      .capture-sandbox .capture-full .rec-date-list,
+      .capture-sandbox .capture-full .rec-touch-summary,
+      .capture-sandbox .capture-full .rec-touch-list,
+      .capture-sandbox .capture-full .rec-touch-why,
+      .capture-sandbox .capture-full .rec-touch-caution,
+      .capture-sandbox .capture-full .flower-detail-row {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+      .capture-sandbox .capture-clean .rec-detail-card .dk,
+      .capture-sandbox .capture-clean .compat-detail-title,
+      .capture-sandbox .capture-clean .compat-card h4,
+      .capture-sandbox .capture-clean .rec-extra-title,
+      .capture-sandbox .capture-clean .flower-detail-name,
+      .capture-sandbox .capture-full .rec-detail-card .dk,
+      .capture-sandbox .capture-full .compat-detail-title,
+      .capture-sandbox .capture-full .compat-card h4,
+      .capture-sandbox .capture-full .rec-extra-title,
+      .capture-sandbox .capture-full .flower-detail-name {
+        font-size: 11.5px !important;
+        line-height: 1.5 !important;
+      }
+      .capture-sandbox .capture-clean .re-names,
+      .capture-sandbox .capture-clean .re-label,
+      .capture-sandbox .capture-clean .compat-chip,
+      .capture-sandbox .capture-clean .dc-label,
+      .capture-sandbox .capture-clean .rec-touch-level-label,
+      .capture-sandbox .capture-clean .flower-detail-row b,
+      .capture-sandbox .capture-full .re-names,
+      .capture-sandbox .capture-full .re-label,
+      .capture-sandbox .capture-full .compat-chip,
+      .capture-sandbox .capture-full .dc-label,
+      .capture-sandbox .capture-full .rec-touch-level-label,
+      .capture-sandbox .capture-full .flower-detail-row b {
+        font-size: 9.5px !important;
+        line-height: 1.45 !important;
       }
 
       /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
