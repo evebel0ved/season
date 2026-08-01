@@ -3188,12 +3188,43 @@
       || (navigator.maxTouchPoints > 1 && window.innerWidth <= 1366);
   }
 
-  async function deliverSavedImage(blob, filename) {
-    const file = new File([blob], filename, { type: 'image/png' });
-    const mobileDevice = isMobileOrTabletDevice();
+  function isAndroidDevice() {
+    const platform = navigator.userAgentData?.platform || navigator.platform || '';
+    return /Android/i.test(navigator.userAgent || '') || /^Android$/i.test(platform);
+  }
 
-    // iOS/Android에서는 data URL 다운로드가 실패하는 경우가 많으므로
-    // 파일 공유 API를 우선 사용해 사진 앱·파일 앱으로 바로 저장할 수 있게 합니다.
+  function downloadSavedImage(blob, filename, mobileDevice) {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // download 속성이 없는 구형 모바일 브라우저만 새 탭 열기로 대체합니다.
+    if (mobileDevice && !('download' in HTMLAnchorElement.prototype)) {
+      window.open(blobUrl, '_blank', 'noopener');
+    }
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+  }
+
+  async function deliverSavedImage(blob, filename) {
+    const mobileDevice = isMobileOrTabletDevice();
+    const androidDevice = isAndroidDevice();
+
+    // Android에서는 공유 시트를 열지 않고 다운로드 매니저로 PNG를 바로 저장합니다.
+    // 저장된 이미지는 기기의 미디어 인덱싱 정책에 따라 갤러리에서도 표시됩니다.
+    if (androidDevice) {
+      downloadSavedImage(blob, filename, true);
+      return;
+    }
+
+    const file = new File([blob], filename, { type: 'image/png' });
+
+    // iOS에서는 파일 공유 API를 우선 사용해 사진 앱·파일 앱으로 저장할 수 있게 합니다.
     if (mobileDevice && navigator.share && navigator.canShare) {
       try {
         if (navigator.canShare({ files: [file] })) {
@@ -3211,21 +3242,7 @@
     }
 
     // 데스크톱 및 공유 API 미지원 브라우저용 Blob 다운로드
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = filename;
-    link.rel = 'noopener';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    // 일부 모바일 브라우저는 download 속성을 무시하므로 새 탭으로 한 번 더 열어줍니다.
-    if (mobileDevice && !('download' in HTMLAnchorElement.prototype)) {
-      window.open(blobUrl, '_blank', 'noopener');
-    }
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    downloadSavedImage(blob, filename, mobileDevice);
   }
 
   async function handleSaveResultImage(btn) {
