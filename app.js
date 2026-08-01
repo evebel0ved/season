@@ -2922,6 +2922,27 @@
         overflow: visible !important;
       }
 
+      .capture-sandbox .capture-watermark {
+        position: relative !important;
+        z-index: 2 !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        margin: 20px 0 0 !important;
+        padding: 0 18px 2px !important;
+        color: #9fa1a9 !important;
+        font-family: 'Noto Sans KR', sans-serif !important;
+        font-size: 9.5px !important;
+        font-weight: 500 !important;
+        line-height: 1.45 !important;
+        letter-spacing: 0.04em !important;
+        text-align: right !important;
+        opacity: 0.88 !important;
+      }
+      .capture-sandbox .capture-clean .capture-watermark {
+        padding-right: 0 !important;
+      }
+
       /* 저장 이미지의 본문 글꼴은 가장 작은 기준으로 통일합니다. */
       .capture-sandbox .capture-clean,
       .capture-sandbox .capture-full {
@@ -3006,6 +3027,7 @@
 
       .capture-sandbox .capture-clean .relation-explain-body .re-names,
       .capture-sandbox .capture-clean .relation-explain-body .re-label,
+      .capture-sandbox .capture-clean .capture-watermark,
       .capture-sandbox .capture-clean .rec-kicker,
       .capture-sandbox .capture-clean .relation-badge,
       .capture-sandbox .capture-clean .compat-detail-wrap .compat-chip,
@@ -3015,6 +3037,7 @@
       .capture-sandbox .capture-clean .flower-detail-row b,
       .capture-sandbox .capture-full .relation-explain-body .re-names,
       .capture-sandbox .capture-full .relation-explain-body .re-label,
+      .capture-sandbox .capture-full .capture-watermark,
       .capture-sandbox .capture-full .rec-kicker,
       .capture-sandbox .capture-full .relation-badge,
       .capture-sandbox .capture-full .compat-detail-wrap .compat-chip,
@@ -3160,7 +3183,7 @@
 
     const metaSelectors = [
       '.relation-explain-body .re-names', '.relation-explain-body .re-label',
-      '.rec-kicker', '.relation-badge',
+      '.capture-watermark', '.rec-kicker', '.relation-badge',
       '.compat-detail-wrap .compat-chip', '.dc-label', '.dc-tone-badge',
       '.rec-touch-level-label',
       '.flower-detail-row b',
@@ -3170,6 +3193,15 @@
       CAPTURE_META_FONT_SIZE,
       CAPTURE_META_LINE_HEIGHT,
     );
+  }
+
+  function appendCaptureWatermark(root) {
+    if (!root) return;
+    root.querySelector('.capture-watermark')?.remove();
+    const watermark = document.createElement('div');
+    watermark.className = 'capture-watermark';
+    watermark.textContent = '@atelier_eve';
+    root.appendChild(watermark);
   }
 
 
@@ -3283,6 +3315,7 @@
     // 데이트 아이디어, 꽃말 상세 설명은 이미지에서 제외
     ['#deepCompat', '#supportNote', '#recCoupleExtraGrid', '#recDateIdeasBlock', '#recTouchBlock', '#flowerMeaningDetails']
       .forEach(sel => { const el = clone.querySelector(sel); if (el) el.remove(); });
+    appendCaptureWatermark(clone);
 
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
@@ -3367,6 +3400,7 @@
     clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
     clone.style.display = 'block';
     clone.querySelector('.save-image-row')?.remove();
+    appendCaptureWatermark(clone);
     normalizeCaptureTypography(clone);
 
     const sandbox = document.createElement('div');
