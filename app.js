@@ -2249,70 +2249,36 @@
   }
 
   function buildPersonalizedPrimaryRecommendation(base, primaryElement, entryA, entryB, rec, inputA, inputB) {
-    const bank = OHAENG_VARIATION_BANK[primaryElement] || OHAENG_VARIATION_BANK.토;
-    const seed = buildRenderVariationSeed(entryA, entryB, rec, inputA, inputB);
-    const relation = rec?.compat?.relation || '중립';
-    const branchSources = getRecommendationBranchBanks(entryA, entryB, seed);
-    const relationIdeas = {
-      상생: ['서로 잘하는 역할을 바꿔 맡아보며 고마웠던 점 말하기', '한 사람의 목표를 다른 사람이 도와주는 작은 공동 미션 정하기'],
-      상극: ['선택이 다른 항목은 각자 하나씩 결정권을 맡아 반반 코스 만들기', '데이트가 끝난 뒤 좋았던 점과 조율할 점을 하나씩만 나누기'],
-      동기: ['같은 취향 속에서도 각자 처음 해보는 활동을 하나씩 고르기', '서로 닮은 점 세 가지와 예상 밖으로 다른 점 한 가지 이야기하기'],
-      중립: ['정기적으로 반복할 수 있는 둘만의 작은 루틴 하나 만들기', '각자 편한 데이트와 새로 해보고 싶은 데이트를 하나씩 섞기'],
-    }[relation] || [];
-    const monthPlaces = branchSources.monthBanks.flatMap(item => item.bank.places || []);
-    const dayPlaces = branchSources.dayBanks.flatMap(item => item.bank.places || []);
-    const monthIdeas = branchSources.monthBanks.flatMap(item => item.bank.dateIdeas || []);
-    const dayIdeas = branchSources.dayBanks.flatMap(item => item.bank.dateIdeas || []);
-    const branchColors = [...branchSources.monthBanks, ...branchSources.dayBanks].flatMap(item => item.bank.colors || []);
-    const branchFlowers = [...branchSources.dayBanks, ...branchSources.monthBanks].flatMap(item => item.bank.flowers || []);
-    const seasonSource = branchSources.seasonSource;
-    const seasonBank = seasonSource?.bank;
-    const places = uniqueText([
-      ...pickVariationMany(monthPlaces, 2, seed, 'primary:month-places'),
-      ...pickVariationMany(dayPlaces, 1, seed, 'primary:day-places'),
-      ...pickVariationMany(bank.places, 2, seed, 'primary:element-places'),
-      ...((base?.places || []).slice(0, 1)),
-    ]).slice(0, 5);
-    const dateIdeas = uniqueText([
-      ...pickVariationMany(dayIdeas, 2, seed, 'primary:day-date-ideas'),
-      ...pickVariationMany(monthIdeas, 1, seed, 'primary:month-date-ideas'),
-      ...pickVariationMany(bank.dateIdeas, 2, seed, 'primary:element-date-ideas'),
-      ...pickVariationMany(relationIdeas, 1, seed, `primary:relation:${relation}`),
-      base?.dateTip,
-    ]).slice(0, 5);
-    const colors = uniqueText([
-      ...pickVariationMany(branchColors, 3, seed, 'primary:branch-colors'),
-      ...pickVariationMany(base?.colors || [], 2, seed, 'primary:base-colors'),
-    ]).slice(0, 4);
-    const baseFlowerDetails = Array.isArray(base?.flowerDetails) && base.flowerDetails.length
-      ? base.flowerDetails
-      : (base?.flowers || []).map(name => ({ name, meaning: '', theme: '', reason: '' }));
-    const flowerDetails = uniqueFlowerDetails([
-      ...pickVariationMany(branchFlowers, 2, seed, 'primary:branch-flowers'),
-      ...pickVariationMany(baseFlowerDetails, 2, seed, 'primary:base-flowers'),
-    ]).slice(0, 3);
-    const branchKeywordPool = [...branchSources.monthBanks, ...branchSources.dayBanks].flatMap(item => item.bank.keyword || []);
-    const elementKeyword = pickVariation(bank.keyword, seed, 'primary:element-keyword');
-    const branchKeyword = pickVariation(branchKeywordPool, seed, 'primary:branch-keyword');
-    const timeDetailPool = [
-      ...(seasonBank?.timeDetail || []),
-      ...branchSources.dayBanks.flatMap(item => item.bank.timeDetail || []),
-      ...(bank.timeDetail || []),
-    ];
+    /*
+     * 메인 추천 영역은 SajuCore가 계산한 기존 오행 기반 결과를 그대로 사용합니다.
+     * 월지·일지 및 생년 미상 후보 분석은 상세 궁합 문장에만 반영하고,
+     * 계절·시간대·색상·꽃·장소·데이트 추천을 덮어쓰지 않습니다.
+     * 따라서 분석 기능을 추가해도 기존 입력의 메인 추천 결과가 달라지지 않습니다.
+     */
+    const original = base || {};
+    const originalFlowerDetails = Array.isArray(original.flowerDetails) && original.flowerDetails.length
+      ? original.flowerDetails
+      : (original.flowers || []).map(name => ({ name, meaning: '', theme: '', reason: '' }));
+    const originalDateIdeas = Array.isArray(original.dateIdeas) && original.dateIdeas.length
+      ? original.dateIdeas
+      : [original.dateTip].filter(Boolean);
+
     return {
-      ...(base || {}),
-      season: seasonBank?.season || base?.season,
-      seasonDetail: pickVariation(seasonBank?.seasonDetail, seed, 'primary:season-detail') || base?.seasonDetail,
-      timeRange: seasonBank?.timeRange || base?.timeRange,
-      summary: pickVariation(bank.summary, seed, 'primary:summary'),
-      keyword: uniqueText([elementKeyword, branchKeyword]).join(' · '),
-      timeDetail: pickVariation(timeDetailPool, seed, 'primary:time-detail') || base?.timeDetail,
-      colors: colors.length ? colors : (base?.colors || []),
-      flowers: flowerDetails.map(item => item.name),
-      flowerDetails: flowerDetails.length ? flowerDetails : baseFlowerDetails,
-      places,
-      dateIdeas,
-      dateTip: dateIdeas[0] || base?.dateTip,
+      ...original,
+      season: original.season,
+      seasonDetail: original.seasonDetail,
+      timeRange: original.timeRange,
+      timeDetail: original.timeDetail,
+      summary: original.summary,
+      keyword: original.keyword,
+      colors: Array.isArray(original.colors) ? [...original.colors] : [],
+      flowers: Array.isArray(original.flowers)
+        ? [...original.flowers]
+        : originalFlowerDetails.map(item => item.name),
+      flowerDetails: originalFlowerDetails.map(item => ({ ...item })),
+      places: Array.isArray(original.places) ? [...original.places] : [],
+      dateIdeas: [...originalDateIdeas],
+      dateTip: original.dateTip,
     };
   }
 
@@ -2953,7 +2919,7 @@
         overflow: visible !important;
       }
 
-      /* 저장본은 화면의 기기별 미디어쿼리 대신 가장 작은 본문 크기로 통일 */
+      /* 저장 이미지의 본문 글꼴은 가장 작은 기준으로 통일합니다. */
       .capture-sandbox .capture-clean,
       .capture-sandbox .capture-full {
         font-size: 10.5px !important;
@@ -2989,34 +2955,6 @@
       .capture-sandbox .capture-full .flower-detail-row {
         font-size: 10.5px !important;
         line-height: 1.65 !important;
-      }
-      .capture-sandbox .capture-clean .rec-detail-card .dk,
-      .capture-sandbox .capture-clean .compat-detail-title,
-      .capture-sandbox .capture-clean .compat-card h4,
-      .capture-sandbox .capture-clean .rec-extra-title,
-      .capture-sandbox .capture-clean .flower-detail-name,
-      .capture-sandbox .capture-full .rec-detail-card .dk,
-      .capture-sandbox .capture-full .compat-detail-title,
-      .capture-sandbox .capture-full .compat-card h4,
-      .capture-sandbox .capture-full .rec-extra-title,
-      .capture-sandbox .capture-full .flower-detail-name {
-        font-size: 11.5px !important;
-        line-height: 1.5 !important;
-      }
-      .capture-sandbox .capture-clean .re-names,
-      .capture-sandbox .capture-clean .re-label,
-      .capture-sandbox .capture-clean .compat-chip,
-      .capture-sandbox .capture-clean .dc-label,
-      .capture-sandbox .capture-clean .rec-touch-level-label,
-      .capture-sandbox .capture-clean .flower-detail-row b,
-      .capture-sandbox .capture-full .re-names,
-      .capture-sandbox .capture-full .re-label,
-      .capture-sandbox .capture-full .compat-chip,
-      .capture-sandbox .capture-full .dc-label,
-      .capture-sandbox .capture-full .rec-touch-level-label,
-      .capture-sandbox .capture-full .flower-detail-row b {
-        font-size: 9.5px !important;
-        line-height: 1.45 !important;
       }
 
       /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
