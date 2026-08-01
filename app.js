@@ -1413,11 +1413,14 @@
       recParent.classList.add('lover-only-block');
     }
 
-    ['deepCompat', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
+    ['deepCompat', 'recHero', 'recTime', 'recTimeDetail', 'recColors', 'recFlowers', 'recPlaces', 'supportNote', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
       .forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        el.classList.add('lover-only-block');
+        const block = id === 'deepCompat' || id === 'recHero' || id === 'supportNote' || id === 'recCoupleExtraGrid' || id === 'recDateIdeasBlock' || id === 'recTouchBlock' || id === 'flowerMeaningDetails'
+          ? el
+          : (el.parentElement || el);
+        block.classList.add('lover-only-block');
       });
   }
 
@@ -2916,59 +2919,69 @@
         overflow: visible !important;
       }
 
-      /* 저장 이미지의 본문 글꼴은 가장 작은 기준으로 통일합니다.
-         "추천 시간대"(#recTime/#recTimeDetail)를 포함한 rec-detail-card 계열이
-         다른 블록과 다른 크기로 새지 않도록, 카드 자기 자신 + 모든 후손 +
-         주요 id를 한 규칙에서 함께 강제합니다. */
+      /* 저장 이미지의 본문 글꼴은 가장 작은 기준으로 통일합니다. */
       .capture-sandbox .capture-clean,
-      .capture-sandbox .capture-full,
-      .capture-sandbox .capture-clean .rec-details,
-      .capture-sandbox .capture-clean .rec-details *,
-      .capture-sandbox .capture-clean .rec-detail-card,
-      .capture-sandbox .capture-clean .rec-detail-card *,
-      .capture-sandbox .capture-clean #recTime,
-      .capture-sandbox .capture-clean #recTimeDetail,
-      .capture-sandbox .capture-clean #recColors,
-      .capture-sandbox .capture-clean #recFlowers,
-      .capture-sandbox .capture-clean #recPlaces,
+      .capture-sandbox .capture-full {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+      .capture-sandbox .capture-clean .rec-detail-card .dv,
+      .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-clean .relation-explain-body,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-card p,
+      .capture-sandbox .capture-clean .compat-detail-wrap .compat-list,
+      .capture-sandbox .capture-clean .dc-item .dc-desc,
+      .capture-sandbox .capture-clean .dc-complement,
+      .capture-sandbox .capture-clean .support-note,
+      .capture-sandbox .capture-clean .rec-date-list,
+      .capture-sandbox .capture-clean .rec-touch-summary,
+      .capture-sandbox .capture-clean .rec-touch-list,
+      .capture-sandbox .capture-clean .rec-touch-why,
+      .capture-sandbox .capture-clean .rec-touch-caution,
+      .capture-sandbox .capture-clean .flower-detail-row,
+      .capture-sandbox .capture-full .rec-detail-card .dv,
+      .capture-sandbox .capture-full .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-full .relation-explain-body,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-card p,
+      .capture-sandbox .capture-full .compat-detail-wrap .compat-list,
+      .capture-sandbox .capture-full .dc-item .dc-desc,
+      .capture-sandbox .capture-full .dc-complement,
+      .capture-sandbox .capture-full .support-note,
+      .capture-sandbox .capture-full .rec-date-list,
+      .capture-sandbox .capture-full .rec-touch-summary,
+      .capture-sandbox .capture-full .rec-touch-list,
+      .capture-sandbox .capture-full .rec-touch-why,
+      .capture-sandbox .capture-full .rec-touch-caution,
+      .capture-sandbox .capture-full .flower-detail-row {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+
+      .capture-sandbox .capture-clean .rec-detail-card .dk,
+      .capture-sandbox .capture-clean .rec-detail-card .dv,
+      .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
       .capture-sandbox .capture-clean .tag,
       .capture-sandbox .capture-clean .color-swatch,
-      .capture-sandbox .capture-clean .swatch,
-      .capture-sandbox .capture-clean .relation-explain-body,
-      .capture-sandbox .capture-clean .relation-explain-body *,
-      .capture-sandbox .capture-clean .compat-detail-wrap,
-      .capture-sandbox .capture-clean .compat-detail-wrap *,
-      .capture-sandbox .capture-clean .deep-compat,
-      .capture-sandbox .capture-clean .deep-compat *,
-      .capture-sandbox .capture-clean .support-note,
-      .capture-sandbox .capture-clean .support-note *,
-      .capture-sandbox .capture-clean .rec-couple-extra-grid,
-      .capture-sandbox .capture-clean .rec-couple-extra-grid *,
-      .capture-sandbox .capture-clean .flower-detail-section,
-      .capture-sandbox .capture-clean .flower-detail-section *,
-      .capture-sandbox .capture-full .rec-details,
-      .capture-sandbox .capture-full .rec-details *,
-      .capture-sandbox .capture-full .rec-detail-card,
-      .capture-sandbox .capture-full .rec-detail-card *,
-      .capture-sandbox .capture-full #recTime,
-      .capture-sandbox .capture-full #recTimeDetail,
-      .capture-sandbox .capture-full #recColors,
-      .capture-sandbox .capture-full #recFlowers,
-      .capture-sandbox .capture-full #recPlaces,
+      .capture-sandbox .capture-full .rec-detail-card .dk,
+      .capture-sandbox .capture-full .rec-detail-card .dv,
+      .capture-sandbox .capture-full .rec-detail-card .dv-sub,
       .capture-sandbox .capture-full .tag,
-      .capture-sandbox .capture-full .color-swatch,
-      .capture-sandbox .capture-full .swatch,
-      .capture-sandbox .capture-full .relation-explain-body,
+      .capture-sandbox .capture-full .color-swatch {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+
+      .capture-sandbox .capture-clean .rec-details *,
+      .capture-sandbox .capture-clean .relation-explain-body *,
+      .capture-sandbox .capture-clean .deep-compat *,
+      .capture-sandbox .capture-clean .support-note *,
+      .capture-sandbox .capture-clean .rec-couple-extra-grid *,
+      .capture-sandbox .capture-clean .flower-detail-section *,
+      .capture-sandbox .capture-full .rec-details *,
       .capture-sandbox .capture-full .relation-explain-body *,
-      .capture-sandbox .capture-full .compat-detail-wrap,
-      .capture-sandbox .capture-full .compat-detail-wrap *,
-      .capture-sandbox .capture-full .deep-compat,
       .capture-sandbox .capture-full .deep-compat *,
-      .capture-sandbox .capture-full .support-note,
       .capture-sandbox .capture-full .support-note *,
-      .capture-sandbox .capture-full .rec-couple-extra-grid,
       .capture-sandbox .capture-full .rec-couple-extra-grid *,
-      .capture-sandbox .capture-full .flower-detail-section,
       .capture-sandbox .capture-full .flower-detail-section * {
         font-size: 10.5px !important;
         line-height: 1.65 !important;
@@ -3035,50 +3048,42 @@
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   }
 
-  const CAPTURE_FONT_SIZE = '10.5px';
-  const CAPTURE_LINE_HEIGHT = '1.65';
+  const CAPTURE_BODY_FONT_SIZE = '10.5px';
+  const CAPTURE_BODY_LINE_HEIGHT = '1.65';
+  const CAPTURE_LABEL_FONT_SIZE = '11.5px';
+  const CAPTURE_LABEL_LINE_HEIGHT = '1.5';
 
-  function normalizeCaptureTypography(root, referenceRoot = root) {
+  function normalizeCaptureTypography(root) {
     if (!root) return;
-    const selectors = [
-      '.rec-detail-card', '.rec-detail-card *',
-      '#recTime', '#recTimeDetail', '#recColors', '#recFlowers', '#recPlaces',
+
+    // 카드 소제목(Time · 시간대 같은 라벨)은 본문보다 한 단계 작은 통일 크기를 사용합니다.
+    const labelSelectors = [
+      '.rec-detail-card .dk', '.relation-explain-body .re-heading',
+      '.compat-detail-wrap .compat-card h4', '.rec-extra-title', '.flower-detail-name',
+    ];
+    root.querySelectorAll(labelSelectors.join(',')).forEach(element => {
+      element.style.setProperty('font-size', CAPTURE_LABEL_FONT_SIZE, 'important');
+      element.style.setProperty('line-height', CAPTURE_LABEL_LINE_HEIGHT, 'important');
+    });
+
+    // 본문/값 영역은 "추천 시간대"(#recTime, #recTimeDetail)를 포함해 어떤 카드든
+    // 데스크톱 기본 CSS(.dv 15px 등)로 되돌아가지 않도록 id까지 명시적으로 잡습니다.
+    const bodySelectors = [
+      '.rec-detail-card .dv', '.rec-detail-card .dv-sub',
+      '#recTime', '#recTimeDetail',
       '.tag', '.color-swatch', '.swatch',
       '.relation-explain-body', '.relation-explain-body *',
-      '.compat-detail-wrap', '.compat-detail-wrap *',
-      '.deep-compat', '.deep-compat *',
-      '.support-note', '.support-note *',
-      '.rec-couple-extra-grid', '.rec-couple-extra-grid *',
-      '.flower-detail-section', '.flower-detail-section *',
+      '.compat-detail-wrap *:not(h4)',
+      '.deep-compat *', '.support-note *',
+      '.rec-couple-extra-grid *', '.flower-detail-section *:not(.flower-detail-name)',
       '.rec-date-list', '.rec-date-list *',
       '.rec-touch-list', '.rec-touch-list *',
       '.rec-touch-summary', '.rec-touch-why', '.rec-touch-caution',
     ];
-    const colorContent = referenceRoot.querySelector('#recColors .tag, #recColors .color-swatch');
-    const colorStyle = colorContent ? getComputedStyle(colorContent) : null;
-        const contentFontSize = colorStyle?.fontSize || CAPTURE_FONT_SIZE;
-        const contentLineHeight = colorStyle?.lineHeight || CAPTURE_LINE_HEIGHT;
-
-    root.querySelectorAll(selectors.join(',')).forEach(element => {
-      element.style.setProperty('font-size', contentFontSize, 'important');
-      element.style.setProperty('line-height', contentLineHeight, 'important');
+    root.querySelectorAll(bodySelectors.join(',')).forEach(element => {
+      element.style.setProperty('font-size', CAPTURE_BODY_FONT_SIZE, 'important');
+      element.style.setProperty('line-height', CAPTURE_BODY_LINE_HEIGHT, 'important');
     });
-
-    // 추천시간대 본문은 추천컬러 내용의 실제 계산값을 기준으로 맞춥니다.
-    root.querySelectorAll('.recTime, #recTime, #recTimeDetail').forEach(element => {
-      element.style.setProperty('font-size', contentFontSize, 'important');
-      element.style.setProperty('line-height', contentLineHeight, 'important');
-    });
-
-    // 전체 저장본은 각 블록의 제목·내용·보조 문구까지 같은 기준으로 고정합니다.
-    if (root.classList.contains('capture-full')) {
-      root.querySelectorAll('*').forEach(element => {
-        if (element.children.length === 0 && element.textContent.trim()) {
-          element.style.setProperty('font-size', contentFontSize, 'important');
-          element.style.setProperty('line-height', contentLineHeight, 'important');
-        }
-      });
-    }
   }
 
 
@@ -3164,7 +3169,7 @@
     clone.style.setProperty('--accent-glow', accentGlow);
     clone.style.borderRadius = '24px';
     clone.style.overflow = 'hidden';
-    normalizeCaptureTypography(clone, recHero);
+    normalizeCaptureTypography(clone);
 
     // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
     // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
@@ -3204,8 +3209,9 @@
           const captured = clonedDocument.querySelector('.capture-clean');
           if (!captured) return;
 
-          /* clone이 새 문서에 재배치되며 상속 폰트 크기가 흔들릴 수 있어
-             캡처 직전 시점에 한 번 더 강제 적용합니다. */
+          /* html2canvas가 문서를 새로 구성하는 과정에서 인라인 스타일이
+             씻겨나갈 수 있으므로 캡처 직전 한 번 더 강제 적용합니다.
+             (특히 #recTime 등 id 기반 데스크톱 CSS로 되돌아가는 것을 방지) */
           normalizeCaptureTypography(captured);
 
           /* 가상 요소 없이도 화면과 같은 계절색과 둥근 테두리가 저장되도록 고정 */
@@ -3258,7 +3264,7 @@
     clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
     clone.style.display = 'block';
     clone.querySelector('.save-image-row')?.remove();
-    normalizeCaptureTypography(clone, result);
+    normalizeCaptureTypography(clone);
 
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
@@ -3282,9 +3288,8 @@
           const captured = clonedDocument.querySelector('.capture-full');
           if (!captured) return;
 
-          /* clone이 새 문서에 재배치되며 상속 폰트 크기가 흔들릴 수 있어
-             캡처 직전 시점에 한 번 더 강제 적용합니다. (추천 시간대 등
-             블록별 폰트 크기 불일치를 막는 핵심 처리) */
+          /* html2canvas가 문서를 새로 구성하는 과정에서 인라인 스타일이
+             씻겨나갈 수 있으므로 캡처 직전 한 번 더 강제 적용합니다. */
           normalizeCaptureTypography(captured);
 
           captured.style.display = 'block';
