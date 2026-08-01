@@ -187,19 +187,141 @@
     '금>목': (a, b) => `${a}님은 문제를 정확히 짚고 고치려 하지만 ${b}님은 자유롭게 시도하며 배우는 편이에요. ${a}님의 조언이 잦아지면 ${b}님은 통제받는다고 느낄 수 있으니, 지적보다 “나는 이렇게 해줬으면 좋겠어”라는 요청으로 말하는 것이 좋아요.`,
   };
 
-  function buildElementHelpSentences(supporter, receiver, elements) {
-    return elements.slice(0, 2).map(k => (ELEMENT_HELP_TEXT[k] ? ELEMENT_HELP_TEXT[k](supporter, receiver) : '')).filter(Boolean);
+  // 같은 오행 안에서도 사주 특징 조합에 따라 후보를 점수화해 선택한다.
+  const OHAENG_VARIATION_BANK = {
+    목: {
+      core: ['가능성을 발견하면 먼저 움직여보려는 편', '관계를 지금보다 나은 방향으로 키우고 싶어 하는 편', '막힌 상황에서도 다음 선택지를 찾으려는 편', '새로운 자극이 있어야 마음이 살아나는 편'],
+      love: ['함께 성장하고 있다는 확신', '새로운 경험을 같이 시작하는 설렘', '서로의 목표를 응원하는 태도', '다음 계획을 함께 세우는 과정'],
+      strength: ['새로운 계획을 꺼내 관계에 활력을 넣는 능력', '상대가 망설일 때 첫걸음을 만들어주는 능력', '함께할 목표를 행동으로 바꾸는 능력', '답답한 분위기에 전환점을 만드는 능력'],
+      shadow: ['속도가 느린 상대를 재촉하는 태도', '새로운 계획을 늘리면서 마무리를 놓치는 태도', '현재의 안정감보다 다음 변화만 바라보는 태도', '조언이 많아져 상대를 통제하는 태도'],
+      repair: ['결론을 정해주기보다 상대가 선택할 여지를 남기는 것', '새로운 제안을 하기 전에 상대의 속도를 먼저 묻는 것', '아이디어를 하나만 고르고 끝까지 함께 마무리하는 것', '변화를 요구하기보다 지금 잘하고 있는 점을 인정하는 것'],
+      romantic: ['새로운 장소를 함께 발견할 때 애정이 살아나는 커플이에요.', '서로의 목표를 응원하고 작은 성취를 함께 축하하는 연인이에요.', '같이 배우고 성장하는 경험이 오래 기억에 남는 커플이에요.'],
+      missing: ['누가 먼저 계획을 꺼낼지 기다리다가 관계가 정체될 수 있어요. 번갈아 다음 약속을 제안해보세요.', '새로운 시도를 시작하는 힘이 약할 수 있어요. 작은 변화를 정기적으로 넣어보세요.', '미래 이야기가 막연해지기 쉬워 이번 달에 함께 할 일 하나를 날짜까지 정해보세요.'],
+      weak: ['계획은 있어도 시작이 늦어질 수 있어요. 첫 행동을 작게 정해보세요.', '먼저 제안하는 데 망설일 수 있어 선택지를 두 개만 정해 골라달라고 해보세요.', '관계의 다음 단계를 미루기 쉬워 공동 목표 하나를 정해보세요.'],
+      sharedStrong: ['둘 다 목 기운이 강하면 새로운 데이트를 빠르게 만들어요. 시작한 일을 누가 마무리할지 나눠보세요.', '함께 성장하려는 욕구가 커 공부·운동·여행 목표를 세울 때 활발해져요.', '변화를 좋아해 관계가 단조롭지 않지만 꼭 지킬 약속 하나는 고정해두세요.'],
+      sharedGap: ['둘 다 목 기운이 약하면 다음 약속을 서로 미룰 수 있어 데이트 담당을 번갈아 정해보세요.', '새로움이 부족해질 수 있어 계절마다 처음 해보는 활동을 넣어보세요.', '미래 계획이 말로만 남기 쉬워 날짜·예산·첫 행동 중 하나를 확정해보세요.'],
+      help: [(s, r) => `${s}님은 ${r}님이 다음 행동을 정하지 못할 때 선택지를 넓혀주고 시작점을 만드는 역할을 하기 쉬워요.`, (s, r) => `${s}님은 ${r}님이 정체감을 느낄 때 새로운 계획을 꺼내 분위기를 바꿔주는 편이에요.`, (s, r) => `${s}님은 ${r}님의 가능성을 먼저 발견해 시작할 용기를 줘요.`],
+    },
+    화: {
+      core: ['감정과 호감이 생기면 반응으로 빠르게 보여주는 편', '관계의 온도와 분위기를 민감하게 느끼는 편', '좋고 싫은 마음이 표정과 말투에 잘 드러나는 편', '즐거운 감정을 상대와 바로 나누려는 편'],
+      love: ['즉각적인 호응과 분명한 애정 표현', '표정과 말투에서 느껴지는 따뜻한 반응', '보고 싶다는 마음을 숨기지 않는 태도', '함께 웃고 설레는 순간의 밀도'],
+      strength: ['관계의 분위기를 밝히고 감정을 빠르게 연결하는 능력', '상대가 위축됐을 때 따뜻한 반응으로 힘을 주는 능력', '좋아하는 마음을 숨기지 않아 관계를 선명하게 만드는 능력', '어색한 분위기를 먼저 풀어 친밀감을 높이는 능력'],
+      shadow: ['서운함이 생기면 말과 반응이 너무 빨라지는 태도', '상대의 반응이 늦을 때 애정이 식었다고 단정하는 태도', '감정이 큰 순간에 결론까지 내리려는 태도', '확인받고 싶은 마음이 커져 상대를 몰아붙이는 태도'],
+      repair: ['감정이 뜨거울 때 결론을 내리지 않고 잠시 식히는 것', '상대의 반응 속도를 애정의 크기로 해석하지 않는 것', '서운함을 비난 대신 구체적인 행동으로 설명하는 것', '감정 표현과 실제 약속을 나누어 이야기하는 것'],
+      romantic: ['표정과 말투가 밝아질 때 연인다운 설렘이 커져요.', '사진·기념일·짧은 메시지처럼 눈에 보이는 표현을 나누는 커플이에요.', '같이 웃고 즉각적으로 반응해주는 순간 애정을 크게 느껴요.'],
+      missing: ['좋아하는 마음이 있어도 표현이 적어 심심하게 느껴질 수 있어요. 짧은 칭찬을 먼저 보여주세요.', '애정 표현을 기다리기만 하면 무심하다고 오해할 수 있어 하루 한 번 마음을 전해보세요.', '작은 성취도 가볍게 축하하면 관계의 온도가 올라가요.'],
+      weak: ['마음은 깊어도 표현이 늦을 수 있어 짧고 구체적인 말을 자주 해보세요.', '상대가 알아서 느껴주길 기대하기 쉬워 고마움을 직접 말해보세요.', '서운함을 참다가 한꺼번에 말할 수 있어 감정이 작을 때 알려주세요.'],
+      sharedStrong: ['둘 다 화 기운이 강하면 즐거울 때 분위기가 빠르게 달아올라요. 서운할 때를 위한 냉각 시간도 정해두세요.', '반응이 빠르고 이벤트를 좋아해 생동감 있지만 확인되지 않은 감정은 단정하지 마세요.', '표현하는 힘이 커 가까워지기 쉽지만 한 번에 한 사람의 이야기를 들어주세요.'],
+      sharedGap: ['둘 다 화 기운이 약하면 애정 표현을 서로 기다릴 수 있어 생각난 순간 바로 한마디 해주세요.', '연인다운 설렘이 줄 수 있어 한 달에 한 번 작은 변화를 줘보세요.', '좋아도 티가 적어 확신을 잃을 수 있어 헤어질 때 좋았던 점을 말해보세요.'],
+      help: [(s, r) => `${s}님은 ${r}님이 기분이 가라앉았을 때 먼저 말을 걸고 분위기를 따뜻하게 바꿔줘요.`, (s, r) => `${s}님은 ${r}님이 표현을 망설일 때 솔직한 반응으로 마음을 꺼내기 쉽게 해줘요.`, (s, r) => `${s}님은 ${r}님의 작은 성취도 크게 반겨 자신감을 높여줘요.`],
+    },
+    토: {
+      core: ['안정과 책임을 중요하게 여기며 관계를 꾸준히 지키는 편', '말보다 반복되는 행동으로 신뢰를 쌓는 편', '생활 리듬과 현실적인 약속이 맞을 때 편안해지는 편', '상대를 실제로 챙겨주는 행동에서 마음을 보여주는 편'],
+      love: ['꾸준한 연락과 변하지 않는 태도', '약속을 지키는 행동에서 느껴지는 신뢰', '생활 속에서 실제로 챙겨주는 마음', '힘들 때 자리를 지켜주는 든든함'],
+      strength: ['관계를 현실적으로 지키고 꾸준히 돌보는 능력', '감정이 흔들릴 때 중심을 잡아주는 능력', '약속과 생활 문제를 차근차근 정리하는 능력', '장기적인 신뢰를 행동으로 쌓는 능력'],
+      shadow: ['익숙한 방식을 고수해 변화를 거부하는 태도', '서운함을 바로 말하지 않고 오래 쌓아두는 태도', '챙겨준 만큼 상대도 해야 한다는 기대', '안정을 이유로 상대의 자유를 제한하는 태도'],
+      repair: ['다음부터 반복하지 않을 약속을 정하는 것', '서운함이 쌓이기 전에 작은 불편부터 말하는 것', '한 가지는 상대 방식으로 해보는 것', '감정과 생활 문제를 분리해 하나씩 정리하는 것'],
+      romantic: ['정해진 날에 만나 일상을 챙기는 모습에서 사랑을 확인하는 커플이에요.', '아플 때 필요한 것을 챙기거나 약속을 지키는 행동이 애정 표현이 돼요.', '둘만의 고정 루틴이 생길수록 관계에 대한 믿음이 단단해져요.'],
+      missing: ['일정·돈·역할처럼 반복 관리가 필요한 일이 흐트러질 수 있어 공동 캘린더가 도움이 돼요.', '안정감을 확인할 행동이 부족할 수 있어 만나는 주기를 어느 정도 고정해보세요.', '좋은 마음은 있어도 실제 챙김이 빠질 수 있어 필요한 도움을 구체적으로 물어보세요.'],
+      weak: ['생활 문제를 감정으로만 해결할 수 있어 일정·비용·역할을 말로 구체화해보세요.', '꾸준함이 부족해 보일 수 있어 지킬 수 있는 연락 약속을 정해보세요.', '서로 챙길 일을 미루기 쉬워 예약·이동·비용을 번갈아 맡아보세요.'],
+      sharedStrong: ['둘 다 토 기운이 강하면 안정적인 생활 리듬을 만들어요. 익숙한 방식이 고집 대결이 되지 않게 해보세요.', '책임감이 있어 장기 관계에 강하지만 챙긴 일을 계산하지 말고 고마움을 말해주세요.', '평범한 일상을 함께 보내는 만족도가 높아 가끔 새로운 코스도 넣어보세요.'],
+      sharedGap: ['둘 다 토 기운이 약하면 약속·돈·일정 관리가 흐트러질 수 있어 확정 사항만 기록해보세요.', '지킬 수 있는 연락·만남 주기를 먼저 정해 안정감을 만들어보세요.', '필요한 도움은 눈치보다 구체적인 요청으로 말해보세요.'],
+      help: [(s, r) => `${s}님은 ${r}님이 생활 문제로 흔들릴 때 해야 할 일을 차근차근 정리해줘요.`, (s, r) => `${s}님은 ${r}님이 지쳐 있을 때 실제 필요한 것을 챙겨 안정감을 줘요.`, (s, r) => `${s}님은 ${r}님이 불안해할 때 변하지 않는 태도와 약속으로 신뢰를 만들어요.`],
+    },
+    금: {
+      core: ['기준과 원칙이 분명하고 관계에서도 명확함을 원하는 편', '약속과 예의를 지키는 태도에서 신뢰를 판단하는 편', '문제의 핵심을 빠르게 정리하고 결론을 내리려는 편', '서로의 경계와 역할이 분명할 때 편안해지는 편'],
+      love: ['약속을 지키는 태도와 분명한 존중', '말과 행동이 일치하는 신뢰', '서로의 경계를 함부로 넘지 않는 배려', '함께 정한 기준을 성실하게 지키는 모습'],
+      strength: ['문제를 정확히 짚고 건강한 경계를 세우는 능력', '복잡한 상황에서 우선순위를 정하는 능력', '약속과 역할을 분명히 만들어 신뢰를 높이는 능력', '관계에 필요한 결정을 미루지 않는 능력'],
+      shadow: ['실망하면 말이 단호해지고 상대를 평가하는 태도', '정답을 찾으려다 감정의 맥락을 놓치는 태도', '약속 위반을 오래 기억하며 계산하는 태도', '사과보다 잘잘못을 먼저 따지는 태도'],
+      repair: ['지적보다 요청의 형태로 말하는 것', '문제를 해결하기 전에 상대의 감정을 확인하는 것', '잘못된 점만큼 잘하고 있는 점도 표현하는 것', '가장 중요한 한 가지부터 합의하는 것'],
+      romantic: ['시간과 약속을 소중히 여기고 기준을 공유할 때 애정이 깊어져요.', '서로의 경계를 존중하고 행동을 지키는 모습이 신뢰로 이어져요.', '확실한 약속과 행동에서 사랑을 확인하는 연애를 해요.'],
+      missing: ['연락·돈·친구 관계의 기준을 말하지 못해 문제가 길어질 수 있어 선을 구체적으로 정해주세요.', '서로 원하는 관계의 정의가 애매할 수 있어 기대를 직접 확인해보세요.', '싫은 일을 참다가 거리를 둘 수 있어 작은 불편도 일찍 말해주세요.'],
+      weak: ['경계와 기준을 분명히 말하기 어려울 수 있어 연락·약속 변경 기준부터 합의해보세요.', '상대에게 맞추다 억울함이 생길 수 있어 가능한 것과 어려운 것을 나눠 말해보세요.', '결론을 미루기 쉬워 대화 끝에 결정된 사항을 확인해보세요.'],
+      sharedStrong: ['둘 다 금 기운이 강하면 약속과 예의를 잘 지켜 믿을 만해요. 지적이 많아지지 않게 조심해주세요.', '문제 해결은 빠르지만 해결 전 위로 한 문장을 먼저 건네보세요.', '목표와 기준을 세우는 데 강하니 여유로운 일정도 남겨두세요.'],
+      sharedGap: ['둘 다 금 기운이 약하면 관계의 선과 약속이 애매해질 수 있어 미리 말로 맞춰보세요.', '불편한 일을 참지 말고 감정이 작을 때 짧게 요청해보세요.', '결정을 미루기 쉬워 작은 선택부터 담당자를 번갈아 정해보세요.'],
+      help: [(s, r) => `${s}님은 ${r}님이 결정을 미룰 때 선택 기준을 정리하고 결론을 내리도록 도와줘요.`, (s, r) => `${s}님은 ${r}님이 관계의 선을 잡지 못할 때 지켜야 할 기준을 분명히 해줘요.`, (s, r) => `${s}님은 ${r}님이 복잡한 문제에 흔들릴 때 핵심과 우선순위를 정리해줘요.`],
+    },
+    수: {
+      core: ['상황을 충분히 관찰하고 속으로 정리한 뒤 움직이는 편', '표면보다 상대의 속마음과 분위기를 깊게 읽는 편', '혼자 생각할 여유가 있어야 감정을 정확히 말하는 편', '깊은 대화와 조용한 친밀감을 선호하는 편'],
+      love: ['간섭받지 않는 여유와 깊이 있는 대화', '말하지 않은 마음까지 이해해주는 태도', '조용히 곁을 지켜주는 안정감', '각자의 시간을 존중한 뒤 다시 연결되는 편안함'],
+      strength: ['상대의 속마음을 읽고 상황에 유연하게 대응하는 능력', '복잡한 감정을 차분히 정리하도록 돕는 능력', '서두르지 않고 관계의 깊이를 키우는 능력', '갈등 속에서도 여러 가능성을 열어두는 능력'],
+      shadow: ['갈등이 부담스러우면 말을 줄이고 속마음을 감추는 태도', '생각이 많아져 행동을 지나치게 미루는 태도', '상대가 알아차리길 기다리며 직접 표현하지 않는 태도', '상처를 피하려고 조용히 멀어지는 태도'],
+      repair: ['혼자 정리할 시간을 갖되 다시 이야기할 때를 약속하는 것', '침묵하기보다 현재 상태를 한 문장으로 알려주는 것', '상대의 감정을 이해한 뒤 자신의 필요도 말하는 것', '답을 미루더라도 가능한 시한을 정하는 것'],
+      romantic: ['둘만의 카페나 밤 산책에서 속이야기를 오래 나누는 커플이에요.', '각자의 시간을 보낸 뒤 다시 만날 때 편안함을 느끼는 연애예요.', '말이 없어도 함께 쉬는 시간이 친밀감으로 느껴지는 커플이에요.'],
+      missing: ['감정이 올라왔을 때 멈추고 생각할 여유가 부족할 수 있어 다시 대화할 시각을 정해주세요.', '상대의 말을 끝까지 듣기 전에 결론을 낼 수 있어 감정을 먼저 되짚어보세요.', '혼자 있는 시간이 부족해 피로가 쌓일 수 있어 휴식 시간을 존중해주세요.'],
+      weak: ['감정이 올라온 순간 바로 반응할 수 있어 잠깐 멈춘 뒤 말해주세요.', '맥락을 듣기 전에 판단할 수 있어 질문을 하나 더 해보세요.', '각자의 시간이 부족하면 피로가 커져 혼자 쉴 시간을 미리 알려주세요.'],
+      sharedStrong: ['둘 다 수 기운이 강하면 깊은 대화와 조용한 시간을 편하게 느껴요. 속마음은 직접 확인해주세요.', '서로의 분위기를 잘 읽지만 추측만으로 결론 내리지 마세요.', '각자의 시간을 존중하되 다시 연결될 시간을 약속해두세요.'],
+      sharedGap: ['둘 다 수 기운이 약하면 싸운 뒤 감정을 가라앉히기 어려워 쉬는 시간과 재대화 시각을 정해주세요.', '상대의 말을 충분히 듣기 전에 결론 내릴 수 있어 한 사람씩 끊지 않고 말해보세요.', '깊은 대화가 줄 수 있어 일주일에 한 번 감정만 묻는 시간을 만들어보세요.'],
+      help: [(s, r) => `${s}님은 ${r}님이 감정이 복잡할 때 답을 재촉하지 않고 이야기할 여유를 만들어줘요.`, (s, r) => `${s}님은 ${r}님의 말 뒤에 숨은 마음을 살피고 상황을 부드럽게 조율해요.`, (s, r) => `${s}님은 ${r}님이 지쳤을 때 조용히 곁을 지키며 마음을 정리할 시간을 줘요.`],
+    },
+  };
+
+  function getVariationContext(profileA, profileB, compat) {
+    const context = new Map();
+    const add = (tag, weight) => context.set(tag, Math.max(weight, context.get(tag) || 0));
+    [profileA, profileB].forEach(profile => {
+      if (!profile) return;
+      add(`day:${profile.day}`, 5);
+      profile.stats.dominant.forEach(k => add(`strong:${k}`, 4));
+      profile.stats.weak.forEach(k => add(`weak:${k}`, 2));
+      profile.stats.missing.forEach(k => add(`missing:${k}`, 3));
+      add(`balance:${profile.stats.balanceLabel}`, 1);
+    });
+    const relation = compat?.relation || '중립';
+    add(`relation:${relation}`, 5);
+    add(`jiji:${compat?.dayJijiRelation?.type || '평'}`, 4);
+    add(`jiji-tone:${compat?.dayJijiRelation?.tone || 'neutral'}`, 3);
+    add(`year-jiji:${compat?.yearJijiRelation?.type || '평'}`, 2);
+    if ((compat?.complement?.aFillsB?.length || 0) + (compat?.complement?.bFillsA?.length || 0)) add('complement', 4);
+    return context;
   }
 
-  function buildWeakEverydayText(stats) {
+  function getSingleVariationContext(day, stats) {
+    return getVariationContext({ day, stats }, null, null);
+  }
+
+  function pickScoredVariation(pool, context, seed, salt) {
+    if (!Array.isArray(pool) || !pool.length) return '';
+    const items = pool.map((value, index) => {
+      const candidate = typeof value === 'string' ? { text: value, tags: [] } : value;
+      const score = (candidate.tags || []).reduce((sum, tag) => sum + (context?.get(tag) || 0), 0);
+      const tie = stableTextHash(`${seed || ''}|${salt || ''}|${index}|${candidate.text}`) / 4294967296;
+      return { text: candidate.text, score: score + tie };
+    }).sort((a, b) => b.score - a.score);
+    return items[0]?.text || '';
+  }
+
+  function pickScoredMany(pool, count, context, seed, salt) {
+    if (!Array.isArray(pool) || !pool.length) return [];
+    return pool.map((value, index) => ({ value, index, score: stableTextHash(`${seed || ''}|${salt || ''}|${index}|${value}`) }))
+      .sort((a, b) => a.score - b.score).slice(0, count).map(item => item.value);
+  }
+
+  function variationCandidates(element, field) {
+    const bank = OHAENG_VARIATION_BANK[element] || OHAENG_VARIATION_BANK.토;
+    return (bank[field] || []).map((text, index) => ({
+      text,
+      tags: [`${field}:${element}`, `strong:${element}`, `weak:${element}`, `missing:${element}`, `day:${element}`].slice(index % 2),
+    }));
+  }
+
+  function buildElementHelpSentences(supporter, receiver, elements, seed, context) {
+    return elements.slice(0, 2).map((k, index) => {
+      const pool = OHAENG_VARIATION_BANK[k]?.help || [];
+      const selected = pickScoredVariation(pool.map(fn => ({ text: fn(supporter, receiver), tags: [`strong:${k}`, `weak:${k}`, `missing:${k}`, `day:${k}`] })), context, seed, `help:${k}:${index}`);
+      return selected || (ELEMENT_HELP_TEXT[k] ? ELEMENT_HELP_TEXT[k](supporter, receiver) : '');
+    }).filter(Boolean);
+  }
+
+  function buildWeakEverydayText(stats, seed, context) {
     const targets = stats.missing.length ? stats.missing : stats.weak.slice(0, 2);
-    return targets.slice(0, 2).map(k => ELEMENT_LOW_GUIDE[k]).filter(Boolean).join(' ');
+    return targets.slice(0, 2).map((k, index) => pickScoredVariation(variationCandidates(k, stats.missing.length ? 'missing' : 'weak'), context, seed, `weak:${k}:${index}`) || ELEMENT_LOW_GUIDE[k]).filter(Boolean).join(' ');
   }
 
-  function buildCombinedEverydayText(stats) {
-    const strongText = stats.dominant.slice(0, 2).map(k => ELEMENT_SHARED_STRONG[k]).filter(Boolean).join(' ');
+  function buildCombinedEverydayText(stats, seed, context) {
+    const strongText = stats.dominant.slice(0, 2).map((k, index) => pickScoredVariation(variationCandidates(k, 'sharedStrong'), context, seed, `strong:${k}:${index}`) || ELEMENT_SHARED_STRONG[k]).filter(Boolean).join(' ');
     const lowTargets = stats.missing.length ? stats.missing : stats.weak;
-    const lowText = lowTargets.slice(0, 2).map(k => ELEMENT_SHARED_GAP[k]).filter(Boolean).join(' ');
+    const lowText = lowTargets.slice(0, 2).map((k, index) => pickScoredVariation(variationCandidates(k, 'sharedGap'), context, seed, `gap:${k}:${index}`) || ELEMENT_SHARED_GAP[k]).filter(Boolean).join(' ');
     return `${strongText} ${lowText}`.trim();
   }
 
@@ -274,16 +396,26 @@
   function makePersonProfile(name, saju) {
     const day = getDayOhaeng(saju);
     const stats = analyzeOhaengCount(saju?.ohaengCount);
-    const dominant = stats.dominant[0] || day || '토';
-    const trait = OHAENG_RELATION_TRAITS[dominant];
-    const weakText = buildWeakEverydayText(stats);
+    const seed = `${name}|${getSajuSignature(saju)}`;
+    const context = getSingleVariationContext(day, stats);
+    const dominant = pickScoredVariation(stats.dominant.map(k => ({ text: k, tags: [`day:${k}`, `strong:${k}`] })), context, seed, 'profile:dominant') || stats.dominant[0] || day || '토';
+    const bank = OHAENG_VARIATION_BANK[dominant] || OHAENG_VARIATION_BANK.토;
+    const dayBank = OHAENG_VARIATION_BANK[day] || bank;
+    const trait = {
+      core: pickScoredVariation(variationCandidates(dominant, 'core'), context, seed, 'trait:core') || OHAENG_RELATION_TRAITS[dominant].core,
+      love: pickScoredVariation(variationCandidates(dominant, 'love'), context, seed, 'trait:love') || OHAENG_RELATION_TRAITS[dominant].love,
+      strength: pickScoredVariation(variationCandidates(dominant, 'strength'), context, seed, 'trait:strength') || OHAENG_RELATION_TRAITS[dominant].strength,
+      shadow: pickScoredVariation(variationCandidates(dominant, 'shadow'), context, seed, 'trait:shadow') || OHAENG_RELATION_TRAITS[dominant].shadow,
+      repair: pickScoredVariation(variationCandidates(dominant, 'repair'), context, seed, 'trait:repair') || OHAENG_RELATION_TRAITS[dominant].repair,
+      activity: bank.activity?.[0] || OHAENG_RELATION_TRAITS[dominant].activity,
+    };
+    const dayCore = pickScoredVariation(variationCandidates(day || dominant, 'core'), context, seed, 'trait:day-core') || trait.core;
+    const weakText = buildWeakEverydayText(stats, seed, context);
     return {
-      name,
-      day,
-      stats,
-      dominant,
-      trait,
-      summary: `${name}님은 사주에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향을 중심으로 보여요. 실제 관계에서는 ${trait.core}이에요. 특히 ‘${trait.love}’가 느껴질 때 상대의 마음을 더 확실히 믿는 편이에요.`,
+      name, day, stats, dominant, trait, seed,
+      summary: day === dominant
+        ? `${name}님은 일간과 전체 오행 분포에서 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'} 성향이 함께 두드러져, 실제 관계에서도 ${trait.core}이에요. 특히 ‘${trait.love}’가 느껴질 때 상대의 마음을 더 확실히 믿는 편이에요.`
+        : `${name}님의 일간은 ${day ? `${day}(${OHAENG_HANJA[day]})` : '확인되지 않은'}라 첫 반응은 ${dayCore}이고, 전체 분포에서는 ${dominant}(${OHAENG_HANJA[dominant]})가 더 두드러져 반복되는 관계 행동은 ${trait.core}이에요. ‘${trait.love}’가 채워질 때 애정을 안정적으로 느껴요.`,
       caution: `관계에서 특히 잘하는 점은 ${trait.strength}이에요. 다만 갈등이 생기면 ${trait.shadow}가 나타나기 쉬워요. ${weakText}`,
     };
   }
@@ -301,9 +433,11 @@
     const day = compat?.dayJijiRelation || { type: '평', tone: 'neutral' };
     const yearSignal = getJijiSignal(year);
     const daySignal = getJijiSignal(day);
+    const seed = `${nameA}|${nameB}|${year.type}|${day.type}|${year.tone}|${day.tone}`;
+    const choose = (pool, salt) => pickScoredVariation(pool.map(text => ({ text, tags: [`jiji:${day.type}`, `jiji-tone:${day.tone}`, `year-jiji:${year.type}`] })), new Map([['jiji:' + day.type, 4], ['jiji-tone:' + day.tone, 3], ['year-jiji:' + year.type, 2]]), seed, salt);
 
     if (daySignal > 0 && yearSignal > 0) {
-      return `일지 관계는 ${day.type}, 년지 관계는 ${year.type}에 해당해요. 두 관계 모두 좋은 흐름이라 가까이 지낼수록 편안한 정서적 호흡이 생기고, 가족·생활환경·장기 계획에서도 방향을 맞추기 쉬워요.`;
+      return choose([`일지는 ${day.type}, 년지는 ${year.type}이라 둘만의 정서적 호흡과 바깥생활의 방향이 함께 잘 맞는 편이에요.`, `가까운 감정 영역에서는 ${day.type}, 장기적인 생활 환경에서는 ${year.type}의 장점이 나타나 관계가 안정적으로 깊어지기 쉬워요.`, `일지와 년지 모두 좋은 흐름이라 연애 감정뿐 아니라 가족·일정·장기 계획에서도 손발을 맞추기 쉬워요.`], 'jiji:both-good');
     }
     if (daySignal > 0 && yearSignal < 0) {
       return `일지 관계에서는 ${day.type}의 편안함이 드러나 둘만 있을 때 정서적 호흡이 좋은 편이에요. 다만 년지 관계에서는 ${year.type}의 영향으로 가족관계·사회생활·생활 습관의 차이가 커질 수 있어요. 애정 자체보다 주변 환경을 조율하는 일이 장기 관계의 핵심이에요.`;
@@ -325,17 +459,19 @@
     const bFillsA = compat?.complement?.bFillsA || [];
     const sharedMissing = profileA.stats.missing.filter(k => profileB.stats.missing.includes(k));
     const sharedDominant = profileA.stats.dominant.filter(k => profileB.stats.dominant.includes(k));
+    const seed = `${profileA.seed}|${profileB.seed}|${compat?.relation || '중립'}|${compat?.dayJijiRelation?.type || '평'}`;
+    const context = getVariationContext(profileA, profileB, compat);
     const lines = [];
 
     if (aFillsB.length && bFillsA.length) {
       lines.push('한 사람만 계속 챙기는 관계라기보다, 상황에 따라 먼저 손을 내미는 사람이 자연스럽게 바뀌는 편이에요.');
-      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
-      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
+      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB, `${seed}|a`, context));
+      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA, `${seed}|b`, context));
     } else if (aFillsB.length) {
-      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB));
+      lines.push(...buildElementHelpSentences(profileA.name, profileB.name, aFillsB, `${seed}|a-only`, context));
       lines.push(`${profileB.name}님도 ${profileA.name}님이 지쳐 보이는 날에는 먼저 안부를 묻거나 약속을 준비해주면, 도움을 받기만 한다는 느낌 없이 애정이 자연스럽게 오갈 수 있어요.`);
     } else if (bFillsA.length) {
-      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA));
+      lines.push(...buildElementHelpSentences(profileB.name, profileA.name, bFillsA, `${seed}|b-only`, context));
       lines.push(`${profileA.name}님도 ${profileB.name}님이 지쳐 보이는 날에는 먼저 안부를 묻거나 약속을 준비해주면, 도움을 받기만 한다는 느낌 없이 애정이 자연스럽게 오갈 수 있어요.`);
     } else {
       lines.push('둘 다 어려워하는 일을 상대가 알아서 해결해주길 기다리기보다, 일정 잡기나 예약처럼 작은 역할부터 나누면 서로를 훨씬 든든하게 느낄 수 있어요.');
@@ -358,10 +494,10 @@
     }
 
     sharedDominant.slice(0, 1).forEach(k => {
-      if (ELEMENT_SHARED_STRONG[k]) lines.push(ELEMENT_SHARED_STRONG[k]);
+      if (ELEMENT_SHARED_STRONG[k]) lines.push(pickScoredVariation(variationCandidates(k, 'sharedStrong'), context, seed, `shared-strong:${k}`) || ELEMENT_SHARED_STRONG[k]);
     });
     sharedMissing.slice(0, 1).forEach(k => {
-      if (ELEMENT_SHARED_GAP[k]) lines.push(ELEMENT_SHARED_GAP[k]);
+      if (ELEMENT_SHARED_GAP[k]) lines.push(pickScoredVariation(variationCandidates(k, 'sharedGap'), context, seed, `shared-gap:${k}`) || ELEMENT_SHARED_GAP[k]);
     });
     return [...new Set(lines)].slice(0, 4);
   }
@@ -432,8 +568,14 @@
     const daySignal = getJijiSignal(compat?.dayJijiRelation);
     const complementCount = (compat?.complement?.aFillsB?.length || 0) + (compat?.complement?.bFillsA?.length || 0);
 
+    const context = getVariationContext(profileA, profileB, compat);
+    const seed = `${profileA.seed}|${profileB.seed}|flow`;
     if (relation === '상생' && daySignal > 0 && complementCount >= 2) {
-      return '초반의 호감이 시간이 지나면서 신뢰로 이어지는 관계예요. 한 사람은 계획을 세우고 다른 사람은 분위기를 풀어주는 식으로 역할이 자연스럽게 나뉘기 쉬워요. 여행·저축·운동처럼 둘이 함께할 목표를 정하면 관계가 더 단단해져요.';
+      return pickScoredVariation([
+        '초반의 호감이 시간이 지나면서 신뢰와 공동 목표로 이어지는 관계예요.',
+        '가까워질수록 서로의 역할이 자연스럽게 나뉘고 실제 생활에서 든든함이 커져요.',
+        '정서적 호흡과 현실적인 보완이 함께 있어 장기 계획을 세울 때 강점이 드러나요.',
+      ].map(text => ({ text, tags: ['relation:상생', 'complement', 'jiji-tone:good'] })), context, seed, 'flow:good');
     }
     if (relation === '상극' && daySignal < 0) {
       return '서로에게 끌리는 힘도 크지만 긴장도 함께 큰 관계예요. 관계가 빠르게 깊어질 수 있는 만큼, 다툴 때의 규칙이 없으면 감정의 오르내림도 커져요. 서로의 속도를 맞추고 선을 존중하는 게 중요해요.';
@@ -447,7 +589,11 @@
     if (daySignal < 0) {
       return '초반의 매력과 별개로 가까워진 뒤에는 조율이 필요한 관계예요. 서로를 바꾸려 하기보다 꼭 지키고 싶은 기준과 서로 맞출 수 있는 부분을 나눠 이야기해보세요.';
     }
-    return '처음부터 강하게 끌리기보다 함께 지내면서 정이 차곡차곡 쌓이는 관계예요. 같은 운동이나 게임, 영화 감상처럼 꾸준히 할 취미를 하나 만들고, 여행·공연·맛집 탐방처럼 둘 다 즐거웠던 경험을 반복해서 쌓을수록 가까워져요.';
+    return pickScoredVariation([
+      '처음부터 강하게 끌리기보다 함께 지내면서 정이 차곡차곡 쌓이는 관계예요.',
+      '반복되는 연락과 약속이 친밀감을 키워주는 관계예요.',
+      '정기적으로 함께할 취미나 루틴을 만들면 관계가 자연스럽게 깊어져요.',
+    ].map(text => ({ text, tags: [`relation:${relation || '중립'}`, `jiji-tone:${compat?.dayJijiRelation?.tone || 'neutral'}`] })), context, seed, 'flow:default');
   }
 
   const ROMANTIC_ELEMENT_SCENE = {
@@ -462,7 +608,9 @@
     const scenes = [];
     const relation = compat?.relation;
     const daySignal = getJijiSignal(compat?.dayJijiRelation);
-    const dominant = combinedStats.dominant[0] || profileA.dominant;
+    const context = getVariationContext(profileA, profileB, compat);
+    const seed = `${profileA.seed}|${profileB.seed}|romantic`;
+    const dominant = pickScoredVariation(combinedStats.dominant.map(k => ({ text: k, tags: [`strong:${k}`, `day:${k}`] })), context, seed, 'romantic:dominant') || profileA.dominant;
 
     if (relation === '상생') {
       scenes.push('연인으로 지낼 때는 한 사람이 먼저 마음이나 계획을 꺼내면 다른 사람이 자연스럽게 호응해주는 모습이 많아요. 거창한 이벤트보다 안부를 챙기고, 필요한 순간에 먼저 움직여주는 행동에서 사랑을 확인하는 커플이에요.');
@@ -482,7 +630,8 @@
       scenes.push('애정이 안정되면 서로의 일상에 무리하게 끼어들기보다, 각자 할 일을 하다가 자연스럽게 만나 쉬는 연애를 하기 쉬워요. 연락 횟수보다 약속한 순간에 성실하게 반응하는 것이 더 중요하게 느껴져요.');
     }
 
-    if (ROMANTIC_ELEMENT_SCENE[dominant]) scenes.push(ROMANTIC_ELEMENT_SCENE[dominant]);
+    const romantic = pickScoredVariation(OHAENG_VARIATION_BANK[dominant]?.romantic?.map(text => ({ text, tags: [`strong:${dominant}`, `relation:${relation || '중립'}`] })), context, seed, `romantic:element:${dominant}`);
+    if (romantic || ROMANTIC_ELEMENT_SCENE[dominant]) scenes.push(romantic || ROMANTIC_ELEMENT_SCENE[dominant]);
 
     if (direction === 'aGeneratesB' || direction === 'bGeneratesA') {
       const giver = direction === 'aGeneratesB' ? profileA : profileB;
@@ -627,11 +776,13 @@
     const sharedStrong = statsA.dominant.filter(k => statsB.dominant.includes(k));
     const aFillsB = statsA.dominant.filter(k => statsB.weak.includes(k) || statsB.missing.includes(k));
     const bFillsA = statsB.dominant.filter(k => statsA.weak.includes(k) || statsA.missing.includes(k));
+    const context = getVariationContext({ day: statsA.dominant[0], stats: statsA }, { day: statsB.dominant[0], stats: statsB }, null);
+    const seed = `${rawNameA}|${rawNameB}|approx|${getCountSignature(countA)}|${getCountSignature(countB)}`;
     const observations = [];
 
-    if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB));
-    if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA));
-    if (sharedStrong.length) sharedStrong.slice(0, 2).forEach(k => observations.push(ELEMENT_SHARED_STRONG[k]));
+    if (aFillsB.length) observations.push(...buildElementHelpSentences(nameA, nameB, aFillsB, `${seed}|a`, context));
+    if (bFillsA.length) observations.push(...buildElementHelpSentences(nameB, nameA, bFillsA, `${seed}|b`, context));
+    if (sharedStrong.length) sharedStrong.slice(0, 2).forEach((k, index) => observations.push(pickScoredVariation(variationCandidates(k, 'sharedStrong'), context, seed, `approx:strong:${index}`) || ELEMENT_SHARED_STRONG[k]));
     if (!observations.length) observations.push('현재 입력값만으로는 누가 더 이끌거나 챙기는지가 뚜렷하지 않아요. 연락 속도, 약속을 잡는 방식, 돈과 시간을 쓰는 습관이 실제 관계에서 더 중요하게 작용해요.');
 
     return `
@@ -1101,6 +1252,38 @@
     }).join('');
   }
 
+  function buildPersonalizedPrimaryRecommendation(base, primaryElement, entryA, entryB, rec, inputA, inputB) {
+    const bank = OHAENG_VARIATION_BANK[primaryElement] || OHAENG_VARIATION_BANK.토;
+    const profileA = entryA?.exact ? makePersonProfile(inputA.name, entryA.exact) : null;
+    const profileB = entryB?.exact ? makePersonProfile(inputB.name, entryB.exact) : null;
+    const context = getVariationContext(profileA, profileB, rec?.compat);
+    const seed = `${getEntrySeed(entryA, inputA)}|${getEntrySeed(entryB, inputB)}|${rec?.primaryOhaeng || primaryElement}`;
+    const relation = rec?.compat?.relation || '중립';
+    const relationIdeas = {
+      상생: ['서로 잘하는 역할을 바꿔 맡아보기', '한 사람의 목표를 다른 사람이 돕는 작은 미션 정하기'],
+      상극: ['각자 하나씩 결정권을 맡아 반반 코스 만들기', '데이트 뒤 좋았던 점과 조율할 점 하나씩 나누기'],
+      동기: ['같은 취향 속에서도 처음 해보는 활동 고르기', '닮은 점과 예상 밖의 다른 점 이야기하기'],
+      중립: ['정기적으로 반복할 둘만의 작은 루틴 만들기', '편한 데이트와 새로 해보고 싶은 데이트 섞기'],
+    }[relation] || [];
+    const places = pickScoredMany(base?.places || [], 4, context, seed, 'primary:places');
+    const dateIdeas = pickScoredMany([...(base?.dateIdeas || []), ...relationIdeas, base?.dateTip].filter(Boolean), 4, context, seed, 'primary:date-ideas');
+    const keywordPool = {
+      목: ['성장', '새로운 시작', '확장', '도전', '발견'], 화: ['설렘', '표현', '온기', '활기', '로맨틱함'],
+      토: ['안정', '신뢰', '꾸준함', '생활의 온기', '든든함'], 금: ['명확함', '존중', '약속', '정돈', '신뢰의 기준'],
+      수: ['깊이', '여유', '공감', '조용한 친밀감', '유연함'],
+    }[primaryElement] || [];
+    const timePool = [base?.timeDetail, ...(bank.timeDetail || [])].filter(Boolean);
+    return {
+      ...(base || {}),
+      summary: pickScoredVariation(bank.summary || bank.core, context, seed, 'primary:summary') || base?.summary,
+      keyword: pickScoredVariation(keywordPool.map(text => ({ text, tags: [`strong:${primaryElement}`, `relation:${relation}`] })), context, seed, 'primary:keyword') || base?.keyword,
+      timeDetail: pickScoredVariation(timePool, context, seed, 'primary:time') || base?.timeDetail,
+      places: places.length ? places : (base?.places || []).slice(0, 3),
+      dateIdeas: dateIdeas.length ? dateIdeas : [base?.dateTip].filter(Boolean),
+      dateTip: dateIdeas[0] || base?.dateTip,
+    };
+  }
+
 
   function stableTextHash(value) {
     let hash = 2166136261;
@@ -1110,6 +1293,35 @@
       hash = Math.imul(hash, 16777619);
     }
     return hash >>> 0;
+  }
+
+  function getCountSignature(count) {
+    return OHAENG_ORDER.map(k => `${k}${Number(count?.[k] || 0)}`).join('');
+  }
+
+  function getSajuSignature(saju) {
+    if (!saju) return 'no-saju';
+    const pillars = ['year', 'month', 'day', 'hour'].map(key => {
+      const pillar = saju[key] || {};
+      return [pillar.cheonganHanja, pillar.jijiHanja, pillar.ohaengCheongan, pillar.ohaengJiji].filter(Boolean).join('');
+    }).join('|');
+    return `${pillars}|${getCountSignature(saju.ohaengCount)}`;
+  }
+
+  function getEntrySeed(entry, input) {
+    if (entry?.exact) return `exact:${getSajuSignature(entry.exact)}`;
+    const approx = entry?.approx || {};
+    return ['approx', input?.month, input?.day, input?.hourUnknown ? '?' : input?.hour, approx.month?.ohaeng, approx.day?.likelyOhaeng?.join(''), approx.hour?.ohaeng].join(':');
+  }
+
+  function getCompatSignature(compat) {
+    return [
+      compat?.relation || '중립',
+      compat?.dayJijiRelation?.type || '평', compat?.dayJijiRelation?.tone || 'neutral',
+      compat?.yearJijiRelation?.type || '평', compat?.yearJijiRelation?.tone || 'neutral',
+      (compat?.complement?.aFillsB || []).join(''), (compat?.complement?.bFillsA || []).join(''),
+      compat?.minOhaeng || '', compat?.maxOhaeng || '', compat?.ilganA || '', compat?.ilganB || '',
+    ].join('|');
   }
 
   const TOUCH_CANDIDATES = [
@@ -1554,7 +1766,7 @@
     }
 
     // 메인 추천
-    const p = rec.primary;
+    const p = buildPersonalizedPrimaryRecommendation(rec.primary, rec.primaryOhaeng, entryA, entryB, rec, inputA, inputB);
     const hanjaMap = { 목: '木', 화: '火', 토: '土', 금: '金', 수: '水' };
     document.getElementById('recHanja').textContent = hanjaMap[rec.primaryOhaeng];
     document.getElementById('recHanja').style.color = OHAENG_COLOR[rec.primaryOhaeng];
@@ -1672,8 +1884,10 @@
     // 두 사람이 실제로 어떤 방식으로 서로에게 도움이 되는지 설명
     const { aFillsB = [], bFillsA = [] } = compat.complement || {};
     const parts = [];
-    if (bFillsA.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameB), escapeHtml(nameA), bFillsA));
-    if (aFillsB.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameA), escapeHtml(nameB), aFillsB));
+    const deepSeed = `${nameA}|${nameB}|${getCompatSignature(compat)}|deep`;
+    const deepContext = getVariationContext({ name: nameA, day: compat.ilganA, stats: analyzeOhaengCount(compat.countA || {}) }, { name: nameB, day: compat.ilganB, stats: analyzeOhaengCount(compat.countB || {}) }, compat);
+    if (bFillsA.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameB), escapeHtml(nameA), bFillsA, `${deepSeed}|b`, deepContext));
+    if (aFillsB.length > 0) parts.push(...buildElementHelpSentences(escapeHtml(nameA), escapeHtml(nameB), aFillsA, `${deepSeed}|a`, deepContext));
 
     let complementHtml = '';
     if (parts.length === 0) {
