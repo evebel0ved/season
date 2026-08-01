@@ -2957,6 +2957,20 @@
         line-height: 1.65 !important;
       }
 
+      .capture-sandbox .capture-clean .rec-detail-card .dk,
+      .capture-sandbox .capture-clean .rec-detail-card .dv,
+      .capture-sandbox .capture-clean .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-clean .tag,
+      .capture-sandbox .capture-clean .color-swatch,
+      .capture-sandbox .capture-full .rec-detail-card .dk,
+      .capture-sandbox .capture-full .rec-detail-card .dv,
+      .capture-sandbox .capture-full .rec-detail-card .dv-sub,
+      .capture-sandbox .capture-full .tag,
+      .capture-sandbox .capture-full .color-swatch {
+        font-size: 10.5px !important;
+        line-height: 1.65 !important;
+      }
+
       .capture-sandbox .capture-clean .rec-details *,
       .capture-sandbox .capture-clean .relation-explain-body *,
       .capture-sandbox .capture-clean .deep-compat *,
@@ -3032,6 +3046,20 @@
 
     /* 복제본의 최종 레이아웃이 확정된 다음 프레임에 캡처 */
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  }
+
+  function normalizeCaptureTypography(root) {
+    const selectors = [
+      '.rec-detail-card .dk', '.rec-detail-card .dv', '.rec-detail-card .dv-sub',
+      '.rec-detail-card .tag', '.rec-detail-card .color-swatch',
+      '.relation-explain-body *', '.compat-detail-wrap *', '.deep-compat *',
+      '.support-note *', '.rec-couple-extra-grid *', '.flower-detail-section *',
+      '.rec-date-list', '.rec-touch-list',
+    ];
+    root.querySelectorAll(selectors.join(',')).forEach(element => {
+      element.style.setProperty('font-size', '10.5px', 'important');
+      element.style.setProperty('line-height', '1.65', 'important');
+    });
   }
 
 
@@ -3117,6 +3145,7 @@
     clone.style.setProperty('--accent-glow', accentGlow);
     clone.style.borderRadius = '24px';
     clone.style.overflow = 'hidden';
+    normalizeCaptureTypography(clone);
 
     // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
     // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
@@ -3206,6 +3235,7 @@
     clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
     clone.style.display = 'block';
     clone.querySelector('.save-image-row')?.remove();
+    normalizeCaptureTypography(clone);
 
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
