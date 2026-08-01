@@ -329,6 +329,7 @@
   button.primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   .save-image-row { text-align: center; margin: 28px 0 0; }
+  .save-image-buttons { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; }
   button.secondary {
     background: #ffffff;
     color: var(--accent-3);
@@ -1237,11 +1238,17 @@
     </div>
 
     <div class="save-image-row">
-      <button class="secondary" id="saveImageBtn" type="button">
-        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        결과 이미지로 저장
-      </button>
-      <div class="save-image-note">추천 궁합 기운 요약까지만 이미지로 저장돼요</div>
+      <div class="save-image-buttons">
+        <button class="secondary" id="saveImageBtn" type="button">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          결과 이미지로 저장
+        </button>
+        <button class="secondary" id="saveFullImageBtn" type="button">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3v9.5M10 12.5L6.5 9M10 12.5L13.5 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v1.5A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5V14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          전체 결과 저장
+        </button>
+      </div>
+      <div class="save-image-note">요약 저장은 추천 궁합 기운까지, 전체 저장은 아래 결과 전체를 저장해요</div>
     </div>
 
   </div>

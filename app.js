@@ -1950,6 +1950,14 @@
         isolation: isolate;
       }
 
+      .capture-sandbox .capture-full {
+        width: var(--capture-width, 992px) !important;
+        margin: 0 !important;
+        padding-bottom: 24px !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+      }
+
       /* 화면용 광택 레이어는 저장할 때만 제거합니다. 계절색은 위 실제 배경으로 유지됩니다. */
       .capture-sandbox .capture-clean::before,
       .capture-sandbox .capture-clean::after {
@@ -2163,8 +2171,75 @@
     }
   }
 
+  async function handleSaveFullImage(btn) {
+    if (typeof html2canvas === 'undefined') {
+      alert('이미지 저장 기능을 불러오지 못했어요. 네트워크 연결을 확인한 뒤 다시 시도해주세요.');
+      return;
+    }
+    const result = document.getElementById('result');
+    if (!result) return;
+
+    ensureSaveImageStyles();
+    const originalLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '전체 결과 만드는 중…';
+
+    const clone = result.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.classList.add('capture-full');
+    clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
+    clone.style.display = 'block';
+    clone.querySelector('.save-image-row')?.remove();
+
+    const sandbox = document.createElement('div');
+    sandbox.className = 'capture-sandbox';
+    sandbox.style.width = `${RESULT_CAPTURE_WIDTH}px`;
+    sandbox.appendChild(clone);
+    document.body.appendChild(sandbox);
+
+    try {
+      await waitForCaptureAssets(clone);
+      const canvas = await html2canvas(clone, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        imageTimeout: 15000,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: RESULT_CAPTURE_WIDTH,
+        onclone: clonedDocument => {
+          const captured = clonedDocument.querySelector('.capture-full');
+          if (!captured) return;
+          captured.style.display = 'block';
+          captured.style.setProperty('width', `${RESULT_CAPTURE_WIDTH}px`, 'important');
+          captured.style.maxWidth = 'none';
+          captured.style.margin = '0';
+          captured.style.paddingBottom = '24px';
+          captured.style.background = '#ffffff';
+          captured.style.overflow = 'visible';
+        },
+      });
+      const stamp = new Date().toISOString().slice(0, 10);
+      const blob = await canvasToPngBlob(canvas);
+      await deliverSavedImage(blob, `season-궁합-전체-${stamp}.png`);
+    } catch (e) {
+      console.error(e);
+      alert('전체 결과를 저장하는 중 문제가 생겼어요: ' + e.message);
+    } finally {
+      document.body.removeChild(sandbox);
+      btn.disabled = false;
+      btn.innerHTML = originalLabel;
+    }
+  }
+
   const saveImageBtn = document.getElementById('saveImageBtn');
   if (saveImageBtn) {
     saveImageBtn.addEventListener('click', () => handleSaveResultImage(saveImageBtn));
+  }
+  const saveFullImageBtn = document.getElementById('saveFullImageBtn');
+  if (saveFullImageBtn) {
+    saveFullImageBtn.addEventListener('click', () => handleSaveFullImage(saveFullImageBtn));
   }
 })();
