@@ -1413,14 +1413,11 @@
       recParent.classList.add('lover-only-block');
     }
 
-    ['deepCompat', 'recHero', 'recTime', 'recTimeDetail', 'recColors', 'recFlowers', 'recPlaces', 'supportNote', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
+    ['deepCompat', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
       .forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        const block = id === 'deepCompat' || id === 'recHero' || id === 'supportNote' || id === 'recCoupleExtraGrid' || id === 'recDateIdeasBlock' || id === 'recTouchBlock' || id === 'flowerMeaningDetails'
-          ? el
-          : (el.parentElement || el);
-        block.classList.add('lover-only-block');
+        el.classList.add('lover-only-block');
       });
   }
 
