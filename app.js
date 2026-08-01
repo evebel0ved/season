@@ -1408,16 +1408,19 @@
 
     const recHero = document.getElementById('recHero');
     const relationBody = document.getElementById('relationExplainBody');
+    // 친구 모드에서도 관계 뱃지와 친구 관계 해설은 보여야 하므로
+    // 추천 영역의 상위 컨테이너 자체는 연인 전용으로 숨기지 않습니다.
+    recHero?.classList.remove('lover-only-block');
     const recParent = recHero?.parentElement;
     if (recParent && recParent.id !== 'result' && !(relationBody && recParent.contains(relationBody))) {
       recParent.classList.add('lover-only-block');
     }
 
-    ['deepCompat', 'recHero', 'recTime', 'recTimeDetail', 'recColors', 'recFlowers', 'recPlaces', 'supportNote', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
+    ['deepCompat', 'recTime', 'recTimeDetail', 'recColors', 'recFlowers', 'recPlaces', 'supportNote', 'recCoupleExtraGrid', 'recDateIdeasBlock', 'recTouchBlock', 'flowerMeaningDetails']
       .forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        const block = id === 'deepCompat' || id === 'recHero' || id === 'supportNote' || id === 'recCoupleExtraGrid' || id === 'recDateIdeasBlock' || id === 'recTouchBlock' || id === 'flowerMeaningDetails'
+        const block = id === 'deepCompat' || id === 'supportNote' || id === 'recCoupleExtraGrid' || id === 'recDateIdeasBlock' || id === 'recTouchBlock' || id === 'flowerMeaningDetails'
           ? el
           : (el.parentElement || el);
         block.classList.add('lover-only-block');
