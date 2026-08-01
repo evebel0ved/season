@@ -3041,11 +3041,8 @@
   const CAPTURE_FONT_SIZE = '10.5px';
   const CAPTURE_LINE_HEIGHT = '1.65';
 
-  function normalizeCaptureTypography(root) {
+  function normalizeCaptureTypography(root, referenceRoot = root) {
     if (!root) return;
-    // rec-detail-card 계열은 클래스뿐 아니라 자기 자신 + id로도 함께 잡아
-    // "추천 시간대"(#recTime/#recTimeDetail)처럼 구조가 살짝 다른 블록도
-    // 절대 빠지지 않고 다른 카드와 동일한 크기로 캡처되게 합니다.
     const selectors = [
       '.rec-detail-card', '.rec-detail-card *',
       '#recTime', '#recTimeDetail', '#recColors', '#recFlowers', '#recPlaces',
@@ -3060,10 +3057,31 @@
       '.rec-touch-list', '.rec-touch-list *',
       '.rec-touch-summary', '.rec-touch-why', '.rec-touch-caution',
     ];
+    const colorContent = referenceRoot.querySelector('#recColors .tag, #recColors .color-swatch');
+    const colorStyle = colorContent ? getComputedStyle(colorContent) : null;
+        const contentFontSize = colorStyle?.fontSize || CAPTURE_FONT_SIZE;
+        const contentLineHeight = colorStyle?.lineHeight || CAPTURE_LINE_HEIGHT;
+
     root.querySelectorAll(selectors.join(',')).forEach(element => {
-      element.style.setProperty('font-size', CAPTURE_FONT_SIZE, 'important');
-      element.style.setProperty('line-height', CAPTURE_LINE_HEIGHT, 'important');
+      element.style.setProperty('font-size', contentFontSize, 'important');
+      element.style.setProperty('line-height', contentLineHeight, 'important');
     });
+
+    // 추천시간대 본문은 추천컬러 내용의 실제 계산값을 기준으로 맞춥니다.
+    root.querySelectorAll('.recTime, #recTime, #recTimeDetail').forEach(element => {
+      element.style.setProperty('font-size', contentFontSize, 'important');
+      element.style.setProperty('line-height', contentLineHeight, 'important');
+    });
+
+    // 전체 저장본은 각 블록의 제목·내용·보조 문구까지 같은 기준으로 고정합니다.
+    if (root.classList.contains('capture-full')) {
+      root.querySelectorAll('*').forEach(element => {
+        if (element.children.length === 0 && element.textContent.trim()) {
+          element.style.setProperty('font-size', contentFontSize, 'important');
+          element.style.setProperty('line-height', contentLineHeight, 'important');
+        }
+      });
+    }
   }
 
 
@@ -3149,7 +3167,7 @@
     clone.style.setProperty('--accent-glow', accentGlow);
     clone.style.borderRadius = '24px';
     clone.style.overflow = 'hidden';
-    normalizeCaptureTypography(clone);
+    normalizeCaptureTypography(clone, recHero);
 
     // relationExplainBody 안에서 짧은 관계궁합 요약(re-heading/re-lover-friend/re-quote)만 남기고
     // 그 뒤에 이어붙는 상세 해설(compat-detail-wrap)은 제거
@@ -3243,7 +3261,7 @@
     clone.style.setProperty('--capture-width', `${RESULT_CAPTURE_WIDTH}px`);
     clone.style.display = 'block';
     clone.querySelector('.save-image-row')?.remove();
-    normalizeCaptureTypography(clone);
+    normalizeCaptureTypography(clone, result);
 
     const sandbox = document.createElement('div');
     sandbox.className = 'capture-sandbox';
