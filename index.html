@@ -707,6 +707,7 @@
     font-size: 12px;
     line-height: 2;
   }
+  .footer-secondary { margin-top: 6px; }
   footer a { color: var(--ink-dim); }
 
   .loading-overlay {
@@ -1114,11 +1115,32 @@
     .mobile-input-flow .pre-calc-row { margin-bottom: 18px; }
 
     .save-image-note {
-      width: calc(100% - 100px);
-      max-width: 280px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 360px;
+      margin: 12px auto 0;
+      padding: 0 18px;
+      line-height: 1.7;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      text-wrap: balance;
+    }
+
+    footer {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 48px 24px 32px;
+    }
+    footer > div {
+      max-width: 360px;
       margin-left: auto;
       margin-right: auto;
-      line-height: 1.6;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      text-wrap: pretty;
+    }
+    footer .footer-secondary {
+      margin-top: 8px;
     }
   }
 </style>
@@ -1324,7 +1346,7 @@
 
 <footer>
   <div>오행 배속 이론(계절·시간·색·방위)을 바탕으로 색상·꽃·장소를 현대적으로 해석해 구성했습니다. 재미로 즐겨주세요.</div>
-  <div style="margin-top:6px;">절기 계산은 천문 근사식을 사용하여, 절입 시각 당일 출생인 경우 ±1시간 오차가 있을 수 있습니다.</div>
+  <div class="footer-secondary">절기 계산은 천문 근사식을 사용하여, 절입 시각 당일 출생인 경우 ±1시간 오차가 있을 수 있습니다.</div>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
